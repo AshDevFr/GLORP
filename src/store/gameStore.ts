@@ -11,12 +11,16 @@ interface GameState {
   evolutionStage: number;
   lastSaved: number;
   upgradeOwned: Record<string, number>;
+  hasSeenFirstEvolution: boolean;
+  hasSeenFirstUpgrade: boolean;
 }
 
 interface GameActions {
   clickFeed: () => void;
   addTrainingData: (amount: number) => void;
   purchaseUpgrade: (id: string) => void;
+  markFirstEvolutionSeen: () => void;
+  markFirstUpgradeSeen: () => void;
 }
 
 export type GameStore = GameState & GameActions;
@@ -28,6 +32,8 @@ export const initialGameState: GameState = {
   evolutionStage: 0,
   lastSaved: 0,
   upgradeOwned: {},
+  hasSeenFirstEvolution: false,
+  hasSeenFirstUpgrade: false,
 };
 
 export const useGameStore = create<GameStore>()(
@@ -71,6 +77,8 @@ export const useGameStore = create<GameStore>()(
             lastSaved: Date.now(),
           };
         }),
+      markFirstEvolutionSeen: () => set({ hasSeenFirstEvolution: true }),
+      markFirstUpgradeSeen: () => set({ hasSeenFirstUpgrade: true }),
     }),
     {
       name: "glorp-game-state",

@@ -2,7 +2,9 @@ import { Button, Stack, Text } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
 import { ASCII_ART } from "../data/asciiArt";
 import { STAGES } from "../data/stages";
+import { useDialogue } from "../hooks/useDialogue";
 import { useGameStore } from "../store";
+import { SpeechBubble } from "./SpeechBubble";
 
 export function PetDisplay() {
   const evolutionStage = useGameStore((s) => s.evolutionStage);
@@ -10,6 +12,7 @@ export function PetDisplay() {
   const art = ASCII_ART[evolutionStage] ?? ASCII_ART[0];
   const stageMeta = STAGES[evolutionStage] ?? STAGES[0];
 
+  const dialogueLine = useDialogue();
   const [isFlashing, setIsFlashing] = useState(false);
   const prevStageRef = useRef(evolutionStage);
 
@@ -24,6 +27,7 @@ export function PetDisplay() {
 
   return (
     <Stack align="center" justify="center" gap="lg" h="100%">
+      <SpeechBubble text={dialogueLine} />
       <Text size="xs" ff="monospace" c="dimmed">
         Stage {evolutionStage}: {stageMeta.name}
       </Text>
