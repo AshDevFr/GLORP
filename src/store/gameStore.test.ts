@@ -206,6 +206,53 @@ describe("gameStore", () => {
     });
   });
 
+  describe("mood", () => {
+    it("defaults to Neutral", () => {
+      expect(useGameStore.getState().mood).toBe("Neutral");
+    });
+
+    it("defaults moodChangedAt to 0", () => {
+      expect(useGameStore.getState().moodChangedAt).toBe(0);
+    });
+
+    it("setMood updates mood and moodChangedAt", () => {
+      const before = Date.now();
+      useGameStore.getState().setMood("Happy");
+      const after = Date.now();
+      const state = useGameStore.getState();
+      expect(state.mood).toBe("Happy");
+      expect(state.moodChangedAt).toBeGreaterThanOrEqual(before);
+      expect(state.moodChangedAt).toBeLessThanOrEqual(after);
+    });
+
+    it("purchaseUpgrade sets mood to Excited", () => {
+      const firstUpgrade = UPGRADES[0];
+      useGameStore.setState({ trainingData: firstUpgrade.baseCost });
+      useGameStore.getState().purchaseUpgrade(firstUpgrade.id);
+      expect(useGameStore.getState().mood).toBe("Excited");
+    });
+
+    it("purchaseUpgrade resets moodChangedAt", () => {
+      const firstUpgrade = UPGRADES[0];
+      useGameStore.setState({
+        trainingData: firstUpgrade.baseCost,
+        moodChangedAt: 1000,
+      });
+      const before = Date.now();
+      useGameStore.getState().purchaseUpgrade(firstUpgrade.id);
+      const after = Date.now();
+      const { moodChangedAt } = useGameStore.getState();
+      expect(moodChangedAt).toBeGreaterThanOrEqual(before);
+      expect(moodChangedAt).toBeLessThanOrEqual(after);
+    });
+
+    it("failed purchase does not change mood", () => {
+      useGameStore.setState({ trainingData: 0, mood: "Sad" });
+      useGameStore.getState().purchaseUpgrade(UPGRADES[0].id);
+      expect(useGameStore.getState().mood).toBe("Sad");
+    });
+  });
+
   describe("evolution", () => {
     it("stays at stage 0 below threshold", () => {
       useGameStore.getState().addTrainingData(99);

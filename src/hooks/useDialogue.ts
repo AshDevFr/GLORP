@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from "react";
+import type { DialogueLine } from "../data/dialogue";
 import { DIALOGUE } from "../data/dialogue";
+import type { Mood } from "../engine/moodEngine";
 import { useGameStore } from "../store";
 
-function getRandomIdleLine(stage: number): string {
+function getFilteredLines(stage: number, mood: Mood): readonly DialogueLine[] {
   const dialogue = DIALOGUE[stage] ?? DIALOGUE[0];
-  const lines = dialogue.idle;
-  return lines[Math.floor(Math.random() * lines.length)];
+  const moodLines = dialogue.idle.filter((l) => l.moods?.includes(mood));
+  return moodLines.length > 0 ? moodLines : dialogue.idle;
+}
+
+function getRandomIdleLine(stage: number, mood: Mood): string {
+  const lines = getFilteredLines(stage, mood);
+  return lines[Math.floor(Math.random() * lines.length)].text;
 }
 
 function getRandomDelay(): number {
@@ -17,9 +24,10 @@ export function useDialogue(): string {
   const upgradeOwned = useGameStore((s) => s.upgradeOwned);
   const hasSeenFirstEvolution = useGameStore((s) => s.hasSeenFirstEvolution);
   const hasSeenFirstUpgrade = useGameStore((s) => s.hasSeenFirstUpgrade);
+  const mood = useGameStore((s) => s.mood);
 
   const [currentLine, setCurrentLine] = useState(() =>
-    getRandomIdleLine(evolutionStage),
+    getRandomIdleLine(evolutionStage, mood),
   );
 
   const prevStageRef = useRef(evolutionStage);
@@ -27,20 +35,20 @@ export function useDialogue(): string {
     Object.values(upgradeOwned).some((c) => c > 0),
   );
 
-  // Idle rotation timer — restarts when stage changes
+  // Idle rotation timer — restarts when stage or mood changes
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const scheduleNext = () => {
       timeoutId = setTimeout(() => {
-        setCurrentLine(getRandomIdleLine(evolutionStage));
+        setCurrentLine(getRandomIdleLine(evolutionStage, mood));
         scheduleNext();
       }, getRandomDelay());
     };
 
     scheduleNext();
     return () => clearTimeout(timeoutId);
-  }, [evolutionStage]);
+  }, [evolutionStage, mood]);
 
   // First evolution trigger
   useEffect(() => {

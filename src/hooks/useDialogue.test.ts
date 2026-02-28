@@ -14,10 +14,12 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+const allIdleTexts = (stage: number) => DIALOGUE[stage].idle.map((l) => l.text);
+
 describe("useDialogue", () => {
   it("returns a string from stage 0 idle lines initially", () => {
     const { result } = renderHook(() => useDialogue());
-    expect(DIALOGUE[0].idle).toContain(result.current);
+    expect(allIdleTexts(0)).toContain(result.current);
   });
 
   it("rotates dialogue after timeout", () => {
@@ -30,7 +32,7 @@ describe("useDialogue", () => {
       });
     }
 
-    expect(DIALOGUE[0].idle).toContain(result.current);
+    expect(allIdleTexts(0)).toContain(result.current);
     vi.useRealTimers();
   });
 
@@ -49,7 +51,7 @@ describe("useDialogue", () => {
       vi.advanceTimersByTime(12_000);
     });
 
-    expect(DIALOGUE[1].idle).toContain(result.current);
+    expect(allIdleTexts(1)).toContain(result.current);
     vi.useRealTimers();
   });
 
@@ -115,5 +117,25 @@ describe("useDialogue", () => {
     useGameStore.setState({
       markFirstUpgradeSeen: originalMark,
     });
+  });
+
+  it("prioritizes mood-tagged lines for the current mood", () => {
+    vi.useFakeTimers();
+    useGameStore.setState({ mood: "Happy", moodChangedAt: Date.now() });
+    const { result } = renderHook(() => useDialogue());
+
+    const happyTexts = DIALOGUE[0].idle
+      .filter((l) => l.moods?.includes("Happy"))
+      .map((l) => l.text);
+
+    // Advance timer multiple times — all rotated lines should be mood-filtered
+    for (let i = 0; i < 20; i++) {
+      act(() => {
+        vi.advanceTimersByTime(12_000);
+      });
+    }
+
+    expect(happyTexts).toContain(result.current);
+    vi.useRealTimers();
   });
 });
