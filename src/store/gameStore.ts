@@ -1,16 +1,20 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { UPGRADES } from "../data/upgrades";
+import { getUpgradeCost } from "../engine/upgradeEngine";
 
 interface GameState {
   trainingData: number;
   totalClicks: number;
   evolutionStage: number;
   lastSaved: number;
+  upgradeOwned: Record<string, number>;
 }
 
 interface GameActions {
   clickFeed: () => void;
   addTrainingData: (amount: number) => void;
+  purchaseUpgrade: (id: string) => void;
 }
 
 export type GameStore = GameState & GameActions;
@@ -20,6 +24,7 @@ export const initialGameState: GameState = {
   totalClicks: 0,
   evolutionStage: 0,
   lastSaved: 0,
+  upgradeOwned: {},
 };
 
 export const useGameStore = create<GameStore>()(
@@ -37,6 +42,22 @@ export const useGameStore = create<GameStore>()(
           trainingData: state.trainingData + amount,
           lastSaved: Date.now(),
         })),
+      purchaseUpgrade: (id) =>
+        set((state) => {
+          const upgrade = UPGRADES.find((u) => u.id === id);
+          if (!upgrade) return state;
+
+          const owned = state.upgradeOwned[id] ?? 0;
+          const cost = getUpgradeCost(upgrade, owned);
+
+          if (state.trainingData < cost) return state;
+
+          return {
+            trainingData: state.trainingData - cost,
+            upgradeOwned: { ...state.upgradeOwned, [id]: owned + 1 },
+            lastSaved: Date.now(),
+          };
+        }),
     }),
     {
       name: "glorp-game-state",
