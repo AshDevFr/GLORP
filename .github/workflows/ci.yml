@@ -24,4 +24,4 @@ jobs:
 
       - run: npm run build
 
-      # - run: npm test  # uncomment once a test runner is added
+      - run: npm test
