@@ -1,9 +1,12 @@
 import { AppShell, Grid } from "@mantine/core";
+import { useGameLoop } from "../hooks/useGameLoop";
 import { PetDisplay } from "./PetDisplay";
 import { StatsBar } from "./StatsBar";
 import { UpgradesPanel } from "./UpgradesPanel";
 
 export function GameLayout() {
+  useGameLoop();
+
   return (
     <AppShell header={{ height: 44 }} padding={0}>
       <AppShell.Header>
