@@ -13,9 +13,16 @@ describe("formatNumber", () => {
       expect(formatNumber(999)).toBe("999");
     });
 
-    it("truncates decimals to integer", () => {
+    it("truncates decimals >= 1 to integer", () => {
       expect(formatNumber(1.9)).toBe("1");
       expect(formatNumber(999.99)).toBe("999");
+    });
+
+    it("formats fractional values between 0 and 1 with 2 decimal places", () => {
+      expect(formatNumber(0.1)).toBe("0.10");
+      expect(formatNumber(0.5)).toBe("0.50");
+      expect(formatNumber(0.75)).toBe("0.75");
+      expect(formatNumber(0.01)).toBe("0.01");
     });
   });
 
