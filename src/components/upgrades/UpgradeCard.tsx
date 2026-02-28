@@ -1,6 +1,8 @@
 import { Badge, Button, Card, Group, Text } from "@mantine/core";
+import { useCallback, useRef, useState } from "react";
 import type { Upgrade } from "../../data/upgrades";
 import { getUpgradeCost } from "../../engine/upgradeEngine";
+import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { formatNumber } from "../../utils/formatNumber";
 
 interface UpgradeCardProps {
@@ -18,9 +20,22 @@ export function UpgradeCard({
 }: UpgradeCardProps) {
   const cost = getUpgradeCost(upgrade, owned);
   const canAfford = trainingData >= cost;
+  const [isGlowing, setIsGlowing] = useState(false);
+  const glowTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const prefersReduced = useReducedMotion();
+
+  const handlePurchase = useCallback(() => {
+    onPurchase(upgrade.id);
+    if (!prefersReduced) {
+      setIsGlowing(true);
+      if (glowTimerRef.current) clearTimeout(glowTimerRef.current);
+      glowTimerRef.current = setTimeout(() => setIsGlowing(false), 600);
+    }
+  }, [onPurchase, upgrade.id, prefersReduced]);
 
   return (
     <Card
+      className={isGlowing ? "glow-pulse" : undefined}
       padding="sm"
       radius="sm"
       withBorder
@@ -29,6 +44,7 @@ export function UpgradeCard({
           ? "var(--mantine-color-green-8)"
           : "var(--mantine-color-dark-4)",
         opacity: canAfford ? 1 : 0.5,
+        animation: isGlowing ? "glow-pulse 0.6s ease-in-out" : undefined,
       }}
     >
       <Group justify="space-between" mb={4}>
@@ -53,7 +69,7 @@ export function UpgradeCard({
           variant={canAfford ? "filled" : "default"}
           color="green"
           disabled={!canAfford}
-          onClick={() => onPurchase(upgrade.id)}
+          onClick={handlePurchase}
           ff="monospace"
         >
           {formatNumber(cost)} TD
