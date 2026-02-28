@@ -40,11 +40,17 @@ npm install
 # Start dev server
 npm run dev
 
-# Lint and format
-npx @biomejs/biome check --write .
-
 # Build for production
 npm run build
+
+# Preview production build locally
+npm run preview
+
+# Lint (check only)
+npm run lint
+
+# Lint and auto-fix
+npx @biomejs/biome check --write .
 ```
 
 ## How This Was Built
