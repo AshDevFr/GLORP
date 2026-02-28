@@ -5,7 +5,6 @@ export default defineConfig({
   plugins: [react()],
   base: "/GLORP/",
   test: {
-    globals: true,
     environment: "node",
   },
 });
