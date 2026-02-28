@@ -16,10 +16,14 @@ export function useGameLoop() {
       lastTickRef.current = now;
 
       const state = useGameStore.getState();
-      const result = computeTick(state, deltaSeconds);
+      const result = computeTick(state, deltaSeconds, now);
 
       if (result.trainingDataDelta > 0) {
         state.addTrainingData(result.trainingDataDelta);
+      }
+
+      if (result.newMood) {
+        state.setMood(result.newMood);
       }
     }, TICK_INTERVAL_MS);
 

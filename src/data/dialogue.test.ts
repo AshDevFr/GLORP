@@ -21,20 +21,64 @@ describe("dialogue data", () => {
     }
   });
 
-  it("all idle lines are non-empty strings", () => {
+  it("all idle lines have non-empty text strings", () => {
     for (const stage of [0, 1, 2]) {
       for (const line of DIALOGUE[stage].idle) {
-        expect(typeof line).toBe("string");
-        expect(line.length).toBeGreaterThan(0);
+        expect(typeof line.text).toBe("string");
+        expect(line.text.length).toBeGreaterThan(0);
       }
     }
   });
 
-  it("has no duplicate idle lines within a stage", () => {
+  it("has no duplicate idle texts within a stage", () => {
     for (const stage of [0, 1, 2]) {
-      const lines = DIALOGUE[stage].idle;
-      const unique = new Set(lines);
-      expect(unique.size).toBe(lines.length);
+      const texts = DIALOGUE[stage].idle.map((l) => l.text);
+      const unique = new Set(texts);
+      expect(unique.size).toBe(texts.length);
+    }
+  });
+
+  it("mood tags are valid Mood values when present", () => {
+    const validMoods = [
+      "Happy",
+      "Neutral",
+      "Hungry",
+      "Sad",
+      "Excited",
+      "Philosophical",
+    ];
+    for (const stage of [0, 1, 2]) {
+      for (const line of DIALOGUE[stage].idle) {
+        if (line.moods) {
+          for (const mood of line.moods) {
+            expect(validMoods).toContain(mood);
+          }
+        }
+      }
+    }
+  });
+
+  it("has mood-tagged lines for Happy, Excited, Hungry, and Sad per stage", () => {
+    for (const stage of [0, 1, 2]) {
+      const moodsPresent = new Set<string>();
+      for (const line of DIALOGUE[stage].idle) {
+        if (line.moods) {
+          for (const m of line.moods) {
+            moodsPresent.add(m);
+          }
+        }
+      }
+      expect(moodsPresent.has("Happy")).toBe(true);
+      expect(moodsPresent.has("Excited")).toBe(true);
+      expect(moodsPresent.has("Hungry")).toBe(true);
+      expect(moodsPresent.has("Sad")).toBe(true);
+    }
+  });
+
+  it("has untagged lines (available to any mood) per stage", () => {
+    for (const stage of [0, 1, 2]) {
+      const untagged = DIALOGUE[stage].idle.filter((l) => !l.moods);
+      expect(untagged.length).toBeGreaterThanOrEqual(1);
     }
   });
 });

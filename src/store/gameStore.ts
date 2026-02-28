@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { UPGRADES } from "../data/upgrades";
 import { getEvolutionStage } from "../engine/evolutionEngine";
+import type { Mood } from "../engine/moodEngine";
 import { getUpgradeCost } from "../engine/upgradeEngine";
 
 interface GameState {
@@ -13,6 +14,8 @@ interface GameState {
   upgradeOwned: Record<string, number>;
   hasSeenFirstEvolution: boolean;
   hasSeenFirstUpgrade: boolean;
+  mood: Mood;
+  moodChangedAt: number;
 }
 
 interface GameActions {
@@ -21,6 +24,7 @@ interface GameActions {
   purchaseUpgrade: (id: string) => void;
   markFirstEvolutionSeen: () => void;
   markFirstUpgradeSeen: () => void;
+  setMood: (mood: Mood) => void;
 }
 
 export type GameStore = GameState & GameActions;
@@ -34,6 +38,8 @@ export const initialGameState: GameState = {
   upgradeOwned: {},
   hasSeenFirstEvolution: false,
   hasSeenFirstUpgrade: false,
+  mood: "Neutral",
+  moodChangedAt: 0,
 };
 
 export const useGameStore = create<GameStore>()(
@@ -75,10 +81,13 @@ export const useGameStore = create<GameStore>()(
             trainingData: state.trainingData - cost,
             upgradeOwned: { ...state.upgradeOwned, [id]: owned + 1 },
             lastSaved: Date.now(),
+            mood: "Excited" as Mood,
+            moodChangedAt: Date.now(),
           };
         }),
       markFirstEvolutionSeen: () => set({ hasSeenFirstEvolution: true }),
       markFirstUpgradeSeen: () => set({ hasSeenFirstUpgrade: true }),
+      setMood: (mood) => set({ mood, moodChangedAt: Date.now() }),
     }),
     {
       name: "glorp-game-state",
