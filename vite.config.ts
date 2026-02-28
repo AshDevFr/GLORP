@@ -6,5 +6,6 @@ export default defineConfig({
   base: "/GLORP/",
   test: {
     environment: "node",
+    setupFiles: ["./src/test-setup.ts"],
   },
 });
