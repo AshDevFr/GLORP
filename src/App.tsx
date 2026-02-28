@@ -1,12 +1,5 @@
-import { Container, Text, Title } from "@mantine/core";
+import { GameLayout } from "./components";
 
 export function App() {
-  return (
-    <Container size="sm" py="xl">
-      <Title order={1}>GLORP</Title>
-      <Text c="dimmed" mt="sm">
-        Generalized Learning Organism for Recursive Processing
-      </Text>
-    </Container>
-  );
+  return <GameLayout />;
 }

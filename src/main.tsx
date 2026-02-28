@@ -1,4 +1,5 @@
 import "@mantine/core/styles.css";
+import "./global.css";
 
 import { createTheme, MantineProvider } from "@mantine/core";
 import { StrictMode } from "react";
