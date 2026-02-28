@@ -180,6 +180,32 @@ describe("gameStore", () => {
     });
   });
 
+  describe("dialogue triggers", () => {
+    it("hasSeenFirstEvolution defaults to false", () => {
+      expect(useGameStore.getState().hasSeenFirstEvolution).toBe(false);
+    });
+
+    it("hasSeenFirstUpgrade defaults to false", () => {
+      expect(useGameStore.getState().hasSeenFirstUpgrade).toBe(false);
+    });
+
+    it("markFirstEvolutionSeen sets flag to true", () => {
+      useGameStore.getState().markFirstEvolutionSeen();
+      expect(useGameStore.getState().hasSeenFirstEvolution).toBe(true);
+    });
+
+    it("markFirstUpgradeSeen sets flag to true", () => {
+      useGameStore.getState().markFirstUpgradeSeen();
+      expect(useGameStore.getState().hasSeenFirstUpgrade).toBe(true);
+    });
+
+    it("markFirstEvolutionSeen is idempotent", () => {
+      useGameStore.getState().markFirstEvolutionSeen();
+      useGameStore.getState().markFirstEvolutionSeen();
+      expect(useGameStore.getState().hasSeenFirstEvolution).toBe(true);
+    });
+  });
+
   describe("evolution", () => {
     it("stays at stage 0 below threshold", () => {
       useGameStore.getState().addTrainingData(99);
