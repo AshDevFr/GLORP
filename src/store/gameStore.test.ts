@@ -18,6 +18,7 @@ describe("gameStore", () => {
       const state = useGameStore.getState();
       expect(state.trainingData).toBe(0);
       expect(state.totalClicks).toBe(0);
+      expect(state.totalTdEarned).toBe(0);
       expect(state.evolutionStage).toBe(0);
       expect(state.lastSaved).toBe(0);
     });
@@ -39,6 +40,11 @@ describe("gameStore", () => {
       expect(useGameStore.getState().totalClicks).toBe(1);
     });
 
+    it("increments totalTdEarned by 1", () => {
+      useGameStore.getState().clickFeed();
+      expect(useGameStore.getState().totalTdEarned).toBe(1);
+    });
+
     it("updates lastSaved timestamp", () => {
       const before = Date.now();
       useGameStore.getState().clickFeed();
@@ -55,11 +61,7 @@ describe("gameStore", () => {
       const state = useGameStore.getState();
       expect(state.trainingData).toBe(3);
       expect(state.totalClicks).toBe(3);
-    });
-
-    it("does not affect evolutionStage", () => {
-      useGameStore.getState().clickFeed();
-      expect(useGameStore.getState().evolutionStage).toBe(0);
+      expect(state.totalTdEarned).toBe(3);
     });
   });
 
@@ -67,6 +69,11 @@ describe("gameStore", () => {
     it("adds the specified amount to trainingData", () => {
       useGameStore.getState().addTrainingData(100);
       expect(useGameStore.getState().trainingData).toBe(100);
+    });
+
+    it("adds the amount to totalTdEarned", () => {
+      useGameStore.getState().addTrainingData(100);
+      expect(useGameStore.getState().totalTdEarned).toBe(100);
     });
 
     it("does not affect totalClicks", () => {
@@ -102,6 +109,7 @@ describe("gameStore", () => {
       const state = useGameStore.getState();
       expect(state.trainingData).toBe(102);
       expect(state.totalClicks).toBe(2);
+      expect(state.totalTdEarned).toBe(102);
     });
   });
 
@@ -163,6 +171,42 @@ describe("gameStore", () => {
       expect(state.upgradeOwned[firstUpgrade.id]).toBe(1);
       expect(state.upgradeOwned[secondUpgrade.id]).toBe(1);
       expect(state.trainingData).toBe(0);
+    });
+
+    it("does not change totalTdEarned", () => {
+      useGameStore.setState({ trainingData: baseCost, totalTdEarned: 50 });
+      useGameStore.getState().purchaseUpgrade(firstUpgrade.id);
+      expect(useGameStore.getState().totalTdEarned).toBe(50);
+    });
+  });
+
+  describe("evolution", () => {
+    it("stays at stage 0 below threshold", () => {
+      useGameStore.getState().addTrainingData(99);
+      expect(useGameStore.getState().evolutionStage).toBe(0);
+    });
+
+    it("evolves to stage 1 at 100 TD earned", () => {
+      useGameStore.getState().addTrainingData(100);
+      expect(useGameStore.getState().evolutionStage).toBe(1);
+    });
+
+    it("evolves to stage 2 at 5000 TD earned", () => {
+      useGameStore.getState().addTrainingData(5_000);
+      expect(useGameStore.getState().evolutionStage).toBe(2);
+    });
+
+    it("evolves via clickFeed accumulation", () => {
+      useGameStore.setState({ totalTdEarned: 99 });
+      useGameStore.getState().clickFeed();
+      expect(useGameStore.getState().evolutionStage).toBe(1);
+    });
+
+    it("evolves via addTrainingData accumulation", () => {
+      useGameStore.getState().addTrainingData(50);
+      expect(useGameStore.getState().evolutionStage).toBe(0);
+      useGameStore.getState().addTrainingData(50);
+      expect(useGameStore.getState().evolutionStage).toBe(1);
     });
   });
 });
