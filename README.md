@@ -55,7 +55,7 @@ npx @biomejs/biome check --write .
 
 ## How This Was Built
 
-GLORP is a demo project for **4shClaw** a personal AI assistant project made by [AshDevFr](https://github.com/AshDevFr). The game itself doesn't use or expose **4shClaw** in any way. Instead, the entire development process is driven by 4shClaw's agent team:
+GLORP is a demo project for **4shClaw**, a personal AI assistant project made by [AshDevFr](https://github.com/AshDevFr). Read the [blog post](https://4sh.dev/posts/2026/building-4shclaw/) for a deep dive into how 4shClaw works. The game itself doesn't use or expose **4shClaw** in any way. Instead, the entire development process is driven by 4shClaw's agent team:
 
 - A **PM agent** creates GitHub issues from the PRD
 - A **Dev agent** picks up stories and writes code
