@@ -5,8 +5,10 @@ import { computeOfflineProgress } from "../engine/offlineEngine";
 import { useGameLoop } from "../hooks/useGameLoop";
 import { useGameStore } from "../store";
 import { AchievementsModal } from "./AchievementsModal";
+import { CrtOverlay } from "./CrtOverlay";
 import { OfflineProgressModal } from "./OfflineProgressModal";
 import { PetDisplay } from "./PetDisplay";
+import { SettingsPanel } from "./SettingsPanel";
 import { StatsBar } from "./StatsBar";
 import { UpgradesPanel } from "./UpgradesPanel";
 
@@ -16,6 +18,7 @@ export function GameLayout() {
   const [offlineResult, setOfflineResult] =
     useState<OfflineProgressResult | null>(null);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const unlockedCount = useGameStore((s) => s.unlockedAchievements.length);
 
   useEffect(() => {
@@ -32,15 +35,26 @@ export function GameLayout() {
       <AppShell.Header>
         <Group h="100%" px="xs" justify="space-between" wrap="nowrap">
           <StatsBar />
-          <Button
-            size="xs"
-            variant="subtle"
-            color="yellow"
-            onClick={() => setAchievementsOpen(true)}
-            style={{ fontFamily: "monospace", whiteSpace: "nowrap" }}
-          >
-            ★ {unlockedCount}
-          </Button>
+          <Group gap="xs" wrap="nowrap">
+            <Button
+              size="xs"
+              variant="subtle"
+              color="yellow"
+              onClick={() => setAchievementsOpen(true)}
+              style={{ fontFamily: "monospace", whiteSpace: "nowrap" }}
+            >
+              ★ {unlockedCount}
+            </Button>
+            <Button
+              size="xs"
+              variant="subtle"
+              onClick={() => setSettingsOpen(true)}
+              style={{ fontFamily: "monospace" }}
+              aria-label="Open settings"
+            >
+              ⚙
+            </Button>
+          </Group>
         </Group>
       </AppShell.Header>
 
@@ -63,6 +77,11 @@ export function GameLayout() {
         opened={achievementsOpen}
         onClose={() => setAchievementsOpen(false)}
       />
+      <SettingsPanel
+        opened={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+      />
+      <CrtOverlay />
     </AppShell>
   );
 }

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { initialSettings, useSettingsStore } from "../store/settingsStore";
 import { useReducedMotion } from "./useReducedMotion";
 
 function mockMatchMedia(matches: boolean) {
@@ -12,6 +13,10 @@ function mockMatchMedia(matches: boolean) {
   window.matchMedia = vi.fn().mockReturnValue(mql) as typeof window.matchMedia;
   return { mql };
 }
+
+beforeEach(() => {
+  useSettingsStore.setState(initialSettings);
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -47,5 +52,19 @@ describe("useReducedMotion", () => {
       "change",
       expect.any(Function),
     );
+  });
+
+  it("returns true when animationsDisabled is set in settings", () => {
+    mockMatchMedia(false);
+    useSettingsStore.setState({ animationsDisabled: true });
+    const { result } = renderHook(() => useReducedMotion());
+    expect(result.current).toBe(true);
+  });
+
+  it("returns true when both OS preference and settings toggle are active", () => {
+    mockMatchMedia(true);
+    useSettingsStore.setState({ animationsDisabled: true });
+    const { result } = renderHook(() => useReducedMotion());
+    expect(result.current).toBe(true);
   });
 });

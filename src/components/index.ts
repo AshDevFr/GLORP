@@ -1,9 +1,11 @@
 export { AchievementsModal } from "./AchievementsModal";
+export { CrtOverlay } from "./CrtOverlay";
 export { FloatingParticles } from "./FloatingParticles";
 export { GameLayout } from "./GameLayout";
 export { OfflineProgressModal } from "./OfflineProgressModal";
 export { PetDisplay } from "./PetDisplay";
 export { RebirthModal } from "./RebirthModal";
+export { SettingsPanel } from "./SettingsPanel";
 export { SpeechBubble } from "./SpeechBubble";
 export { StatsBar } from "./StatsBar";
 export { UpgradesPanel } from "./UpgradesPanel";
