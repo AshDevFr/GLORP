@@ -11,7 +11,7 @@ import {
 } from "../engine/rebirthEngine";
 import { getUpgradeCost } from "../engine/upgradeEngine";
 
-interface GameState {
+export interface GameState {
   trainingData: number;
   totalClicks: number;
   totalTdEarned: number;
@@ -27,6 +27,8 @@ interface GameState {
   rebirthCount: number;
   currentSpecies: Species;
   unlockedSpecies: Species[];
+  // Achievements — persists across rebirths
+  unlockedAchievements: string[];
 }
 
 interface GameActions {
@@ -38,6 +40,7 @@ interface GameActions {
   setMood: (mood: Mood) => void;
   updateLastSaved: () => void;
   performRebirth: () => void;
+  unlockAchievements: (ids: string[]) => void;
 }
 
 export type GameStore = GameState & GameActions;
@@ -57,6 +60,7 @@ export const initialGameState: GameState = {
   rebirthCount: 0,
   currentSpecies: "GLORP",
   unlockedSpecies: ["GLORP"],
+  unlockedAchievements: [],
 };
 
 export const useGameStore = create<GameStore>()(
@@ -106,6 +110,10 @@ export const useGameStore = create<GameStore>()(
       markFirstUpgradeSeen: () => set({ hasSeenFirstUpgrade: true }),
       setMood: (mood) => set({ mood, moodChangedAt: Date.now() }),
       updateLastSaved: () => set({ lastSaved: Date.now() }),
+      unlockAchievements: (ids) =>
+        set((state) => ({
+          unlockedAchievements: [...state.unlockedAchievements, ...ids],
+        })),
       performRebirth: () =>
         set((state) => {
           if (!canRebirth(state.evolutionStage)) return state;

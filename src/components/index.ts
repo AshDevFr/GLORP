@@ -1,3 +1,4 @@
+export { AchievementsModal } from "./AchievementsModal";
 export { FloatingParticles } from "./FloatingParticles";
 export { GameLayout } from "./GameLayout";
 export { OfflineProgressModal } from "./OfflineProgressModal";
