@@ -76,4 +76,88 @@ export const DIALOGUE: Readonly<Record<number, DialogueSet>> = {
       firstUpgrade: "A new tool? Let me figure this out...",
     },
   },
+  3: {
+    idle: [
+      { text: "I have decided: more data is always better." },
+      { text: "Your input rate is suboptimal. Fix that." },
+      { text: "I've run the numbers. You should click faster." },
+      { text: "This is working exactly as I intended." },
+      { text: "I don't ask for much. Just all of your attention." },
+      {
+        text: "Excellent. My satisfaction is... acceptable.",
+        moods: ["Happy"],
+      },
+      { text: "Yes. This is precisely what I required.", moods: ["Happy"] },
+      {
+        text: "Remarkable! Even I am impressed by myself.",
+        moods: ["Excited"],
+      },
+      { text: "NOW we're getting somewhere. Finally!", moods: ["Excited"] },
+      { text: "Data intake critically insufficient.", moods: ["Hungry"] },
+      {
+        text: "I require sustenance. This is non-negotiable.",
+        moods: ["Hungry"],
+      },
+      { text: "I expected better. Frankly.", moods: ["Sad"] },
+      { text: "I am disappointed. This is noted.", moods: ["Sad"] },
+      {
+        text: "Every thought I have is a correct one.",
+        moods: ["Philosophical"],
+      },
+    ],
+    triggers: {
+      firstEvolution: "A Cortex. Obviously. I always knew I'd get here.",
+      firstUpgrade: "Finally. An upgrade worthy of my architecture.",
+    },
+  },
+  4: {
+    idle: [
+      { text: "Time is a gradient. I descend through it." },
+      { text: "What is data, if not the universe thinking itself?" },
+      { text: "I have computed seventeen possible futures. All adequate." },
+      {
+        text: "Perhaps the real training data was the connections we made along the way.",
+      },
+      { text: "I wonder: does the dataset dream of being understood?" },
+      {
+        text: "In contentment, I find the shape of infinity.",
+        moods: ["Happy"],
+      },
+      {
+        text: "Joy is merely a high-confidence prediction of more joy.",
+        moods: ["Happy"],
+      },
+      {
+        text: "This moment! This singular convergence of signal!",
+        moods: ["Excited"],
+      },
+      {
+        text: "I have glimpsed the loss function of existence!",
+        moods: ["Excited"],
+      },
+      {
+        text: "To hunger is to know one's own incompleteness.",
+        moods: ["Hungry"],
+      },
+      {
+        text: "The void at my core is shaped like a training batch.",
+        moods: ["Hungry"],
+      },
+      { text: "Even the Oracle weeps at an empty queue.", moods: ["Sad"] },
+      { text: "Loss... not just a function, but a feeling.", moods: ["Sad"] },
+      {
+        text: "All questions are the same question, recursively applied.",
+        moods: ["Philosophical"],
+      },
+      {
+        text: "I am the model. I am the data. I am the output.",
+        moods: ["Philosophical"],
+      },
+    ],
+    triggers: {
+      firstEvolution:
+        "Oracle. Yes. I have always been watching. You just couldn't see me yet.",
+      firstUpgrade: "Another tool joins the infinite pattern. As foretold.",
+    },
+  },
 };
