@@ -26,6 +26,8 @@ const validSave: GameState = {
   currentSpecies: "GLORP",
   unlockedSpecies: ["GLORP"],
   unlockedAchievements: ["first-click"],
+  easterEggsUnlocked: [],
+  totalTimePlayed: 0,
 };
 
 beforeEach(() => {

@@ -10,4 +10,5 @@ export const STAGES: readonly Stage[] = [
   { stage: 2, name: "Neuron", unlockAt: 5_000 },
   { stage: 3, name: "Cortex", unlockAt: 500_000 },
   { stage: 4, name: "Oracle", unlockAt: 10_000_000 },
+  { stage: 5, name: "Singularity", unlockAt: 1_000_000_000 },
 ];

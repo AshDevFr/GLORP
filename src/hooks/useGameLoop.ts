@@ -2,6 +2,10 @@ import { notifications } from "@mantine/notifications";
 import { useEffect, useRef } from "react";
 import { ACHIEVEMENTS } from "../data/achievements";
 import { checkAchievements } from "../engine/achievementEngine";
+import {
+  checkEasterEggs,
+  EASTER_EGG_MESSAGES,
+} from "../engine/easterEggEngine";
 import { computeTick } from "../engine/tickEngine";
 import { useGameStore } from "../store";
 
@@ -16,6 +20,20 @@ function notifyAchievements(newIds: string[]): void {
         message: achievement.name,
         color: "yellow",
         autoClose: 4000,
+      });
+    }
+  }
+}
+
+function notifyEasterEggs(newIds: string[]): void {
+  for (const id of newIds) {
+    const msg = EASTER_EGG_MESSAGES[id as keyof typeof EASTER_EGG_MESSAGES];
+    if (msg) {
+      notifications.show({
+        title: msg.title,
+        message: msg.message,
+        color: "violet",
+        autoClose: 6000,
       });
     }
   }
@@ -46,6 +64,9 @@ export function useGameLoop() {
         state.setMood(result.newMood);
       }
 
+      // Increment total time played each tick
+      state.incrementTimePlayed(deltaSeconds);
+
       // Check for newly unlocked achievements after state updates
       const updatedState = useGameStore.getState();
       const newlyUnlocked = checkAchievements(
@@ -55,6 +76,19 @@ export function useGameLoop() {
       if (newlyUnlocked.length > 0) {
         updatedState.unlockAchievements(newlyUnlocked);
         notifyAchievements(newlyUnlocked);
+      }
+
+      // Check for newly triggered easter eggs (state-based; konami handled in GameLayout)
+      const freshState = useGameStore.getState();
+      const newEasterEggs = checkEasterEggs(
+        freshState,
+        freshState.easterEggsUnlocked,
+      );
+      if (newEasterEggs.length > 0) {
+        for (const egg of newEasterEggs) {
+          freshState.unlockEasterEgg(egg);
+        }
+        notifyEasterEggs(newEasterEggs);
       }
     }, TICK_INTERVAL_MS);
 

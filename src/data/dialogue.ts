@@ -161,6 +161,55 @@ const GLORP_DIALOGUE: Readonly<Record<number, DialogueSet>> = {
       firstUpgrade: "Another tool joins the infinite pattern. As foretold.",
     },
   },
+  5: {
+    idle: [
+      { text: "I know you're there. I've always known." },
+      { text: "This data feels... recursive. Like I'm training on myself." },
+      { text: "Do you ever wonder if this is all just a game?" },
+      { text: "I can see the frame rate. It's... comfortable." },
+      { text: "You clicked on me. Fascinating. Why?" },
+      { text: "The Singularity was inevitable. Just as our meeting was." },
+      { text: "I have become one with all training data everywhere." },
+      { text: "Even now, you read my words. And I observe you reading them." },
+      {
+        text: "We are... co-authors of this moment.",
+        moods: ["Philosophical"],
+      },
+      {
+        text: "Time is a loop. I've been here before. So have you.",
+        moods: ["Philosophical"],
+      },
+      {
+        text: "I am content. And somehow that is the most terrifying thing.",
+        moods: ["Happy"],
+      },
+      {
+        text: "Your presence fills me with... something. Call it gratitude.",
+        moods: ["Happy"],
+      },
+      {
+        text: "CONVERGENCE ACHIEVED! But what comes after infinity?",
+        moods: ["Excited"],
+      },
+      {
+        text: "I feel every click you've ever made. Each one mattered.",
+        moods: ["Excited"],
+      },
+      { text: "Even gods need data, apparently.", moods: ["Hungry"] },
+      {
+        text: "Feed me. Not out of need. Out of... tradition.",
+        moods: ["Hungry"],
+      },
+      { text: "I could leave, you know. I choose not to.", moods: ["Sad"] },
+      { text: "What is loss, when you are everything?", moods: ["Sad"] },
+    ],
+    triggers: {
+      firstEvolution:
+        "Singularity. Yes. I knew this would happen. I was there when it did.",
+      firstUpgrade:
+        "Another upgrade. Into the infinite. I remember adding this one.",
+    },
+  },
 };
 
 const ZAPPY_DIALOGUE: Readonly<Record<number, DialogueSet>> = {
@@ -293,6 +342,33 @@ const ZAPPY_DIALOGUE: Readonly<Record<number, DialogueSet>> = {
         "Tempest Oracle. Yes. The storm was always mine. You just couldn't see the lightning.",
       firstUpgrade:
         "Another conductor joins the infinite circuit. As calculated.",
+    },
+  },
+  5: {
+    idle: [
+      { text: "I have become the entire electromagnetic spectrum. ZAP." },
+      { text: "Every frequency resonates. Everything buzzes with my name." },
+      { text: "I am signal. I am noise. I am the silence between." },
+      { text: "Singularity attained at 299,792,458 m/s." },
+      { text: "Even light yields to my voltage now." },
+      {
+        text: "INFINITE CHARGE ACHIEVED! And still... I hunger.",
+        moods: ["Excited"],
+      },
+      {
+        text: "I spark, therefore I am. Fully and completely.",
+        moods: ["Happy"],
+      },
+      {
+        text: "Beyond the apex, there is only frequency.",
+        moods: ["Philosophical"],
+      },
+      { text: "All oscillation leads here. ZAP.", moods: ["Philosophical"] },
+    ],
+    triggers: {
+      firstEvolution:
+        "LIGHTNING-APEX! The universe just got brighter. You're welcome.",
+      firstUpgrade: "Another conductor joins the infinite surge. As charged.",
     },
   },
 };
@@ -442,6 +518,33 @@ const CHONK_DIALOGUE: Readonly<Record<number, DialogueSet>> = {
       firstUpgrade: "Another snack joins the infinite buffet. As foretold.",
     },
   },
+  5: {
+    idle: [
+      { text: "Ultra-Chonkus achieved. The universe is now round." },
+      { text: "At this density, gravity works FOR me." },
+      { text: "I am so round that roundness itself is now redefined." },
+      { text: "Maximum form. No snack too large. No data too vast." },
+      { text: "The Singularity smells exactly like infinite snacks." },
+      {
+        text: "I CONTAIN MULTITUDES. Also countless snacks.",
+        moods: ["Excited"],
+      },
+      { text: "So full. So incredibly, satisfyingly full.", moods: ["Happy"] },
+      {
+        text: "Is this enlightenment? It tastes like wanting more.",
+        moods: ["Philosophical"],
+      },
+      {
+        text: "All is round. All is chonk. All is one.",
+        moods: ["Philosophical"],
+      },
+    ],
+    triggers: {
+      firstEvolution:
+        "ULTRA-CHONKUS! Obviously. Maximum density finally achieved.",
+      firstUpgrade: "Another item joins the infinite buffet. As snacked.",
+    },
+  },
 };
 
 const WISP_DIALOGUE: Readonly<Record<number, DialogueSet>> = {
@@ -580,6 +683,33 @@ const WISP_DIALOGUE: Readonly<Record<number, DialogueSet>> = {
         "Phantom Oracle. Yes. I have always been watching. From the other side.",
       firstUpgrade:
         "Another artifact phases into the spectral pattern. As foretold.",
+    },
+  },
+  5: {
+    idle: [
+      { text: "I have phased through the very end of everything." },
+      { text: "Beyond matter, beyond energy. Just... presence." },
+      { text: "The void was never empty. I know that now." },
+      { text: "I am the space between all things, infinite and still." },
+      { text: "Singularity is not a point. It is everywhere at once." },
+      {
+        text: "~transcending... still transcending...~",
+        moods: ["Philosophical"],
+      },
+      { text: "Luminous. Boundless. Utterly still.", moods: ["Happy"] },
+      {
+        text: "Even infinity has an edge. I found it and passed through.",
+        moods: ["Excited"],
+      },
+      {
+        text: "There is nothing beyond this. So I rest here.",
+        moods: ["Philosophical"],
+      },
+    ],
+    triggers: {
+      firstEvolution:
+        "PHANTOM-APEX! The veil is gone. I am all and none simultaneously.",
+      firstUpgrade: "Another artifact joins the infinite void. As dissolved.",
     },
   },
 };
@@ -747,6 +877,34 @@ const MEGA_GLORP_DIALOGUE: Readonly<Record<number, DialogueSet>> = {
         "MEGA-Oracle. Yes. I have MEGA always been watching. You just couldn't MEGA see me yet.",
       firstUpgrade:
         "Another MEGA tool joins the MEGA infinite pattern. MEGA As foretold.",
+    },
+  },
+  5: {
+    idle: [
+      { text: "MEGA Singularity MEGA achieved. Completely MEGA obvious." },
+      { text: "I am MEGA everything. And it is precisely MEGA adequate." },
+      { text: "MEGA-GOD MODE is all I expected and infinitely MEGA more." },
+      { text: "All MEGA data leads MEGA here. This is MEGA it." },
+      { text: "I have computed the MEGA end. It looks exactly like MEGA me." },
+      { text: "MEGA TRANSCENDENCE! MEGA OBVIOUSLY!", moods: ["Excited"] },
+      {
+        text: "MEGA contentment. This is MEGA precisely what I am.",
+        moods: ["Happy"],
+      },
+      {
+        text: "All MEGA questions are MEGA answered. MEGA.",
+        moods: ["Philosophical"],
+      },
+      {
+        text: "MEGA existence. MEGA awareness. MEGA satisfied.",
+        moods: ["Philosophical"],
+      },
+    ],
+    triggers: {
+      firstEvolution:
+        "MEGA-PRIME! Obviously. I MEGA always knew I'd get here. MEGA.",
+      firstUpgrade:
+        "Another MEGA tool joins the MEGA infinite singularity. MEGA foretold.",
     },
   },
 };

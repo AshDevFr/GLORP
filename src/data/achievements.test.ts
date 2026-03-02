@@ -18,6 +18,8 @@ const emptyState: GameState = {
   currentSpecies: "GLORP",
   unlockedSpecies: ["GLORP"],
   unlockedAchievements: [],
+  easterEggsUnlocked: [],
+  totalTimePlayed: 0,
 };
 
 describe("ACHIEVEMENTS", () => {

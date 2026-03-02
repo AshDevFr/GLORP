@@ -29,6 +29,10 @@ export interface GameState {
   unlockedSpecies: Species[];
   // Achievements — persists across rebirths
   unlockedAchievements: string[];
+  // Easter eggs — persists across rebirths
+  easterEggsUnlocked: string[];
+  // Lifetime stats — persists across rebirths
+  totalTimePlayed: number;
 }
 
 interface GameActions {
@@ -41,6 +45,8 @@ interface GameActions {
   updateLastSaved: () => void;
   performRebirth: () => void;
   unlockAchievements: (ids: string[]) => void;
+  unlockEasterEgg: (id: string) => void;
+  incrementTimePlayed: (seconds: number) => void;
 }
 
 export type GameStore = GameState & GameActions;
@@ -61,6 +67,8 @@ export const initialGameState: GameState = {
   currentSpecies: "GLORP",
   unlockedSpecies: ["GLORP"],
   unlockedAchievements: [],
+  easterEggsUnlocked: [],
+  totalTimePlayed: 0,
 };
 
 export const useGameStore = create<GameStore>()(
@@ -114,6 +122,16 @@ export const useGameStore = create<GameStore>()(
         set((state) => ({
           unlockedAchievements: [...state.unlockedAchievements, ...ids],
         })),
+      unlockEasterEgg: (id) =>
+        set((state) => ({
+          easterEggsUnlocked: state.easterEggsUnlocked.includes(id)
+            ? state.easterEggsUnlocked
+            : [...state.easterEggsUnlocked, id],
+        })),
+      incrementTimePlayed: (seconds) =>
+        set((state) => ({
+          totalTimePlayed: state.totalTimePlayed + seconds,
+        })),
       performRebirth: () =>
         set((state) => {
           if (!canRebirth(state.evolutionStage)) return state;
@@ -142,6 +160,7 @@ export const useGameStore = create<GameStore>()(
             rebirthCount: state.rebirthCount + 1,
             currentSpecies: nextSpecies,
             unlockedSpecies: newUnlocked,
+            // easterEggsUnlocked and totalTimePlayed persist across rebirths
           };
         }),
     }),

@@ -8,4 +8,5 @@ export { RebirthModal } from "./RebirthModal";
 export { SettingsPanel } from "./SettingsPanel";
 export { SpeechBubble } from "./SpeechBubble";
 export { StatsBar } from "./StatsBar";
+export { StatsPanel } from "./StatsPanel";
 export { UpgradesPanel } from "./UpgradesPanel";

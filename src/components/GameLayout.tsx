@@ -1,8 +1,12 @@
 import { AppShell, Button, Grid, Group } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { notifications } from "@mantine/notifications";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { EASTER_EGG_MESSAGES } from "../engine/easterEggEngine";
 import type { OfflineProgressResult } from "../engine/offlineEngine";
 import { computeOfflineProgress } from "../engine/offlineEngine";
 import { useGameLoop } from "../hooks/useGameLoop";
+import { useKonamiCode } from "../hooks/useKonamiCode";
+import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useGameStore } from "../store";
 import { AchievementsModal } from "./AchievementsModal";
 import { CrtOverlay } from "./CrtOverlay";
@@ -10,6 +14,7 @@ import { OfflineProgressModal } from "./OfflineProgressModal";
 import { PetDisplay } from "./PetDisplay";
 import { SettingsPanel } from "./SettingsPanel";
 import { StatsBar } from "./StatsBar";
+import { StatsPanel } from "./StatsPanel";
 import { UpgradesPanel } from "./UpgradesPanel";
 
 export function GameLayout() {
@@ -19,7 +24,11 @@ export function GameLayout() {
     useState<OfflineProgressResult | null>(null);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [konamiVisible, setKonamiVisible] = useState(false);
+  const konamiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unlockedCount = useGameStore((s) => s.unlockedAchievements.length);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     const state = useGameStore.getState();
@@ -29,6 +38,27 @@ export function GameLayout() {
       setOfflineResult(result);
     }
   }, []);
+
+  const handleKonami = useCallback(() => {
+    const state = useGameStore.getState();
+    if (!state.easterEggsUnlocked.includes("konami")) {
+      state.unlockEasterEgg("konami");
+      const msg = EASTER_EGG_MESSAGES.konami;
+      notifications.show({
+        title: msg.title,
+        message: msg.message,
+        color: "violet",
+        autoClose: 6000,
+      });
+    }
+    if (!reducedMotion) {
+      setKonamiVisible(true);
+      if (konamiTimerRef.current) clearTimeout(konamiTimerRef.current);
+      konamiTimerRef.current = setTimeout(() => setKonamiVisible(false), 2000);
+    }
+  }, [reducedMotion]);
+
+  useKonamiCode(handleKonami);
 
   return (
     <AppShell header={{ height: 44 }} padding={0}>
@@ -44,6 +74,16 @@ export function GameLayout() {
               style={{ fontFamily: "monospace", whiteSpace: "nowrap" }}
             >
               ★ {unlockedCount}
+            </Button>
+            <Button
+              size="xs"
+              variant="subtle"
+              color="cyan"
+              onClick={() => setStatsOpen(true)}
+              style={{ fontFamily: "monospace" }}
+              aria-label="Open stats"
+            >
+              📊
             </Button>
             <Button
               size="xs"
@@ -77,11 +117,28 @@ export function GameLayout() {
         opened={achievementsOpen}
         onClose={() => setAchievementsOpen(false)}
       />
+      <StatsPanel opened={statsOpen} onClose={() => setStatsOpen(false)} />
       <SettingsPanel
         opened={settingsOpen}
         onClose={() => setSettingsOpen(false)}
       />
       <CrtOverlay />
+
+      {konamiVisible && (
+        <div
+          aria-hidden="true"
+          className="konami-overlay"
+          style={{
+            position: "fixed",
+            inset: 0,
+            pointerEvents: "none",
+            zIndex: 9998,
+            background:
+              "linear-gradient(135deg, #ff0000, #ff7700, #ffff00, #00ff00, #0000ff, #8b00ff)",
+            animation: "konami-flash 2s ease-out forwards",
+          }}
+        />
+      )}
     </AppShell>
   );
 }

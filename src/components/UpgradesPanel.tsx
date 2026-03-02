@@ -15,6 +15,7 @@ const TIER_CONFIG: readonly TierConfig[] = [
   { tier: "startup", label: "🚀 Startup", unlockStage: 0 },
   { tier: "scale-up", label: "🏗️ Scale-Up", unlockStage: 2 },
   { tier: "mega-corp", label: "🏢 Mega Corp", unlockStage: 3 },
+  { tier: "transcendence", label: "✨ Transcendence", unlockStage: 4 },
 ];
 
 export function UpgradesPanel() {

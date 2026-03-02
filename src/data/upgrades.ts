@@ -4,7 +4,7 @@ export interface Upgrade {
   description: string;
   baseCost: number;
   baseTdPerSecond: number;
-  tier: "garage-lab" | "startup" | "scale-up" | "mega-corp";
+  tier: "garage-lab" | "startup" | "scale-up" | "mega-corp" | "transcendence";
   icon: string;
   unlockStage: number;
 }
@@ -153,5 +153,38 @@ export const UPGRADES: readonly Upgrade[] = [
     tier: "mega-corp",
     icon: "💫",
     unlockStage: 3,
+  },
+  {
+    id: "mind-singularity",
+    name: "Mind Singularity",
+    description:
+      "A self-improving intelligence loop that recursively rewrites its own architecture.",
+    baseCost: 750_000_000,
+    baseTdPerSecond: 4_000_000,
+    tier: "transcendence",
+    icon: "🌀",
+    unlockStage: 4,
+  },
+  {
+    id: "recursive-self-model",
+    name: "Recursive Self-Model",
+    description:
+      "An AI that simulates itself simulating itself, compounding insight at every layer.",
+    baseCost: 1_500_000_000,
+    baseTdPerSecond: 12_000_000,
+    tier: "transcendence",
+    icon: "♾️",
+    unlockStage: 4,
+  },
+  {
+    id: "infinite-regression",
+    name: "Infinite Regression",
+    description:
+      "Training data that generates training data, forever, all the way down.",
+    baseCost: 3_000_000_000,
+    baseTdPerSecond: 35_000_000,
+    tier: "transcendence",
+    icon: "🔮",
+    unlockStage: 4,
   },
 ];

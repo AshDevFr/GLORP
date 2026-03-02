@@ -72,6 +72,24 @@ body {
   }
 }
 
+@keyframes konami-flash {
+  0% {
+    opacity: 0.4;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  80% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .float-particle {
     animation: none;
@@ -82,5 +100,9 @@ body {
   }
   .screen-shake {
     animation: none;
+  }
+  .konami-overlay {
+    animation: none;
+    opacity: 0;
   }
 }
