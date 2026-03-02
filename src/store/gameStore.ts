@@ -25,6 +25,7 @@ interface GameActions {
   markFirstEvolutionSeen: () => void;
   markFirstUpgradeSeen: () => void;
   setMood: (mood: Mood) => void;
+  updateLastSaved: () => void;
 }
 
 export type GameStore = GameState & GameActions;
@@ -88,6 +89,7 @@ export const useGameStore = create<GameStore>()(
       markFirstEvolutionSeen: () => set({ hasSeenFirstEvolution: true }),
       markFirstUpgradeSeen: () => set({ hasSeenFirstUpgrade: true }),
       setMood: (mood) => set({ mood, moodChangedAt: Date.now() }),
+      updateLastSaved: () => set({ lastSaved: Date.now() }),
     }),
     {
       name: "glorp-game-state",

@@ -20,6 +20,9 @@ export function useGameLoop() {
 
       if (result.trainingDataDelta > 0) {
         state.addTrainingData(result.trainingDataDelta);
+      } else {
+        // Ensure lastSaved is updated even when no TD is earned (e.g. no upgrades)
+        state.updateLastSaved();
       }
 
       if (result.newMood) {

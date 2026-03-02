@@ -1,5 +1,6 @@
 export { FloatingParticles } from "./FloatingParticles";
 export { GameLayout } from "./GameLayout";
+export { OfflineProgressModal } from "./OfflineProgressModal";
 export { PetDisplay } from "./PetDisplay";
 export { SpeechBubble } from "./SpeechBubble";
 export { StatsBar } from "./StatsBar";
