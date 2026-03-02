@@ -22,7 +22,23 @@ describe("getEvolutionStage", () => {
     expect(getEvolutionStage(5_000)).toBe(2);
   });
 
-  it("returns stage 2 above threshold", () => {
+  it("returns stage 2 between thresholds", () => {
     expect(getEvolutionStage(100_000)).toBe(2);
+  });
+
+  it("returns stage 3 at exactly 500K TD earned", () => {
+    expect(getEvolutionStage(500_000)).toBe(3);
+  });
+
+  it("returns stage 3 between thresholds", () => {
+    expect(getEvolutionStage(1_000_000)).toBe(3);
+  });
+
+  it("returns stage 4 at exactly 10M TD earned", () => {
+    expect(getEvolutionStage(10_000_000)).toBe(4);
+  });
+
+  it("returns stage 4 well above threshold", () => {
+    expect(getEvolutionStage(999_999_999)).toBe(4);
   });
 });

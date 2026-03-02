@@ -1,18 +1,30 @@
-import { ScrollArea, Stack, Text, Title } from "@mantine/core";
+import { Divider, ScrollArea, Stack, Text, Title } from "@mantine/core";
+import type { Upgrade } from "../data/upgrades";
 import { UPGRADES } from "../data/upgrades";
 import { useGameStore } from "../store";
 import { UpgradeCard } from "./upgrades/UpgradeCard";
 
-const GARAGE_LAB_UPGRADES = UPGRADES.filter((u) => u.tier === "garage-lab");
-const STARTUP_UPGRADES = UPGRADES.filter((u) => u.tier === "startup");
+interface TierConfig {
+  tier: Upgrade["tier"];
+  label: string;
+  unlockStage: number;
+}
+
+const TIER_CONFIG: readonly TierConfig[] = [
+  { tier: "garage-lab", label: "🔬 Garage Lab", unlockStage: 0 },
+  { tier: "startup", label: "🚀 Startup", unlockStage: 0 },
+  { tier: "scale-up", label: "🏗️ Scale-Up", unlockStage: 2 },
+  { tier: "mega-corp", label: "🏢 Mega Corp", unlockStage: 3 },
+];
 
 export function UpgradesPanel() {
   const trainingData = useGameStore((s) => s.trainingData);
   const upgradeOwned = useGameStore((s) => s.upgradeOwned);
   const purchaseUpgrade = useGameStore((s) => s.purchaseUpgrade);
+  const evolutionStage = useGameStore((s) => s.evolutionStage);
 
-  const hasGarageLabUpgrade = GARAGE_LAB_UPGRADES.some(
-    (u) => (upgradeOwned[u.id] ?? 0) > 0,
+  const visibleTiers = TIER_CONFIG.filter(
+    (tc) => evolutionStage >= tc.unlockStage,
   );
 
   return (
@@ -30,35 +42,26 @@ export function UpgradesPanel() {
       </Title>
       <ScrollArea style={{ flex: 1 }}>
         <Stack gap="xs">
-          <Text size="xs" fw={700} ff="monospace" c="dimmed">
-            🔬 Garage Lab
-          </Text>
-          {GARAGE_LAB_UPGRADES.map((upgrade) => (
-            <UpgradeCard
-              key={upgrade.id}
-              upgrade={upgrade}
-              owned={upgradeOwned[upgrade.id] ?? 0}
-              trainingData={trainingData}
-              onPurchase={purchaseUpgrade}
-            />
-          ))}
-
-          {hasGarageLabUpgrade && (
-            <>
-              <Text size="xs" fw={700} ff="monospace" c="dimmed" mt="sm">
-                🚀 Startup
-              </Text>
-              {STARTUP_UPGRADES.map((upgrade) => (
-                <UpgradeCard
-                  key={upgrade.id}
-                  upgrade={upgrade}
-                  owned={upgradeOwned[upgrade.id] ?? 0}
-                  trainingData={trainingData}
-                  onPurchase={purchaseUpgrade}
-                />
-              ))}
-            </>
-          )}
+          {visibleTiers.map((tc, index) => {
+            const tierUpgrades = UPGRADES.filter((u) => u.tier === tc.tier);
+            return (
+              <div key={tc.tier}>
+                {index > 0 && <Divider my="xs" />}
+                <Text size="xs" fw={700} ff="monospace" c="dimmed" mb="xs">
+                  {tc.label}
+                </Text>
+                {tierUpgrades.map((upgrade) => (
+                  <UpgradeCard
+                    key={upgrade.id}
+                    upgrade={upgrade}
+                    owned={upgradeOwned[upgrade.id] ?? 0}
+                    trainingData={trainingData}
+                    onPurchase={purchaseUpgrade}
+                  />
+                ))}
+              </div>
+            );
+          })}
         </Stack>
       </ScrollArea>
     </Stack>

@@ -4,8 +4,9 @@ export interface Upgrade {
   description: string;
   baseCost: number;
   baseTdPerSecond: number;
-  tier: "garage-lab" | "startup";
+  tier: "garage-lab" | "startup" | "scale-up" | "mega-corp";
   icon: string;
+  unlockStage: number;
 }
 
 export const UPGRADES: readonly Upgrade[] = [
@@ -17,6 +18,7 @@ export const UPGRADES: readonly Upgrade[] = [
     baseTdPerSecond: 0.1,
     tier: "garage-lab",
     icon: "📝",
+    unlockStage: 0,
   },
   {
     id: "data-hamster-wheel",
@@ -26,6 +28,7 @@ export const UPGRADES: readonly Upgrade[] = [
     baseTdPerSecond: 0.5,
     tier: "garage-lab",
     icon: "🐹",
+    unlockStage: 0,
   },
   {
     id: "pattern-antenna",
@@ -35,6 +38,7 @@ export const UPGRADES: readonly Upgrade[] = [
     baseTdPerSecond: 2,
     tier: "garage-lab",
     icon: "📡",
+    unlockStage: 0,
   },
   {
     id: "intern-algorithm",
@@ -44,6 +48,7 @@ export const UPGRADES: readonly Upgrade[] = [
     baseTdPerSecond: 5,
     tier: "startup",
     icon: "🧑‍💻",
+    unlockStage: 0,
   },
   {
     id: "cloud-crumb",
@@ -54,6 +59,7 @@ export const UPGRADES: readonly Upgrade[] = [
     baseTdPerSecond: 20,
     tier: "startup",
     icon: "☁️",
+    unlockStage: 0,
   },
   {
     id: "gpu-toaster",
@@ -63,5 +69,89 @@ export const UPGRADES: readonly Upgrade[] = [
     baseTdPerSecond: 100,
     tier: "startup",
     icon: "🍞",
+    unlockStage: 0,
+  },
+  {
+    id: "server-farm",
+    name: "Server Farm",
+    description: "Rows of humming servers in a converted barn.",
+    baseCost: 100_000,
+    baseTdPerSecond: 500,
+    tier: "scale-up",
+    icon: "🏚️",
+    unlockStage: 2,
+  },
+  {
+    id: "ml-cluster",
+    name: "ML Cluster",
+    description: "A proper cluster of GPUs crunching tensors around the clock.",
+    baseCost: 500_000,
+    baseTdPerSecond: 2_000,
+    tier: "scale-up",
+    icon: "🖥️",
+    unlockStage: 2,
+  },
+  {
+    id: "data-center",
+    name: "Data Center",
+    description:
+      "A fully air-conditioned facility processing petabytes per day.",
+    baseCost: 2_000_000,
+    baseTdPerSecond: 7_500,
+    tier: "scale-up",
+    icon: "🏭",
+    unlockStage: 2,
+  },
+  {
+    id: "neural-mainframe",
+    name: "Neural Mainframe",
+    description: "A room-sized neural processor. It hums with quiet ambition.",
+    baseCost: 5_000_000,
+    baseTdPerSecond: 20_000,
+    tier: "scale-up",
+    icon: "🧠",
+    unlockStage: 2,
+  },
+  {
+    id: "quantum-processor",
+    name: "Quantum Processor",
+    description:
+      "Leverages quantum superposition to train on infinite datasets simultaneously.",
+    baseCost: 50_000_000,
+    baseTdPerSecond: 100_000,
+    tier: "mega-corp",
+    icon: "⚛️",
+    unlockStage: 3,
+  },
+  {
+    id: "continental-grid",
+    name: "Continental Grid",
+    description: "An entire continent's worth of compute, yours to command.",
+    baseCost: 150_000_000,
+    baseTdPerSecond: 300_000,
+    tier: "mega-corp",
+    icon: "🌍",
+    unlockStage: 3,
+  },
+  {
+    id: "global-mesh",
+    name: "Global Mesh",
+    description: "Every device on Earth contributing cycles to your cause.",
+    baseCost: 300_000_000,
+    baseTdPerSecond: 700_000,
+    tier: "mega-corp",
+    icon: "🌐",
+    unlockStage: 3,
+  },
+  {
+    id: "dyson-compute-ring",
+    name: "Dyson Compute Ring",
+    description:
+      "A ring of solar collectors powering a planetary-scale AI substrate.",
+    baseCost: 500_000_000,
+    baseTdPerSecond: 1_500_000,
+    tier: "mega-corp",
+    icon: "💫",
+    unlockStage: 3,
   },
 ];
