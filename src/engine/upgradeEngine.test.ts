@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Upgrade } from "../data/upgrades";
-import { getTotalTdPerSecond, getUpgradeCost } from "./upgradeEngine";
+import {
+  COST_MULTIPLIER,
+  getBulkCost,
+  getMaxAffordable,
+  getTotalTdPerSecond,
+  getUpgradeCost,
+} from "./upgradeEngine";
 
 const mockUpgrade: Upgrade = {
   id: "test-upgrade",
@@ -49,6 +55,94 @@ describe("getUpgradeCost", () => {
   it("works with different base costs", () => {
     expect(getUpgradeCost(mockUpgrade2, 0)).toBe(500);
     expect(getUpgradeCost(mockUpgrade2, 3)).toBe(Math.floor(500 * 1.15 ** 3));
+  });
+});
+
+describe("getBulkCost", () => {
+  it("returns 0 for count 0", () => {
+    expect(getBulkCost(mockUpgrade, 0, 0)).toBe(0);
+  });
+
+  it("returns negative count as 0", () => {
+    expect(getBulkCost(mockUpgrade, 0, -1)).toBe(0);
+  });
+
+  it("matches getUpgradeCost for count 1 at 0 owned", () => {
+    expect(getBulkCost(mockUpgrade, 0, 1)).toBe(getUpgradeCost(mockUpgrade, 0));
+  });
+
+  it("matches getUpgradeCost for count 1 at 5 owned", () => {
+    expect(getBulkCost(mockUpgrade, 5, 1)).toBe(getUpgradeCost(mockUpgrade, 5));
+  });
+
+  it("is greater than single cost and less than 10x the last cost for count 10", () => {
+    const singleCost = getBulkCost(mockUpgrade, 0, 1);
+    const tenthCost = getUpgradeCost(mockUpgrade, 9);
+    const bulk10 = getBulkCost(mockUpgrade, 0, 10);
+    expect(bulk10).toBeGreaterThan(singleCost);
+    expect(bulk10).toBeLessThan(10 * tenthCost + 1);
+  });
+
+  it("is more expensive when owning more already", () => {
+    expect(getBulkCost(mockUpgrade, 10, 5)).toBeGreaterThan(
+      getBulkCost(mockUpgrade, 0, 5),
+    );
+  });
+
+  it("returns an integer", () => {
+    expect(Number.isInteger(getBulkCost(mockUpgrade, 3, 7))).toBe(true);
+  });
+
+  it("works with different base costs", () => {
+    expect(getBulkCost(mockUpgrade2, 0, 1)).toBe(500);
+    // count=2 should cost more than 1 but less than 2x the second-upgrade cost
+    const bulk2 = getBulkCost(mockUpgrade2, 0, 2);
+    expect(bulk2).toBeGreaterThan(500);
+    expect(bulk2).toBeLessThan(2 * Math.floor(500 * COST_MULTIPLIER) + 1);
+  });
+});
+
+describe("getMaxAffordable", () => {
+  it("returns 0 for 0 budget", () => {
+    expect(getMaxAffordable(mockUpgrade, 0, 0)).toBe(0);
+  });
+
+  it("returns 0 when budget is less than first cost", () => {
+    expect(getMaxAffordable(mockUpgrade, 0, 99)).toBe(0);
+  });
+
+  it("returns 1 when budget exactly covers first cost", () => {
+    expect(getMaxAffordable(mockUpgrade, 0, 100)).toBe(1);
+  });
+
+  it("returns a value consistent with getBulkCost for count 10", () => {
+    const count = 10;
+    const cost = getBulkCost(mockUpgrade, 0, count);
+    // With the exact budget, we should get at least count-1 affordable
+    expect(getMaxAffordable(mockUpgrade, 0, cost)).toBeGreaterThanOrEqual(
+      count - 1,
+    );
+  });
+
+  it("returns 0 when budget is one less than first cost at 5 owned", () => {
+    const firstCost = getUpgradeCost(mockUpgrade, 5);
+    expect(getMaxAffordable(mockUpgrade, 5, firstCost - 1)).toBe(0);
+  });
+
+  it("affordable count is consistent: buying that many should not exceed budget", () => {
+    const budget = 50000;
+    const n = getMaxAffordable(mockUpgrade, 0, budget);
+    expect(getBulkCost(mockUpgrade, 0, n)).toBeLessThanOrEqual(budget);
+    if (n > 0) {
+      expect(getBulkCost(mockUpgrade, 0, n + 1)).toBeGreaterThan(budget);
+    }
+  });
+
+  it("works with a large budget", () => {
+    const budget = 1_000_000;
+    const n = getMaxAffordable(mockUpgrade, 0, budget);
+    expect(n).toBeGreaterThan(0);
+    expect(getBulkCost(mockUpgrade, 0, n)).toBeLessThanOrEqual(budget);
   });
 });
 

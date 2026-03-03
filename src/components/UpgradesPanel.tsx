@@ -1,8 +1,11 @@
-import { Divider, ScrollArea, Stack, Text, Title } from "@mantine/core";
+import { Button, Divider, Group, ScrollArea, Stack, Text, Title } from "@mantine/core";
+import { useEffect } from "react";
 import { CLICK_UPGRADES } from "../data/clickUpgrades";
 import type { Upgrade } from "../data/upgrades";
 import { UPGRADES } from "../data/upgrades";
 import { useGameStore } from "../store";
+import type { BuyMode } from "../store/settingsStore";
+import { useSettingsStore } from "../store/settingsStore";
 import { ClickUpgradeCard } from "./upgrades/ClickUpgradeCard";
 import { UpgradeCard } from "./upgrades/UpgradeCard";
 
@@ -20,13 +23,43 @@ const TIER_CONFIG: readonly TierConfig[] = [
   { tier: "transcendence", label: "✨ Transcendence", unlockStage: 4 },
 ];
 
+const BUY_MODES: readonly { mode: BuyMode; label: string; shortcut: string }[] =
+  [
+    { mode: 1, label: "×1", shortcut: "1" },
+    { mode: 10, label: "×10", shortcut: "2" },
+    { mode: 100, label: "×100", shortcut: "3" },
+    { mode: "max", label: "Max", shortcut: "4" },
+  ];
+
 export function UpgradesPanel() {
   const trainingData = useGameStore((s) => s.trainingData);
   const upgradeOwned = useGameStore((s) => s.upgradeOwned);
-  const purchaseUpgrade = useGameStore((s) => s.purchaseUpgrade);
+  const purchaseBulkUpgrade = useGameStore((s) => s.purchaseBulkUpgrade);
   const purchaseClickUpgrade = useGameStore((s) => s.purchaseClickUpgrade);
   const evolutionStage = useGameStore((s) => s.evolutionStage);
   const clickUpgradesPurchased = useGameStore((s) => s.clickUpgradesPurchased);
+
+  const buyMode = useSettingsStore((s) => s.buyMode);
+  const setBuyMode = useSettingsStore((s) => s.setBuyMode);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+      if (e.key === "1") setBuyMode(1);
+      else if (e.key === "2") setBuyMode(10);
+      else if (e.key === "3") setBuyMode(100);
+      else if (e.key === "4") setBuyMode("max");
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [setBuyMode]);
 
   const visibleTiers = TIER_CONFIG.filter(
     (tc) => evolutionStage >= tc.unlockStage,
@@ -50,6 +83,21 @@ export function UpgradesPanel() {
       <Title order={4} ff="monospace" c="green">
         Upgrades
       </Title>
+      <Group gap="xs">
+        {BUY_MODES.map(({ mode, label, shortcut }) => (
+          <Button
+            key={String(mode)}
+            size="compact-xs"
+            variant={buyMode === mode ? "filled" : "default"}
+            color="green"
+            ff="monospace"
+            onClick={() => setBuyMode(mode)}
+            title={`Buy ${label} (key: ${shortcut})`}
+          >
+            {label}
+          </Button>
+        ))}
+      </Group>
       <ScrollArea style={{ flex: 1 }}>
         <Stack gap="xs">
           {visibleClickUpgrades.length > 0 && (
@@ -84,7 +132,8 @@ export function UpgradesPanel() {
                     upgrade={upgrade}
                     owned={upgradeOwned[upgrade.id] ?? 0}
                     trainingData={trainingData}
-                    onPurchase={purchaseUpgrade}
+                    buyMode={buyMode}
+                    onPurchase={purchaseBulkUpgrade}
                   />
                 ))}
               </div>

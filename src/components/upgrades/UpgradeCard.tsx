@@ -1,37 +1,55 @@
 import { Badge, Button, Card, Group, Text } from "@mantine/core";
 import { useCallback, useRef, useState } from "react";
 import type { Upgrade } from "../../data/upgrades";
-import { getUpgradeCost } from "../../engine/upgradeEngine";
+import {
+  getBulkCost,
+  getMaxAffordable,
+} from "../../engine/upgradeEngine";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
+import type { BuyMode } from "../../store/settingsStore";
 import { formatNumber } from "../../utils/formatNumber";
 
 interface UpgradeCardProps {
   upgrade: Upgrade;
   owned: number;
   trainingData: number;
-  onPurchase: (id: string) => void;
+  buyMode: BuyMode;
+  onPurchase: (id: string, count: number) => void;
 }
 
 export function UpgradeCard({
   upgrade,
   owned,
   trainingData,
+  buyMode,
   onPurchase,
 }: UpgradeCardProps) {
-  const cost = getUpgradeCost(upgrade, owned);
-  const canAfford = trainingData >= cost;
+  const count =
+    buyMode === "max"
+      ? getMaxAffordable(upgrade, owned, trainingData)
+      : buyMode;
+  const cost = getBulkCost(upgrade, owned, count);
+  const canAfford = count > 0 && trainingData >= cost;
+
   const [isGlowing, setIsGlowing] = useState(false);
   const glowTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const prefersReduced = useReducedMotion();
 
   const handlePurchase = useCallback(() => {
-    onPurchase(upgrade.id);
+    onPurchase(upgrade.id, count);
     if (!prefersReduced) {
       setIsGlowing(true);
       if (glowTimerRef.current) clearTimeout(glowTimerRef.current);
       glowTimerRef.current = setTimeout(() => setIsGlowing(false), 600);
     }
-  }, [onPurchase, upgrade.id, prefersReduced]);
+  }, [onPurchase, upgrade.id, count, prefersReduced]);
+
+  const buyLabel =
+    buyMode === "max"
+      ? count > 0
+        ? `×${count} — ${formatNumber(cost)} TD`
+        : "Max (0)"
+      : `${formatNumber(cost)} TD`;
 
   return (
     <Card
@@ -72,7 +90,7 @@ export function UpgradeCard({
           onClick={handlePurchase}
           ff="monospace"
         >
-          {formatNumber(cost)} TD
+          {buyLabel}
         </Button>
       </Group>
     </Card>

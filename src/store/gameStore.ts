@@ -11,7 +11,7 @@ import {
   computeWisdomTokens,
   getNextSpecies,
 } from "../engine/rebirthEngine";
-import { getUpgradeCost } from "../engine/upgradeEngine";
+import { getBulkCost, getUpgradeCost } from "../engine/upgradeEngine";
 
 export interface GameState {
   trainingData: number;
@@ -45,6 +45,7 @@ interface GameActions {
   clickFeed: () => void;
   addTrainingData: (amount: number) => void;
   purchaseUpgrade: (id: string) => void;
+  purchaseBulkUpgrade: (id: string, count: number) => void;
   purchaseClickUpgrade: (id: string) => void;
   markFirstEvolutionSeen: () => void;
   markFirstUpgradeSeen: () => void;
@@ -137,6 +138,25 @@ export const useGameStore = create<GameStore>()(
           return {
             trainingData: state.trainingData - cost,
             upgradeOwned: { ...state.upgradeOwned, [id]: owned + 1 },
+            lastSaved: Date.now(),
+            mood: "Excited" as Mood,
+            moodChangedAt: Date.now(),
+          };
+        }),
+      purchaseBulkUpgrade: (id, count) =>
+        set((state) => {
+          if (count <= 0) return state;
+          const upgrade = UPGRADES.find((u) => u.id === id);
+          if (!upgrade) return state;
+
+          const owned = state.upgradeOwned[id] ?? 0;
+          const cost = getBulkCost(upgrade, owned, count);
+
+          if (state.trainingData < cost) return state;
+
+          return {
+            trainingData: state.trainingData - cost,
+            upgradeOwned: { ...state.upgradeOwned, [id]: owned + count },
             lastSaved: Date.now(),
             mood: "Excited" as Mood,
             moodChangedAt: Date.now(),
