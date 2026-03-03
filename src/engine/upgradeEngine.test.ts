@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import type { Booster } from "../data/boosters";
 import type { Upgrade } from "../data/upgrades";
 import {
   COST_MULTIPLIER,
+  computeBoosterMultiplier,
   getBulkCost,
   getMaxAffordable,
   getTotalTdPerSecond,
@@ -172,5 +174,78 @@ describe("getTotalTdPerSecond", () => {
 
   it("handles empty upgrades array", () => {
     expect(getTotalTdPerSecond([], { "test-upgrade": 5 })).toBe(0);
+  });
+
+  it("applies wisdomMultiplier correctly", () => {
+    const owned = { "test-upgrade": 1 };
+    expect(getTotalTdPerSecond([mockUpgrade], owned, 2)).toBeCloseTo(3);
+  });
+
+  it("applies boosterMultiplier correctly", () => {
+    const owned = { "test-upgrade": 1 };
+    expect(getTotalTdPerSecond([mockUpgrade], owned, 1, 3)).toBeCloseTo(4.5);
+  });
+
+  it("applies both multipliers combined", () => {
+    const owned = { "test-upgrade": 1 };
+    // base 1.5 * wisdom 2 * booster 3 = 9
+    expect(getTotalTdPerSecond([mockUpgrade], owned, 2, 3)).toBeCloseTo(9);
+  });
+});
+
+const mockBooster1: Booster = {
+  id: "booster-a",
+  name: "Booster A",
+  description: "Test booster A",
+  multiplier: 2,
+  cost: 1000,
+  unlockStage: 1,
+  icon: "🅰️",
+};
+
+const mockBooster2: Booster = {
+  id: "booster-b",
+  name: "Booster B",
+  description: "Test booster B",
+  multiplier: 3,
+  cost: 5000,
+  unlockStage: 2,
+  icon: "🅱️",
+};
+
+describe("computeBoosterMultiplier", () => {
+  it("returns 1 when no boosters are purchased", () => {
+    expect(computeBoosterMultiplier([mockBooster1, mockBooster2], [])).toBe(1);
+  });
+
+  it("returns booster multiplier for a single purchase", () => {
+    expect(
+      computeBoosterMultiplier([mockBooster1, mockBooster2], ["booster-a"]),
+    ).toBe(2);
+  });
+
+  it("multiplies two purchased boosters", () => {
+    expect(
+      computeBoosterMultiplier(
+        [mockBooster1, mockBooster2],
+        ["booster-a", "booster-b"],
+      ),
+    ).toBe(6);
+  });
+
+  it("ignores boosters not in the purchased list", () => {
+    expect(
+      computeBoosterMultiplier([mockBooster1, mockBooster2], ["booster-b"]),
+    ).toBe(3);
+  });
+
+  it("returns 1 when boosters list is empty", () => {
+    expect(computeBoosterMultiplier([], ["booster-a"])).toBe(1);
+  });
+
+  it("ignores unknown purchased IDs gracefully", () => {
+    expect(
+      computeBoosterMultiplier([mockBooster1], ["nonexistent-booster"]),
+    ).toBe(1);
   });
 });

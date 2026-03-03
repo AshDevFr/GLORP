@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { BOOSTERS } from "../data/boosters";
 import { CLICK_UPGRADES } from "../data/clickUpgrades";
 import type { Species } from "../data/species";
 import { UPGRADES } from "../data/upgrades";
@@ -35,6 +36,8 @@ export interface GameState {
   unlockedSpecies: Species[];
   // Achievements — persists across rebirths
   unlockedAchievements: string[];
+  // Booster upgrades — resets on rebirth
+  boostersPurchased: string[];
   // Easter eggs — persists across rebirths
   easterEggsUnlocked: string[];
   // Lifetime stats — persists across rebirths
@@ -48,6 +51,7 @@ interface GameActions {
   addTrainingData: (amount: number) => void;
   purchaseUpgrade: (id: string) => void;
   purchaseBulkUpgrade: (id: string, count: number) => void;
+  purchaseBooster: (id: string) => void;
   purchaseClickUpgrade: (id: string) => void;
   markFirstEvolutionSeen: () => void;
   markFirstUpgradeSeen: () => void;
@@ -80,6 +84,7 @@ export const initialGameState: GameState = {
   rebirthCount: 0,
   currentSpecies: "GLORP",
   unlockedSpecies: ["GLORP"],
+  boostersPurchased: [],
   unlockedAchievements: [],
   easterEggsUnlocked: [],
   totalTimePlayed: 0,
@@ -166,6 +171,28 @@ export const useGameStore = create<GameStore>()(
             moodChangedAt: Date.now(),
           };
         }),
+      purchaseBooster: (id) =>
+        set((state) => {
+          const booster = BOOSTERS.find((b) => b.id === id);
+          if (!booster) return state;
+
+          // Already purchased (one-time only)
+          if (state.boostersPurchased.includes(id)) return state;
+
+          // Stage requirement not met
+          if (state.evolutionStage < booster.unlockStage) return state;
+
+          // Not enough TD
+          if (state.trainingData < booster.cost) return state;
+
+          return {
+            trainingData: state.trainingData - booster.cost,
+            boostersPurchased: [...state.boostersPurchased, id],
+            lastSaved: Date.now(),
+            mood: "Excited" as Mood,
+            moodChangedAt: Date.now(),
+          };
+        }),
       purchaseClickUpgrade: (id) =>
         set((state) => {
           const upgrade = CLICK_UPGRADES.find((u) => u.id === id);
@@ -233,8 +260,9 @@ export const useGameStore = create<GameStore>()(
             hasSeenFirstEvolution: false,
             hasSeenFirstUpgrade: false,
             lastSaved: Date.now(),
-            // Reset click power state
+            // Reset click power and booster state
             clickUpgradesPurchased: [],
+            boostersPurchased: [],
             comboCount: 0,
             lastClickTime: 0,
             crossedMilestones: [],

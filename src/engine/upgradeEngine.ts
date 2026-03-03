@@ -1,3 +1,4 @@
+import type { Booster } from "../data/boosters";
 import type { Upgrade } from "../data/upgrades";
 
 export const COST_MULTIPLIER = 1.15;
@@ -43,18 +44,33 @@ export function getMaxAffordable(
 }
 
 /**
+ * Product of the multipliers for all purchased boosters.
+ * Returns 1 (no bonus) when nothing has been purchased.
+ */
+export function computeBoosterMultiplier(
+  boosters: readonly Booster[],
+  purchased: readonly string[],
+): number {
+  return boosters
+    .filter((b) => purchased.includes(b.id))
+    .reduce((acc, b) => acc * b.multiplier, 1);
+}
+
+/**
  * Returns the total TD/s from owned upgrades, multiplied by the permanent
- * wisdom multiplier (1 + wisdomTokens * 0.05). Defaults to no bonus (×1).
+ * wisdom multiplier (1 + wisdomTokens * 0.05) and an optional booster
+ * multiplier. Defaults to no bonus (×1) for both.
  */
 export function getTotalTdPerSecond(
   upgrades: readonly Upgrade[],
   owned: Record<string, number>,
   wisdomMultiplier = 1,
+  boosterMultiplier = 1,
 ): number {
   let total = 0;
   for (const upgrade of upgrades) {
     const count = owned[upgrade.id] ?? 0;
     total += upgrade.baseTdPerSecond * count;
   }
-  return total * wisdomMultiplier;
+  return total * wisdomMultiplier * boosterMultiplier;
 }

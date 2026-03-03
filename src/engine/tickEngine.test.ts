@@ -103,6 +103,52 @@ describe("computeTick", () => {
     expect(result.trainingDataDelta).toBeCloseTo(127.6);
   });
 
+  describe("booster multiplier in tick", () => {
+    it("applies no bonus when boostersPurchased is empty", () => {
+      const result = computeTick(
+        { ...makeState({ "neural-notepad": 1 }), boostersPurchased: [] },
+        1,
+        BASE_TIME,
+      );
+      expect(result.trainingDataDelta).toBeCloseTo(0.1);
+    });
+
+    it("applies series-a-funding 2x multiplier", () => {
+      const result = computeTick(
+        {
+          ...makeState({ "neural-notepad": 1 }),
+          boostersPurchased: ["series-a-funding"],
+        },
+        1,
+        BASE_TIME,
+      );
+      // neural-notepad 0.1 TD/s * 2 = 0.2
+      expect(result.trainingDataDelta).toBeCloseTo(0.2);
+    });
+
+    it("stacks two booster multipliers multiplicatively", () => {
+      const result = computeTick(
+        {
+          ...makeState({ "neural-notepad": 1 }),
+          boostersPurchased: ["series-a-funding", "hype-train"],
+        },
+        1,
+        BASE_TIME,
+      );
+      // neural-notepad 0.1 TD/s * 2 * 3 = 0.6
+      expect(result.trainingDataDelta).toBeCloseTo(0.6);
+    });
+
+    it("uses default 1x when boostersPurchased is undefined", () => {
+      const result = computeTick(
+        makeState({ "neural-notepad": 1 }),
+        1,
+        BASE_TIME,
+      );
+      expect(result.trainingDataDelta).toBeCloseTo(0.1);
+    });
+  });
+
   describe("mood decay in tick", () => {
     it("returns null newMood when mood has not decayed", () => {
       const result = computeTick(

@@ -8,12 +8,14 @@ import {
   Title,
 } from "@mantine/core";
 import { useEffect } from "react";
+import { BOOSTERS } from "../data/boosters";
 import { CLICK_UPGRADES } from "../data/clickUpgrades";
 import type { Upgrade } from "../data/upgrades";
 import { UPGRADES } from "../data/upgrades";
 import { useGameStore } from "../store";
 import type { BuyMode } from "../store/settingsStore";
 import { useSettingsStore } from "../store/settingsStore";
+import { BoosterCard } from "./upgrades/BoosterCard";
 import { ClickUpgradeCard } from "./upgrades/ClickUpgradeCard";
 import { UpgradeCard } from "./upgrades/UpgradeCard";
 
@@ -44,8 +46,10 @@ export function UpgradesPanel() {
   const upgradeOwned = useGameStore((s) => s.upgradeOwned);
   const purchaseBulkUpgrade = useGameStore((s) => s.purchaseBulkUpgrade);
   const purchaseClickUpgrade = useGameStore((s) => s.purchaseClickUpgrade);
+  const purchaseBooster = useGameStore((s) => s.purchaseBooster);
   const evolutionStage = useGameStore((s) => s.evolutionStage);
   const clickUpgradesPurchased = useGameStore((s) => s.clickUpgradesPurchased);
+  const boostersPurchased = useGameStore((s) => s.boostersPurchased);
 
   const buyMode = useSettingsStore((s) => s.buyMode);
   const setBuyMode = useSettingsStore((s) => s.setBuyMode);
@@ -76,6 +80,11 @@ export function UpgradesPanel() {
   // Show click upgrades that are unlocked at or below current stage
   const visibleClickUpgrades = CLICK_UPGRADES.filter(
     (u) => evolutionStage >= u.unlockStage,
+  );
+
+  // Show boosters unlocked at or below current stage
+  const visibleBoosters = BOOSTERS.filter(
+    (b) => evolutionStage >= b.unlockStage,
   );
 
   return (
@@ -147,6 +156,24 @@ export function UpgradesPanel() {
               </div>
             );
           })}
+          {visibleBoosters.length > 0 && (
+            <div>
+              <Divider my="xs" />
+              <Text size="xs" fw={700} ff="monospace" c="violet" mb="xs">
+                ⚡ Global Boosters
+              </Text>
+              {visibleBoosters.map((booster) => (
+                <BoosterCard
+                  key={booster.id}
+                  booster={booster}
+                  purchased={boostersPurchased.includes(booster.id)}
+                  trainingData={trainingData}
+                  evolutionStage={evolutionStage}
+                  onPurchase={purchaseBooster}
+                />
+              ))}
+            </div>
+          )}
         </Stack>
       </ScrollArea>
     </Stack>
