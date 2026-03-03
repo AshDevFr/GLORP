@@ -337,7 +337,7 @@ describe("gameStore", () => {
 
     it("performRebirth awards tokens and increments balance", () => {
       useGameStore.setState({
-        totalTdEarned: 400_000, // floor(sqrt(400K/100K)) = 2 tokens
+        totalTdEarned: 2_000_000, // floor(sqrt(2_000_000 / 500_000)) = floor(sqrt(4)) = 2 tokens
         evolutionStage: 5,
         prestigeTokenBalance: 0,
         wisdomTokens: 0,

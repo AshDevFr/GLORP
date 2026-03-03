@@ -257,8 +257,7 @@ export function PetDisplay() {
           color="yellow"
           style={{
             fontFamily: "monospace",
-            visibility:
-              displayCombo >= COMBO_THRESHOLD ? "visible" : "hidden",
+            visibility: displayCombo >= COMBO_THRESHOLD ? "visible" : "hidden",
           }}
           aria-hidden={displayCombo < COMBO_THRESHOLD}
         >

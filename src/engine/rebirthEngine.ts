@@ -5,7 +5,7 @@ import { SPECIES_ORDER } from "../data/species";
 export const REBIRTH_MIN_STAGE = 4;
 
 /** Divisor used in the Wisdom Token formula: floor(sqrt(totalTdEarned / divisor)). */
-export const WISDOM_TOKENS_DIVISOR = 100_000;
+export const WISDOM_TOKENS_DIVISOR = 500_000;
 
 /**
  * Number of Wisdom Tokens earned for a Rebirth given the total TD earned
