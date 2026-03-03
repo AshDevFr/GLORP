@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Species } from "../data/species";
 import type { GameState } from "../store/gameStore";
 import { checkAchievements } from "./achievementEngine";
 
@@ -27,6 +28,7 @@ const baseState: GameState = {
   crossedMilestones: [],
   prestigeUpgrades: {},
   prestigeTokenBalance: 0,
+  hasOpenedPrestigeShop: false,
 };
 
 describe("checkAchievements", () => {
@@ -117,14 +119,126 @@ describe("checkAchievements", () => {
     expect(result).not.toContain("stage-4");
   });
 
+  it("returns click-storm when comboCount reaches 10", () => {
+    const state = { ...baseState, comboCount: 10 };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("click-storm");
+  });
+
+  it("returns synergy-first when a synergy threshold is met", () => {
+    const state = {
+      ...baseState,
+      upgradeOwned: { "neural-notepad": 50 },
+    };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("synergy-first");
+  });
+
+  it("returns bulk-buyer when a generator reaches 100 owned", () => {
+    const state = {
+      ...baseState,
+      upgradeOwned: { "neural-notepad": 100 },
+    };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("bulk-buyer");
+  });
+
+  it("returns window-shopper when prestige shop has been opened", () => {
+    const state = { ...baseState, hasOpenedPrestigeShop: true };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("window-shopper");
+  });
+
+  it("returns fully-loaded when all prestige upgrades are at max level", () => {
+    const state = {
+      ...baseState,
+      prestigeUpgrades: {
+        "quick-start": 3,
+        "auto-buy": 1,
+        "click-mastery": 10,
+        "generator-discount": 3,
+        "idle-boost": 5,
+        "offline-efficiency": 3,
+        "evolution-accelerator": 3,
+        "species-memory": 5,
+        "token-magnet": 5,
+        "unlock-all-species": 1,
+      },
+    };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("fully-loaded");
+  });
+
+  it("returns multiplied when all 4 boosters are purchased", () => {
+    const state = {
+      ...baseState,
+      boostersPurchased: [
+        "series-a-funding",
+        "hype-train",
+        "consciousness-clause",
+        "dyson-sphere",
+      ],
+    };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("multiplied");
+  });
+
+  it("returns species-collector when all 5 species are unlocked", () => {
+    const state = {
+      ...baseState,
+      unlockedSpecies: [
+        "GLORP",
+        "ZAPPY",
+        "CHONK",
+        "WISP",
+        "MEGA-GLORP",
+      ] as Species[],
+    };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("species-collector");
+  });
+
+  it("returns td-1t when totalTdEarned reaches 1 trillion", () => {
+    const state = { ...baseState, totalTdEarned: 1_000_000_000_000 };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("td-1t");
+  });
+
   it("excludes all achievements when all are already unlocked", () => {
     const state = {
       ...baseState,
       totalClicks: 100_000,
-      totalTdEarned: 2_000_000_000,
+      totalTdEarned: 1_000_000_000_000,
       evolutionStage: 4,
       rebirthCount: 10,
-      upgradeOwned: { a: 10 },
+      upgradeOwned: { "neural-notepad": 100 },
+      comboCount: 10,
+      hasOpenedPrestigeShop: true,
+      prestigeUpgrades: {
+        "quick-start": 3,
+        "auto-buy": 1,
+        "click-mastery": 10,
+        "generator-discount": 3,
+        "idle-boost": 5,
+        "offline-efficiency": 3,
+        "evolution-accelerator": 3,
+        "species-memory": 5,
+        "token-magnet": 5,
+        "unlock-all-species": 1,
+      },
+      boostersPurchased: [
+        "series-a-funding",
+        "hype-train",
+        "consciousness-clause",
+        "dyson-sphere",
+      ],
+      unlockedSpecies: [
+        "GLORP",
+        "ZAPPY",
+        "CHONK",
+        "WISP",
+        "MEGA-GLORP",
+      ] as Species[],
     };
     const allIds = [
       "first-click",
@@ -143,6 +257,14 @@ describe("checkAchievements", () => {
       "td-1b",
       "first-rebirth",
       "rebirths-5",
+      "click-storm",
+      "synergy-first",
+      "bulk-buyer",
+      "window-shopper",
+      "fully-loaded",
+      "multiplied",
+      "species-collector",
+      "td-1t",
     ];
     const result = checkAchievements(state, allIds);
     expect(result).toEqual([]);

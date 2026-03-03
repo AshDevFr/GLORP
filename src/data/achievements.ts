@@ -1,4 +1,8 @@
 import type { GameState } from "../store/gameStore";
+import { BOOSTERS } from "./boosters";
+import { PRESTIGE_UPGRADES } from "./prestigeShop";
+import { SPECIES_ORDER } from "./species";
+import { SYNERGIES } from "./synergies";
 
 export type AchievementId = string;
 
@@ -107,5 +111,59 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
     name: "Serial Rebirther",
     description: "Perform 5 Rebirths",
     condition: (s) => s.rebirthCount >= 5,
+  },
+  {
+    id: "click-storm",
+    name: "Click Storm",
+    description: "10x click combo! Your fingers are on fire!",
+    condition: (s) => s.comboCount >= 10,
+  },
+  {
+    id: "synergy-first",
+    name: "Synergy!",
+    description: "Unlocked your first cross-generator synergy",
+    condition: (s) =>
+      SYNERGIES.some(
+        (syn) => (s.upgradeOwned[syn.sourceId] ?? 0) >= syn.threshold,
+      ),
+  },
+  {
+    id: "bulk-buyer",
+    name: "Bulk Buyer",
+    description: "100 of a single generator. Now THAT's commitment.",
+    condition: (s) => Object.values(s.upgradeOwned).some((c) => c >= 100),
+  },
+  {
+    id: "window-shopper",
+    name: "Window Shopper",
+    description: "Browsing the prestige shop for the first time",
+    condition: (s) => s.hasOpenedPrestigeShop,
+  },
+  {
+    id: "fully-loaded",
+    name: "Fully Loaded",
+    description: "Every prestige upgrade maxed. You are GLORP's champion.",
+    condition: (s) =>
+      PRESTIGE_UPGRADES.every(
+        (u) => (s.prestigeUpgrades[u.id] ?? 0) >= u.maxLevel,
+      ),
+  },
+  {
+    id: "multiplied",
+    name: "Multiplied!",
+    description: "2x × 3x × 5x × 10x = 300x. Math is beautiful.",
+    condition: (s) => BOOSTERS.every((b) => s.boostersPurchased.includes(b.id)),
+  },
+  {
+    id: "species-collector",
+    name: "Species Collector",
+    description: "Played as every species. Which is your favorite?",
+    condition: (s) => s.unlockedSpecies.length >= SPECIES_ORDER.length,
+  },
+  {
+    id: "td-1t",
+    name: "Trillionaire",
+    description: "A trillion training data points. GLORP transcends.",
+    condition: (s) => s.totalTdEarned >= 1_000_000_000_000,
   },
 ];

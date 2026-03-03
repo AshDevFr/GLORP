@@ -27,6 +27,7 @@ const emptyState: GameState = {
   crossedMilestones: [],
   prestigeUpgrades: {},
   prestigeTokenBalance: 0,
+  hasOpenedPrestigeShop: false,
 };
 
 describe("ACHIEVEMENTS", () => {
