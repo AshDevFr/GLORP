@@ -180,15 +180,31 @@ body {
 /* ── Game layout: lock panels to viewport height on desktop ─────────── */
 
 .game-main-grid {
-  min-height: calc(100vh - 44px);
+  min-height: calc(100dvh - 44px);
 }
 
 @media (min-width: 62em) {
   /* On desktop the panels sit side-by-side; lock the grid to the viewport
-     so each panel scrolls internally rather than growing the page. */
+     so each panel scrolls internally rather than growing the page.
+     Use 100dvh (dynamic viewport height) so the calculation stays correct
+     at non-100 % browser zoom levels. */
   .game-main-grid {
-    height: calc(100vh - 44px);
+    height: calc(100dvh - 44px);
     overflow: hidden;
+  }
+
+  /* Propagate the bounded height through Mantine Grid's inner flex wrapper
+     so that Grid.Col children can resolve percentage heights. */
+  .game-main-grid > div {
+    height: 100%;
+  }
+
+  /* Grid.Col items need an explicit height (align-self:stretch alone does
+     not count for %-height resolution) and min-height:0 so content taller
+     than the viewport doesn't force the flex row to grow. */
+  .game-main-grid > div > div {
+    height: 100%;
+    min-height: 0;
   }
 }
 

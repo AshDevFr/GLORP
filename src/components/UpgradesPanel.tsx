@@ -127,7 +127,7 @@ export function UpgradesPanel() {
           </Button>
         ))}
       </Group>
-      <ScrollArea style={{ flex: 1 }}>
+      <ScrollArea style={{ flex: 1, minHeight: 0 }}>
         <Stack gap="xs">
           {visibleClickUpgrades.length > 0 && (
             <div>
