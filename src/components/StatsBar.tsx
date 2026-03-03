@@ -2,11 +2,12 @@ import { Group, Text } from "@mantine/core";
 import { UPGRADES } from "../data/upgrades";
 import { computeWisdomMultiplier } from "../engine/rebirthEngine";
 import { getTotalTdPerSecond } from "../engine/upgradeEngine";
+import { useInterpolatedTd } from "../hooks/useInterpolatedTd";
 import { useGameStore } from "../store";
 import { formatNumber } from "../utils/formatNumber";
 
 export function StatsBar() {
-  const trainingData = useGameStore((s) => s.trainingData);
+  const trainingData = useInterpolatedTd();
   const upgradeOwned = useGameStore((s) => s.upgradeOwned);
   const wisdomTokens = useGameStore((s) => s.wisdomTokens);
   const wisdomMultiplier = computeWisdomMultiplier(wisdomTokens);

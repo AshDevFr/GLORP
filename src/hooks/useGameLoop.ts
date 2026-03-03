@@ -6,8 +6,10 @@ import {
   checkEasterEggs,
   EASTER_EGG_MESSAGES,
 } from "../engine/easterEggEngine";
+import { checkMilestones } from "../engine/milestoneEngine";
 import { computeTick } from "../engine/tickEngine";
 import { useGameStore } from "../store";
+import { useUIStore } from "../store/uiStore";
 
 const TICK_INTERVAL_MS = 1000;
 
@@ -51,10 +53,27 @@ export function useGameLoop() {
       lastTickRef.current = now;
 
       const state = useGameStore.getState();
+      const prevTdEarned = state.totalTdEarned;
       const result = computeTick(state, deltaSeconds, now);
 
       if (result.trainingDataDelta > 0) {
         state.addTrainingData(result.trainingDataDelta);
+
+        // Check for milestone crossings and fire celebration events.
+        const afterTick = useGameStore.getState();
+        const alreadyCrossed = new Set(afterTick.crossedMilestones);
+        const newMilestones = checkMilestones(
+          prevTdEarned,
+          afterTick.totalTdEarned,
+          alreadyCrossed,
+        );
+        if (newMilestones.length > 0) {
+          afterTick.crossMilestones(newMilestones);
+          afterTick.setMood("Excited");
+          for (const threshold of newMilestones) {
+            useUIStore.getState().triggerMilestone(threshold);
+          }
+        }
       } else {
         // Ensure lastSaved is updated even when no TD is earned (e.g. no upgrades)
         state.updateLastSaved();

@@ -1,11 +1,14 @@
 const SUFFIXES: ReadonlyArray<{ threshold: number; suffix: string }> = [
+  { threshold: 1_000_000_000_000_000_000, suffix: "Qi" },
+  { threshold: 1_000_000_000_000_000, suffix: "Qa" },
+  { threshold: 1_000_000_000_000, suffix: "T" },
   { threshold: 1_000_000_000, suffix: "B" },
   { threshold: 1_000_000, suffix: "M" },
   { threshold: 1_000, suffix: "K" },
 ];
 
 /**
- * Format a number with K / M / B suffixes for compact display.
+ * Format a number with K / M / B / T / Qa / Qi suffixes for compact display.
  *
  * - Values < 1,000 → plain integer (e.g. "42")
  * - Values >= 1,000 → 2 decimal places + suffix (e.g. "1.23K")

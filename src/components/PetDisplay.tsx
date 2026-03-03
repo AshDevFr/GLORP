@@ -14,6 +14,7 @@ import { useClickParticles } from "../hooks/useClickParticles";
 import { useDialogue } from "../hooks/useDialogue";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useGameStore } from "../store";
+import { useUIStore } from "../store/uiStore";
 import { formatNumber } from "../utils/formatNumber";
 import { FloatingParticles } from "./FloatingParticles";
 import { RebirthModal } from "./RebirthModal";
@@ -55,7 +56,36 @@ export function PetDisplay() {
   const containerRef = useRef<HTMLDivElement>(null);
   const prefersReduced = useReducedMotion();
 
-  const { particles, spawn } = useClickParticles();
+  const { particles, spawn, spawnBurst } = useClickParticles();
+
+  // ── Milestone celebration ────────────────────────────────────────────────
+  const milestoneEvent = useUIStore((s) => s.milestoneEvent);
+  const clearMilestoneEvent = useUIStore((s) => s.clearMilestoneEvent);
+  const prevMilestoneIdRef = useRef<number>(-1);
+
+  useEffect(() => {
+    if (!milestoneEvent || milestoneEvent.id === prevMilestoneIdRef.current)
+      return;
+    prevMilestoneIdRef.current = milestoneEvent.id;
+
+    if (!prefersReduced) {
+      setIsFlashing(true);
+      setIsShaking(true);
+      const flashTimer = setTimeout(() => setIsFlashing(false), 800);
+      const shakeTimer = setTimeout(() => setIsShaking(false), 500);
+      if (containerRef.current) {
+        spawnBurst(containerRef.current.getBoundingClientRect());
+      }
+      clearMilestoneEvent();
+      return () => {
+        clearTimeout(flashTimer);
+        clearTimeout(shakeTimer);
+      };
+    }
+
+    clearMilestoneEvent();
+  }, [milestoneEvent, clearMilestoneEvent, prefersReduced, spawnBurst]);
+  // ────────────────────────────────────────────────────────────────────────
 
   // Compute current click power for display (without combo since it fluctuates)
   const baseClickPower = computeClickPower(
@@ -122,6 +152,19 @@ export function PetDisplay() {
         animation: isShaking ? "screen-shake 0.5s ease-in-out" : undefined,
       }}
     >
+      {isFlashing && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(57, 255, 20, 0.25)",
+            pointerEvents: "none",
+            animation: "milestone-flash 0.8s ease-out forwards",
+            zIndex: 999,
+          }}
+        />
+      )}
       <FloatingParticles particles={particles} clickPower={baseClickPower} />
       <Stack align="center" justify="center" gap="lg" h="100%">
         <SpeechBubble text={dialogueLine} />

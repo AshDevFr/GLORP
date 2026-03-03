@@ -39,6 +39,8 @@ export interface GameState {
   easterEggsUnlocked: string[];
   // Lifetime stats — persists across rebirths
   totalTimePlayed: number;
+  // Milestone celebrations — persists across rebirths
+  crossedMilestones: number[];
 }
 
 interface GameActions {
@@ -55,6 +57,7 @@ interface GameActions {
   unlockAchievements: (ids: string[]) => void;
   unlockEasterEgg: (id: string) => void;
   incrementTimePlayed: (seconds: number) => void;
+  crossMilestones: (thresholds: number[]) => void;
 }
 
 export type GameStore = GameState & GameActions;
@@ -80,6 +83,7 @@ export const initialGameState: GameState = {
   unlockedAchievements: [],
   easterEggsUnlocked: [],
   totalTimePlayed: 0,
+  crossedMilestones: [],
 };
 
 export const useGameStore = create<GameStore>()(
@@ -201,6 +205,10 @@ export const useGameStore = create<GameStore>()(
       incrementTimePlayed: (seconds) =>
         set((state) => ({
           totalTimePlayed: state.totalTimePlayed + seconds,
+        })),
+      crossMilestones: (thresholds) =>
+        set((state) => ({
+          crossedMilestones: [...state.crossedMilestones, ...thresholds],
         })),
       performRebirth: () =>
         set((state) => {

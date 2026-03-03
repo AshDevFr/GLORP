@@ -62,10 +62,36 @@ describe("formatNumber", () => {
       expect(formatNumber(1_500_000_000)).toBe("1.50B");
       expect(formatNumber(999_000_000_000)).toBe("999.00B");
     });
+  });
 
-    it("formats very large numbers", () => {
-      expect(formatNumber(1_000_000_000_000)).toBe("1000.00B");
-      expect(formatNumber(1e15)).toBe("1000000.00B");
+  describe("trillions (T)", () => {
+    it("formats exactly 1 trillion", () => {
+      expect(formatNumber(1_000_000_000_000)).toBe("1.00T");
+    });
+
+    it("formats with 2 decimal places", () => {
+      expect(formatNumber(4_560_000_000_000)).toBe("4.56T");
+      expect(formatNumber(999_000_000_000_000)).toBe("999.00T");
+    });
+  });
+
+  describe("quadrillions (Qa)", () => {
+    it("formats exactly 1 quadrillion", () => {
+      expect(formatNumber(1_000_000_000_000_000)).toBe("1.00Qa");
+    });
+
+    it("formats with 2 decimal places", () => {
+      expect(formatNumber(2_500_000_000_000_000)).toBe("2.50Qa");
+    });
+  });
+
+  describe("quintillions (Qi)", () => {
+    it("formats exactly 1 quintillion", () => {
+      expect(formatNumber(1_000_000_000_000_000_000)).toBe("1.00Qi");
+    });
+
+    it("formats with 2 decimal places", () => {
+      expect(formatNumber(1_500_000_000_000_000_000)).toBe("1.50Qi");
     });
   });
 

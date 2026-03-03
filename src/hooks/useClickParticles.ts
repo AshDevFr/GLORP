@@ -14,17 +14,25 @@ export function useClickParticles() {
   const nextId = useRef(0);
   const prefersReduced = useReducedMotion();
 
-  const spawn = useCallback(
-    (containerRect: DOMRect) => {
+  const spawnParticles = useCallback(
+    (
+      containerRect: DOMRect,
+      count: number,
+      spreadX: number,
+      spreadY: number,
+    ) => {
       if (prefersReduced) return;
 
-      const count = 3 + Math.floor(Math.random() * 3); // 3–5 particles
       const newParticles: Particle[] = [];
       for (let i = 0; i < count; i++) {
         newParticles.push({
           id: nextId.current++,
-          x: containerRect.width / 2 + (Math.random() * 40 - 20),
-          y: containerRect.height / 2 + (Math.random() * 20 - 10),
+          x:
+            containerRect.width / 2 +
+            (Math.random() * spreadX * 2 - spreadX),
+          y:
+            containerRect.height / 2 +
+            (Math.random() * spreadY * 2 - spreadY),
         });
       }
 
@@ -38,5 +46,26 @@ export function useClickParticles() {
     [prefersReduced],
   );
 
-  return { particles, spawn };
+  /** Spawn 3–5 particles around the container centre (normal click). */
+  const spawn = useCallback(
+    (containerRect: DOMRect) => {
+      spawnParticles(
+        containerRect,
+        3 + Math.floor(Math.random() * 3),
+        20,
+        10,
+      );
+    },
+    [spawnParticles],
+  );
+
+  /** Spawn a larger burst of particles for milestone celebrations. */
+  const spawnBurst = useCallback(
+    (containerRect: DOMRect) => {
+      spawnParticles(containerRect, 15, 60, 40);
+    },
+    [spawnParticles],
+  );
+
+  return { particles, spawn, spawnBurst };
 }
