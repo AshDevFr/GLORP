@@ -29,6 +29,7 @@ const validSave: GameState = {
   easterEggsUnlocked: [],
   totalTimePlayed: 0,
   clickUpgradesPurchased: [],
+  boostersPurchased: [],
   comboCount: 0,
   lastClickTime: 0,
   crossedMilestones: [],
