@@ -1,4 +1,12 @@
-import { Button, Divider, Group, Modal, Select, Stack, Text } from "@mantine/core";
+import {
+  Button,
+  Divider,
+  Group,
+  Modal,
+  Select,
+  Stack,
+  Text,
+} from "@mantine/core";
 import { useState } from "react";
 import { getTokenMagnetMultiplier } from "../data/prestigeShop";
 import type { Species } from "../data/species";
@@ -78,24 +86,44 @@ export function RebirthModal({
 
         <Stack gap={4}>
           <Group justify="space-between">
-            <Text size="xs" c="dimmed" ff="monospace">Run duration</Text>
-            <Text size="xs" ff="monospace" fw={600}>{formatRunDuration(runStart)}</Text>
+            <Text size="xs" c="dimmed" ff="monospace">
+              Run duration
+            </Text>
+            <Text size="xs" ff="monospace" fw={600}>
+              {formatRunDuration(runStart)}
+            </Text>
           </Group>
           <Group justify="space-between">
-            <Text size="xs" c="dimmed" ff="monospace">Total TD earned</Text>
-            <Text size="xs" ff="monospace" fw={600}>{formatNumber(totalTdEarned)}</Text>
+            <Text size="xs" c="dimmed" ff="monospace">
+              Total TD earned
+            </Text>
+            <Text size="xs" ff="monospace" fw={600}>
+              {formatNumber(totalTdEarned)}
+            </Text>
           </Group>
           <Group justify="space-between">
-            <Text size="xs" c="dimmed" ff="monospace">Total clicks</Text>
-            <Text size="xs" ff="monospace" fw={600}>{totalClicks.toLocaleString()}</Text>
+            <Text size="xs" c="dimmed" ff="monospace">
+              Total clicks
+            </Text>
+            <Text size="xs" ff="monospace" fw={600}>
+              {totalClicks.toLocaleString()}
+            </Text>
           </Group>
           <Group justify="space-between">
-            <Text size="xs" c="dimmed" ff="monospace">Peak TD/s</Text>
-            <Text size="xs" ff="monospace" fw={600}>{formatNumber(peakTdPerSecond)}/s</Text>
+            <Text size="xs" c="dimmed" ff="monospace">
+              Peak TD/s
+            </Text>
+            <Text size="xs" ff="monospace" fw={600}>
+              {formatNumber(peakTdPerSecond)}/s
+            </Text>
           </Group>
           <Group justify="space-between">
-            <Text size="xs" c="dimmed" ff="monospace">Evolution stage</Text>
-            <Text size="xs" ff="monospace" fw={600}>{evolutionStage}</Text>
+            <Text size="xs" c="dimmed" ff="monospace">
+              Evolution stage
+            </Text>
+            <Text size="xs" ff="monospace" fw={600}>
+              {evolutionStage}
+            </Text>
           </Group>
         </Stack>
 

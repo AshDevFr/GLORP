@@ -30,7 +30,12 @@ function StatRow({ label, value, highlight }: StatRowProps) {
       <Text size="xs" c="dimmed" ff="monospace">
         {label}
       </Text>
-      <Text size="xs" ff="monospace" fw={700} c={highlight ? "yellow.4" : undefined}>
+      <Text
+        size="xs"
+        ff="monospace"
+        fw={700}
+        c={highlight ? "yellow.4" : undefined}
+      >
         {value}
         {highlight && " ★"}
       </Text>
@@ -58,7 +63,9 @@ export function StatsPanel({
   const unlockedAchievements = useGameStore((s) => s.unlockedAchievements);
   const easterEggsUnlocked = useGameStore((s) => s.easterEggsUnlocked);
   const lifetimeTdEarned = useGameStore((s) => s.lifetimeTdEarned);
-  const lifetimePeakTdPerSecond = useGameStore((s) => s.lifetimePeakTdPerSecond);
+  const lifetimePeakTdPerSecond = useGameStore(
+    (s) => s.lifetimePeakTdPerSecond,
+  );
   const lifetimeBestRunTd = useGameStore((s) => s.lifetimeBestRunTd);
   const lifetimeWisdomEarned = useGameStore((s) => s.lifetimeWisdomEarned);
 
@@ -68,7 +75,8 @@ export function StatsPanel({
   );
 
   const isBestRun = rebirthCount > 0 && totalTdEarned > lifetimeBestRunTd;
-  const isPeakTdPs = rebirthCount > 0 && peakTdPerSecond > lifetimePeakTdPerSecond;
+  const isPeakTdPs =
+    rebirthCount > 0 && peakTdPerSecond > lifetimePeakTdPerSecond;
 
   return (
     <Modal

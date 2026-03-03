@@ -265,7 +265,11 @@ export function PetDisplay() {
           }}
           aria-hidden={displayCombo < COMBO_THRESHOLD}
         >
-          COMBO x{displayCombo} ({computeComboMultiplier(displayCombo, Date.now(), Date.now()).toFixed(2)}x)
+          COMBO x{displayCombo} (
+          {computeComboMultiplier(displayCombo, Date.now(), Date.now()).toFixed(
+            2,
+          )}
+          x)
         </Badge>
       </Stack>
       <RebirthModal
