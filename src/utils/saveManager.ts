@@ -27,10 +27,41 @@ export function validateSave(data: unknown): data is GameState {
   return REQUIRED_KEYS.every((key) => key in (data as object));
 }
 
+/**
+ * Migrate old saves that lack prestige fields.
+ * Old saves have `wisdomTokens` but no `prestigeTokenBalance`.
+ * Convert: all accumulated tokens become the spendable balance.
+ */
+export function migrateSave(data: GameState): GameState {
+  const record = data as unknown as Record<string, unknown>;
+  if (!("prestigeTokenBalance" in record)) {
+    return {
+      ...data,
+      prestigeUpgrades: {},
+      prestigeTokenBalance: data.wisdomTokens ?? 0,
+    };
+  }
+  // Ensure defaults for any missing prestige fields
+  return {
+    ...data,
+    prestigeUpgrades: data.prestigeUpgrades ?? {},
+    prestigeTokenBalance: data.prestigeTokenBalance ?? 0,
+  };
+}
+
 export function exportSave(): void {
   const state = useGameStore.getState();
+  const exportKeys: (keyof GameState)[] = [
+    ...REQUIRED_KEYS,
+    "prestigeUpgrades",
+    "prestigeTokenBalance",
+    "boostersPurchased",
+    "easterEggsUnlocked",
+    "totalTimePlayed",
+    "crossedMilestones",
+  ];
   const saveData: Partial<GameState> = {};
-  for (const key of REQUIRED_KEYS) {
+  for (const key of exportKeys) {
     (saveData as Record<string, unknown>)[key] = state[key];
   }
   const json = JSON.stringify(saveData, null, 2);
@@ -54,7 +85,7 @@ export function parseSaveFile(file: File): Promise<GameState> {
           reject(new Error("Invalid save file: missing required fields"));
           return;
         }
-        resolve(data);
+        resolve(migrateSave(data));
       } catch {
         reject(new Error("Failed to parse save file"));
       }
@@ -65,7 +96,7 @@ export function parseSaveFile(file: File): Promise<GameState> {
 }
 
 export function applySave(save: GameState): void {
-  useGameStore.setState(save);
+  useGameStore.setState(migrateSave(save));
 }
 
 export function resetGame(): void {

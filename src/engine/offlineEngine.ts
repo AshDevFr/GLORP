@@ -10,7 +10,9 @@ interface OfflineState {
   mood: Mood;
   moodChangedAt: number;
   evolutionStage: number;
-  wisdomTokens?: number;
+  boostersPurchased?: string[];
+  idleBoostMultiplier?: number;
+  speciesAutoGenMultiplier?: number;
 }
 
 export interface OfflineProgressResult {
@@ -24,11 +26,13 @@ export interface OfflineProgressResult {
  * Compute offline Training Data earned since lastSaved.
  * Returns null if below the 5-minute threshold or if nothing was earned.
  * Reuses computeTick for TD calculation logic.
+ * `offlineEfficiency` overrides the default 50% rate (prestige upgrade).
  */
 export function computeOfflineProgress(
   lastSaved: number,
   now: number,
   state: OfflineState,
+  offlineEfficiency = OFFLINE_EFFICIENCY,
 ): OfflineProgressResult | null {
   if (lastSaved === 0) return null;
 
@@ -42,7 +46,7 @@ export function computeOfflineProgress(
 
   // Reuse computeTick for TD calculation (no duplicated TD/s logic)
   const tickResult = computeTick(state, cappedSeconds, now);
-  const earned = tickResult.trainingDataDelta * OFFLINE_EFFICIENCY;
+  const earned = tickResult.trainingDataDelta * offlineEfficiency;
 
   if (earned === 0) return null;
 

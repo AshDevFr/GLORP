@@ -2,15 +2,15 @@ import { BOOSTERS } from "../data/boosters";
 import { UPGRADES } from "../data/upgrades";
 import type { Mood } from "./moodEngine";
 import { getDecayedMood } from "./moodEngine";
-import { computeWisdomMultiplier } from "./rebirthEngine";
 import { computeBoosterMultiplier, getTotalTdPerSecond } from "./upgradeEngine";
 
 interface TickState {
   upgradeOwned: Record<string, number>;
   mood: Mood;
   moodChangedAt: number;
-  wisdomTokens?: number;
   boostersPurchased?: string[];
+  idleBoostMultiplier?: number;
+  speciesAutoGenMultiplier?: number;
 }
 
 interface TickResult {
@@ -23,7 +23,8 @@ export function computeTick(
   deltaSeconds: number,
   now: number,
 ): TickResult {
-  const wisdomMultiplier = computeWisdomMultiplier(state.wisdomTokens ?? 0);
+  const globalMultiplier =
+    (state.idleBoostMultiplier ?? 1) * (state.speciesAutoGenMultiplier ?? 1);
   const boosterMultiplier = computeBoosterMultiplier(
     BOOSTERS,
     state.boostersPurchased ?? [],
@@ -31,7 +32,7 @@ export function computeTick(
   const tdPerSecond = getTotalTdPerSecond(
     UPGRADES,
     state.upgradeOwned,
-    wisdomMultiplier,
+    globalMultiplier,
     boosterMultiplier,
   );
 

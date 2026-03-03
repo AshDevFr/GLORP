@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   canRebirth,
-  computeWisdomMultiplier,
   computeWisdomTokens,
   getNextSpecies,
   REBIRTH_MIN_STAGE,
-  WISDOM_MULTIPLIER_PER_TOKEN,
   WISDOM_TOKENS_DIVISOR,
 } from "./rebirthEngine";
 
@@ -14,62 +12,57 @@ describe("computeWisdomTokens", () => {
     expect(computeWisdomTokens(0)).toBe(0);
   });
 
-  it("returns 0 below 1M TD (sqrt < 1)", () => {
-    expect(computeWisdomTokens(999_999)).toBe(0);
+  it("returns 0 below 100K TD (sqrt < 1)", () => {
+    expect(computeWisdomTokens(99_999)).toBe(0);
   });
 
-  it("returns 1 at exactly 1M TD", () => {
-    // floor(sqrt(1_000_000 / 1_000_000)) = floor(sqrt(1)) = 1
+  it("returns 1 at exactly 100K TD", () => {
+    // floor(sqrt(100_000 / 100_000)) = floor(sqrt(1)) = 1
     expect(computeWisdomTokens(WISDOM_TOKENS_DIVISOR)).toBe(1);
   });
 
-  it("returns correct tokens for 4M TD", () => {
-    // floor(sqrt(4_000_000 / 1_000_000)) = floor(sqrt(4)) = floor(2) = 2
-    expect(computeWisdomTokens(4_000_000)).toBe(2);
+  it("returns correct tokens for 400K TD", () => {
+    // floor(sqrt(400_000 / 100_000)) = floor(sqrt(4)) = 2
+    expect(computeWisdomTokens(400_000)).toBe(2);
   });
 
-  it("returns correct tokens for 9M TD", () => {
+  it("returns correct tokens for 900K TD", () => {
     // floor(sqrt(9)) = 3
-    expect(computeWisdomTokens(9_000_000)).toBe(3);
+    expect(computeWisdomTokens(900_000)).toBe(3);
   });
 
-  it("returns correct tokens for 10M TD (stage 4 unlock threshold)", () => {
-    // floor(sqrt(10)) ≈ floor(3.162) = 3
-    expect(computeWisdomTokens(10_000_000)).toBe(3);
+  it("returns correct tokens for 1M TD", () => {
+    // floor(sqrt(1_000_000 / 100_000)) = floor(sqrt(10)) ≈ floor(3.162) = 3
+    expect(computeWisdomTokens(1_000_000)).toBe(3);
   });
 
   it("floors fractional results", () => {
-    // floor(sqrt(2_000_000 / 1_000_000)) = floor(sqrt(2)) = floor(1.414) = 1
-    expect(computeWisdomTokens(2_000_000)).toBe(1);
+    // floor(sqrt(200_000 / 100_000)) = floor(sqrt(2)) = floor(1.414) = 1
+    expect(computeWisdomTokens(200_000)).toBe(1);
   });
 
-  it("scales correctly at 100M TD", () => {
-    // floor(sqrt(100)) = 10
-    expect(computeWisdomTokens(100_000_000)).toBe(10);
-  });
-});
-
-describe("computeWisdomMultiplier", () => {
-  it("returns 1.0 with 0 tokens (no bonus)", () => {
-    expect(computeWisdomMultiplier(0)).toBeCloseTo(1.0);
+  it("scales correctly at 10M TD", () => {
+    // floor(sqrt(10_000_000 / 100_000)) = floor(sqrt(100)) = 10
+    expect(computeWisdomTokens(10_000_000)).toBe(10);
   });
 
-  it("returns 1.05 with 1 token (5% bonus)", () => {
-    expect(computeWisdomMultiplier(1)).toBeCloseTo(
-      1 + WISDOM_MULTIPLIER_PER_TOKEN,
-    );
+  it("applies tokenMagnetMultiplier", () => {
+    // base = floor(sqrt(400_000 / 100_000)) = 2, then floor(2 * 1.5) = 3
+    expect(computeWisdomTokens(400_000, 1.5)).toBe(3);
   });
 
-  it("returns 1.1 with 2 tokens (10% bonus)", () => {
-    expect(computeWisdomMultiplier(2)).toBeCloseTo(1.1);
+  it("floors result after tokenMagnetMultiplier", () => {
+    // base = floor(sqrt(100_000 / 100_000)) = 1, then floor(1 * 1.2) = 1
+    expect(computeWisdomTokens(100_000, 1.2)).toBe(1);
   });
 
-  it("returns 1.5 with 10 tokens (50% bonus)", () => {
-    expect(computeWisdomMultiplier(10)).toBeCloseTo(1.5);
+  it("tokenMagnetMultiplier of 2 doubles tokens", () => {
+    // base = floor(sqrt(900_000 / 100_000)) = 3, then floor(3 * 2) = 6
+    expect(computeWisdomTokens(900_000, 2)).toBe(6);
   });
 
-  it("scales linearly with token count", () => {
-    expect(computeWisdomMultiplier(20)).toBeCloseTo(2.0);
+  it("defaults tokenMagnetMultiplier to 1", () => {
+    expect(computeWisdomTokens(400_000)).toBe(computeWisdomTokens(400_000, 1));
   });
 });
 

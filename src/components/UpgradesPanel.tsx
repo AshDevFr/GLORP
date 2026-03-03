@@ -10,6 +10,7 @@ import {
 import { useEffect } from "react";
 import { BOOSTERS } from "../data/boosters";
 import { CLICK_UPGRADES } from "../data/clickUpgrades";
+import { getGeneratorCostMultiplier } from "../data/prestigeShop";
 import type { Upgrade } from "../data/upgrades";
 import { UPGRADES } from "../data/upgrades";
 import { useGameStore } from "../store";
@@ -50,6 +51,10 @@ export function UpgradesPanel() {
   const evolutionStage = useGameStore((s) => s.evolutionStage);
   const clickUpgradesPurchased = useGameStore((s) => s.clickUpgradesPurchased);
   const boostersPurchased = useGameStore((s) => s.boostersPurchased);
+  const prestigeUpgrades = useGameStore((s) => s.prestigeUpgrades);
+  const costMultiplier = getGeneratorCostMultiplier(
+    prestigeUpgrades["generator-discount"] ?? 0,
+  );
 
   const buyMode = useSettingsStore((s) => s.buyMode);
   const setBuyMode = useSettingsStore((s) => s.setBuyMode);
@@ -152,6 +157,7 @@ export function UpgradesPanel() {
                     trainingData={trainingData}
                     buyMode={buyMode}
                     onPurchase={purchaseBulkUpgrade}
+                    costMultiplier={costMultiplier}
                   />
                 ))}
               </div>

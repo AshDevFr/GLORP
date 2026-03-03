@@ -25,6 +25,8 @@ const baseState: GameState = {
   comboCount: 0,
   lastClickTime: 0,
   crossedMilestones: [],
+  prestigeUpgrades: {},
+  prestigeTokenBalance: 0,
 };
 
 describe("checkAchievements", () => {

@@ -22,14 +22,18 @@ interface ClickPowerState {
 /**
  * Compute the total click power.
  *
- * Formula: (1 + evolutionStage) × product(purchased upgrade multipliers) × comboMultiplier
+ * Formula: (1 + evolutionStage + clickMasteryBonus)
+ *          × product(purchased upgrade multipliers)
+ *          × comboMultiplier × speciesClickMultiplier
  */
 export function computeClickPower(
   state: ClickPowerState,
   clickUpgrades: readonly ClickUpgrade[],
   now?: number,
+  clickMasteryBonus = 0,
+  speciesClickMultiplier = 1,
 ): number {
-  const base = 1 + state.evolutionStage;
+  const base = 1 + state.evolutionStage + clickMasteryBonus;
 
   let upgradeMultiplier = 1;
   for (const upgrade of clickUpgrades) {
@@ -44,7 +48,7 @@ export function computeClickPower(
     now,
   );
 
-  return base * upgradeMultiplier * combo;
+  return base * upgradeMultiplier * combo * speciesClickMultiplier;
 }
 
 /**

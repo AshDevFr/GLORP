@@ -1,8 +1,9 @@
 import { Group, Text } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
 import { BOOSTERS } from "../data/boosters";
+import { getIdleBoostMultiplier } from "../data/prestigeShop";
+import { getSpeciesBonus } from "../data/species";
 import { UPGRADES } from "../data/upgrades";
-import { computeWisdomMultiplier } from "../engine/rebirthEngine";
 import {
   computeBoosterMultiplier,
   getTotalTdPerSecond,
@@ -17,9 +18,13 @@ const RATE_BOOST_DURATION_MS = 3000;
 export function StatsBar() {
   const trainingData = useInterpolatedTd();
   const upgradeOwned = useGameStore((s) => s.upgradeOwned);
-  const wisdomTokens = useGameStore((s) => s.wisdomTokens);
+  const prestigeTokenBalance = useGameStore((s) => s.prestigeTokenBalance);
   const boostersPurchased = useGameStore((s) => s.boostersPurchased);
-  const wisdomMultiplier = computeWisdomMultiplier(wisdomTokens);
+  const prestigeUpgrades = useGameStore((s) => s.prestigeUpgrades);
+  const currentSpecies = useGameStore((s) => s.currentSpecies);
+  const rebirthCount = useGameStore((s) => s.rebirthCount);
+  const idleBoost = getIdleBoostMultiplier(prestigeUpgrades["idle-boost"] ?? 0);
+  const speciesAutoGen = getSpeciesBonus(currentSpecies).autoGen;
   const boosterMultiplier = computeBoosterMultiplier(
     BOOSTERS,
     boostersPurchased,
@@ -27,7 +32,7 @@ export function StatsBar() {
   const tdPerSecond = getTotalTdPerSecond(
     UPGRADES,
     upgradeOwned,
-    wisdomMultiplier,
+    idleBoost * speciesAutoGen,
     boosterMultiplier,
   );
   const numberFormat = useSettingsStore((s) => s.numberFormat);
@@ -85,11 +90,11 @@ export function StatsBar() {
           </Text>
         )}
       </Text>
-      {wisdomTokens > 0 && (
+      {rebirthCount > 0 && (
         <Text size="sm" ff="monospace">
           Wisdom:{" "}
           <Text span fw={700} c="yellow">
-            {wisdomTokens} ✦ (+{((wisdomMultiplier - 1) * 100).toFixed(0)}%)
+            {prestigeTokenBalance} ✦
           </Text>
         </Text>
       )}

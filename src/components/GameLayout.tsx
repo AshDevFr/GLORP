@@ -1,6 +1,11 @@
 import { AppShell, Button, Grid, Group } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  getIdleBoostMultiplier,
+  getPrestigeOfflineEfficiency,
+} from "../data/prestigeShop";
+import { getSpeciesBonus } from "../data/species";
 import { EASTER_EGG_MESSAGES } from "../engine/easterEggEngine";
 import type { OfflineProgressResult } from "../engine/offlineEngine";
 import { computeOfflineProgress } from "../engine/offlineEngine";
@@ -32,7 +37,23 @@ export function GameLayout() {
 
   useEffect(() => {
     const state = useGameStore.getState();
-    const result = computeOfflineProgress(state.lastSaved, Date.now(), state);
+    const offlineEff = getPrestigeOfflineEfficiency(
+      state.prestigeUpgrades["offline-efficiency"] ?? 0,
+    );
+    const idleBoost = getIdleBoostMultiplier(
+      state.prestigeUpgrades["idle-boost"] ?? 0,
+    );
+    const speciesAutoGen = getSpeciesBonus(state.currentSpecies).autoGen;
+    const result = computeOfflineProgress(
+      state.lastSaved,
+      Date.now(),
+      {
+        ...state,
+        idleBoostMultiplier: idleBoost,
+        speciesAutoGenMultiplier: speciesAutoGen,
+      },
+      offlineEff,
+    );
     if (result) {
       state.addTrainingData(result.earned);
       setOfflineResult(result);

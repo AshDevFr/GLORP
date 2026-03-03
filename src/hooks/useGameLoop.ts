@@ -1,6 +1,12 @@
 import { notifications } from "@mantine/notifications";
 import { useEffect, useRef } from "react";
 import { ACHIEVEMENTS } from "../data/achievements";
+import {
+  getGeneratorCostMultiplier,
+  getIdleBoostMultiplier,
+} from "../data/prestigeShop";
+import { getSpeciesBonus } from "../data/species";
+import { UPGRADES } from "../data/upgrades";
 import { checkAchievements } from "../engine/achievementEngine";
 import {
   checkEasterEggs,
@@ -8,6 +14,7 @@ import {
 } from "../engine/easterEggEngine";
 import { checkMilestones } from "../engine/milestoneEngine";
 import { computeTick } from "../engine/tickEngine";
+import { getUpgradeCost } from "../engine/upgradeEngine";
 import { useGameStore } from "../store";
 import { useUIStore } from "../store/uiStore";
 
@@ -54,7 +61,22 @@ export function useGameLoop() {
 
       const state = useGameStore.getState();
       const prevTdEarned = state.totalTdEarned;
-      const result = computeTick(state, deltaSeconds, now);
+
+      // Compute prestige multipliers for the tick engine
+      const idleBoost = getIdleBoostMultiplier(
+        state.prestigeUpgrades["idle-boost"] ?? 0,
+      );
+      const speciesAutoGen = getSpeciesBonus(state.currentSpecies).autoGen;
+
+      const result = computeTick(
+        {
+          ...state,
+          idleBoostMultiplier: idleBoost,
+          speciesAutoGenMultiplier: speciesAutoGen,
+        },
+        deltaSeconds,
+        now,
+      );
 
       if (result.trainingDataDelta > 0) {
         state.addTrainingData(result.trainingDataDelta);
@@ -85,6 +107,30 @@ export function useGameLoop() {
 
       // Increment total time played each tick
       state.incrementTimePlayed(deltaSeconds);
+
+      // Auto-Buy: purchase cheapest affordable generator once per tick
+      const autoBuyLevel = state.prestigeUpgrades["auto-buy"] ?? 0;
+      if (autoBuyLevel > 0) {
+        const current = useGameStore.getState();
+        const costMult = getGeneratorCostMultiplier(
+          current.prestigeUpgrades["generator-discount"] ?? 0,
+        );
+        let cheapest: { id: string; cost: number } | null = null;
+        for (const u of UPGRADES) {
+          if (current.evolutionStage < u.unlockStage) continue;
+          const owned = current.upgradeOwned[u.id] ?? 0;
+          const cost = getUpgradeCost(u, owned, costMult);
+          if (
+            cost <= current.trainingData &&
+            (cheapest === null || cost < cheapest.cost)
+          ) {
+            cheapest = { id: u.id, cost };
+          }
+        }
+        if (cheapest) {
+          current.purchaseUpgrade(cheapest.id);
+        }
+      }
 
       // Check for newly unlocked achievements after state updates
       const updatedState = useGameStore.getState();

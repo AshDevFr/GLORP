@@ -5,28 +5,21 @@ import { SPECIES_ORDER } from "../data/species";
 export const REBIRTH_MIN_STAGE = 4;
 
 /** Divisor used in the Wisdom Token formula: floor(sqrt(totalTdEarned / divisor)). */
-export const WISDOM_TOKENS_DIVISOR = 1_000_000;
-
-/** Passive TD/s bonus per Wisdom Token: 5% per token. */
-export const WISDOM_MULTIPLIER_PER_TOKEN = 0.05;
+export const WISDOM_TOKENS_DIVISOR = 100_000;
 
 /**
  * Number of Wisdom Tokens earned for a Rebirth given the total TD earned
  * at the moment of rebirth.
  *
- * Formula: floor(sqrt(totalTdEarned / WISDOM_TOKENS_DIVISOR))
+ * Formula: floor(sqrt(totalTdEarned / WISDOM_TOKENS_DIVISOR) * tokenMagnetMultiplier)
+ * The optional `tokenMagnetMultiplier` scales the result (default 1).
  */
-export function computeWisdomTokens(totalTdEarned: number): number {
-  return Math.floor(Math.sqrt(totalTdEarned / WISDOM_TOKENS_DIVISOR));
-}
-
-/**
- * Permanent passive TD/s multiplier conferred by accumulated Wisdom Tokens.
- *
- * Formula: 1 + wisdomTokens * WISDOM_MULTIPLIER_PER_TOKEN
- */
-export function computeWisdomMultiplier(wisdomTokens: number): number {
-  return 1 + wisdomTokens * WISDOM_MULTIPLIER_PER_TOKEN;
+export function computeWisdomTokens(
+  totalTdEarned: number,
+  tokenMagnetMultiplier = 1,
+): number {
+  const base = Math.floor(Math.sqrt(totalTdEarned / WISDOM_TOKENS_DIVISOR));
+  return Math.floor(base * tokenMagnetMultiplier);
 }
 
 /** Returns true when the player is eligible to Rebirth. */
