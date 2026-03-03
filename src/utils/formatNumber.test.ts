@@ -26,72 +26,55 @@ describe("formatNumber", () => {
     });
   });
 
-  describe("thousands (K)", () => {
+  describe("thousands", () => {
     it("formats exactly 1,000", () => {
-      expect(formatNumber(1_000)).toBe("1.00K");
+      expect(formatNumber(1_000)).toBe("1,000");
     });
 
-    it("formats with 2 decimal places", () => {
-      expect(formatNumber(1_234)).toBe("1.23K");
-      expect(formatNumber(9_999)).toBe("10.00K");
-      expect(formatNumber(999_999)).toBe("1000.00K");
-    });
-
-    it("boundary just below 1M", () => {
-      expect(formatNumber(999_999)).toBe("1000.00K");
+    it("formats thousands with commas", () => {
+      expect(formatNumber(1_234)).toBe("1,234");
+      expect(formatNumber(9_999)).toBe("9,999");
+      expect(formatNumber(999_999)).toBe("999,999");
     });
   });
 
-  describe("millions (M)", () => {
+  describe("millions", () => {
     it("formats exactly 1,000,000", () => {
-      expect(formatNumber(1_000_000)).toBe("1.00M");
+      expect(formatNumber(1_000_000)).toBe("1,000,000");
     });
 
-    it("formats with 2 decimal places", () => {
-      expect(formatNumber(4_560_000)).toBe("4.56M");
-      expect(formatNumber(999_999_999)).toBe("1000.00M");
+    it("formats millions with commas", () => {
+      expect(formatNumber(4_560_000)).toBe("4,560,000");
+      expect(formatNumber(999_999_999)).toBe("999,999,999");
     });
   });
 
-  describe("billions (B)", () => {
+  describe("billions", () => {
     it("formats exactly 1,000,000,000", () => {
-      expect(formatNumber(1_000_000_000)).toBe("1.00B");
+      expect(formatNumber(1_000_000_000)).toBe("1,000,000,000");
     });
 
     it("formats large billions", () => {
-      expect(formatNumber(1_500_000_000)).toBe("1.50B");
-      expect(formatNumber(999_000_000_000)).toBe("999.00B");
+      expect(formatNumber(1_500_000_000)).toBe("1,500,000,000");
+      expect(formatNumber(999_000_000_000)).toBe("999,000,000,000");
     });
   });
 
-  describe("trillions (T)", () => {
+  describe("trillions", () => {
     it("formats exactly 1 trillion", () => {
-      expect(formatNumber(1_000_000_000_000)).toBe("1.00T");
+      expect(formatNumber(1_000_000_000_000)).toBe("1,000,000,000,000");
     });
 
-    it("formats with 2 decimal places", () => {
-      expect(formatNumber(4_560_000_000_000)).toBe("4.56T");
-      expect(formatNumber(999_000_000_000_000)).toBe("999.00T");
-    });
-  });
-
-  describe("quadrillions (Qa)", () => {
-    it("formats exactly 1 quadrillion", () => {
-      expect(formatNumber(1_000_000_000_000_000)).toBe("1.00Qa");
-    });
-
-    it("formats with 2 decimal places", () => {
-      expect(formatNumber(2_500_000_000_000_000)).toBe("2.50Qa");
+    it("formats trillions without exponential notation", () => {
+      expect(formatNumber(4_560_000_000_000)).toBe("4,560,000,000,000");
+      expect(formatNumber(999_000_000_000_000)).toBe("999,000,000,000,000");
     });
   });
 
-  describe("quintillions (Qi)", () => {
-    it("formats exactly 1 quintillion", () => {
-      expect(formatNumber(1_000_000_000_000_000_000)).toBe("1.00Qi");
-    });
-
-    it("formats with 2 decimal places", () => {
-      expect(formatNumber(1_500_000_000_000_000_000)).toBe("1.50Qi");
+  describe("very large numbers", () => {
+    it("formats quadrillions without exponential notation", () => {
+      expect(formatNumber(1_000_000_000_000_000)).toBe("1,000,000,000,000,000");
+      expect(formatNumber(2_500_000_000_000_000)).toBe("2,500,000,000,000,000");
     });
   });
 
@@ -101,15 +84,15 @@ describe("formatNumber", () => {
     });
 
     it("formats negative thousands", () => {
-      expect(formatNumber(-1_234)).toBe("-1.23K");
+      expect(formatNumber(-1_234)).toBe("-1,234");
     });
 
     it("formats negative millions", () => {
-      expect(formatNumber(-4_560_000)).toBe("-4.56M");
+      expect(formatNumber(-4_560_000)).toBe("-4,560,000");
     });
 
     it("formats negative billions", () => {
-      expect(formatNumber(-1_000_000_000)).toBe("-1.00B");
+      expect(formatNumber(-1_000_000_000)).toBe("-1,000,000,000");
     });
   });
 
