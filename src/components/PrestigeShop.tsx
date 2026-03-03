@@ -9,6 +9,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { useEffect } from "react";
 import { PRESTIGE_UPGRADES } from "../data/prestigeShop";
 import { useGameStore } from "../store";
 
@@ -23,6 +24,13 @@ export function PrestigeShop({ opened, onClose }: PrestigeShopProps) {
   const purchasePrestigeUpgrade = useGameStore(
     (s) => s.purchasePrestigeUpgrade,
   );
+  const markPrestigeShopOpened = useGameStore((s) => s.markPrestigeShopOpened);
+
+  useEffect(() => {
+    if (opened) {
+      markPrestigeShopOpened();
+    }
+  }, [opened, markPrestigeShopOpened]);
 
   return (
     <Modal

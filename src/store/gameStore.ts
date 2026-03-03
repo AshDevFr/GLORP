@@ -47,6 +47,7 @@ export interface GameState {
   // Prestige shop state — persists across rebirths
   prestigeUpgrades: Record<string, number>;
   prestigeTokenBalance: number;
+  hasOpenedPrestigeShop: boolean;
   // Achievements — persists across rebirths
   unlockedAchievements: string[];
   // Booster upgrades — resets on rebirth
@@ -67,6 +68,7 @@ interface GameActions {
   purchaseBooster: (id: string) => void;
   purchaseClickUpgrade: (id: string) => void;
   purchasePrestigeUpgrade: (id: string) => void;
+  markPrestigeShopOpened: () => void;
   markFirstEvolutionSeen: () => void;
   markFirstUpgradeSeen: () => void;
   setMood: (mood: Mood) => void;
@@ -100,6 +102,7 @@ export const initialGameState: GameState = {
   unlockedSpecies: ["GLORP"],
   prestigeUpgrades: {},
   prestigeTokenBalance: 0,
+  hasOpenedPrestigeShop: false,
   boostersPurchased: [],
   unlockedAchievements: [],
   easterEggsUnlocked: [],
@@ -263,6 +266,7 @@ export const useGameStore = create<GameStore>()(
             prestigeTokenBalance: state.prestigeTokenBalance - cost,
           };
         }),
+      markPrestigeShopOpened: () => set({ hasOpenedPrestigeShop: true }),
       markFirstEvolutionSeen: () => set({ hasSeenFirstEvolution: true }),
       markFirstUpgradeSeen: () => set({ hasSeenFirstUpgrade: true }),
       setMood: (mood) => set({ mood, moodChangedAt: Date.now() }),
@@ -385,6 +389,9 @@ export const useGameStore = create<GameStore>()(
         }
         if (saved.prestigeTokenBalance === undefined) {
           merged.prestigeTokenBalance = saved.wisdomTokens ?? 0;
+        }
+        if (saved.hasOpenedPrestigeShop === undefined) {
+          merged.hasOpenedPrestigeShop = false;
         }
         return merged;
       },

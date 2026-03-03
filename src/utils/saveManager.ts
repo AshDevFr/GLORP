@@ -39,6 +39,7 @@ export function migrateSave(data: GameState): GameState {
       ...data,
       prestigeUpgrades: {},
       prestigeTokenBalance: data.wisdomTokens ?? 0,
+      hasOpenedPrestigeShop: false,
     };
   }
   // Ensure defaults for any missing prestige fields
@@ -46,6 +47,7 @@ export function migrateSave(data: GameState): GameState {
     ...data,
     prestigeUpgrades: data.prestigeUpgrades ?? {},
     prestigeTokenBalance: data.prestigeTokenBalance ?? 0,
+    hasOpenedPrestigeShop: data.hasOpenedPrestigeShop ?? false,
   };
 }
 
@@ -55,6 +57,7 @@ export function exportSave(): void {
     ...REQUIRED_KEYS,
     "prestigeUpgrades",
     "prestigeTokenBalance",
+    "hasOpenedPrestigeShop",
     "boostersPurchased",
     "easterEggsUnlocked",
     "totalTimePlayed",

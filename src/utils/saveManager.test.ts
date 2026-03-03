@@ -36,6 +36,7 @@ const validSave: GameState = {
   crossedMilestones: [],
   prestigeUpgrades: {},
   prestigeTokenBalance: 0,
+  hasOpenedPrestigeShop: false,
 };
 
 beforeEach(() => {
