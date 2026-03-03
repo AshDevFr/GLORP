@@ -5,8 +5,12 @@ import { getSynergyMultiplier } from "./synergyEngine";
 
 export const COST_MULTIPLIER = 1.15;
 
-export function getUpgradeCost(upgrade: Upgrade, owned: number): number {
-  return Math.floor(upgrade.baseCost * COST_MULTIPLIER ** owned);
+export function getUpgradeCost(
+  upgrade: Upgrade,
+  owned: number,
+  costMultiplier = COST_MULTIPLIER,
+): number {
+  return Math.floor(upgrade.baseCost * costMultiplier ** owned);
 }
 
 /**
@@ -17,12 +21,13 @@ export function getBulkCost(
   upgrade: Upgrade,
   owned: number,
   count: number,
+  costMultiplier = COST_MULTIPLIER,
 ): number {
   if (count <= 0) return 0;
-  if (count === 1) return getUpgradeCost(upgrade, owned);
-  const firstCost = upgrade.baseCost * COST_MULTIPLIER ** owned;
+  if (count === 1) return getUpgradeCost(upgrade, owned, costMultiplier);
+  const firstCost = upgrade.baseCost * costMultiplier ** owned;
   return Math.floor(
-    (firstCost * (COST_MULTIPLIER ** count - 1)) / (COST_MULTIPLIER - 1),
+    (firstCost * (costMultiplier ** count - 1)) / (costMultiplier - 1),
   );
 }
 
@@ -34,13 +39,14 @@ export function getMaxAffordable(
   upgrade: Upgrade,
   owned: number,
   budget: number,
+  costMultiplier = COST_MULTIPLIER,
 ): number {
   if (budget <= 0) return 0;
-  const firstCost = upgrade.baseCost * COST_MULTIPLIER ** owned;
+  const firstCost = upgrade.baseCost * costMultiplier ** owned;
   if (budget < firstCost) return 0;
   const n = Math.floor(
-    Math.log((budget * (COST_MULTIPLIER - 1)) / firstCost + 1) /
-      Math.log(COST_MULTIPLIER),
+    Math.log((budget * (costMultiplier - 1)) / firstCost + 1) /
+      Math.log(costMultiplier),
   );
   return Math.max(0, n);
 }
@@ -60,13 +66,13 @@ export function computeBoosterMultiplier(
 
 /**
  * Returns the total TD/s from owned upgrades, applying per-generator milestone
- * and synergy multipliers, then the global wisdom and booster multipliers.
- * Defaults to no bonus (×1) for wisdom and booster multipliers.
+ * and synergy multipliers, then the global multipliers (idle boost, species
+ * auto-gen bonus, booster multiplier).
  */
 export function getTotalTdPerSecond(
   upgrades: readonly Upgrade[],
   owned: Record<string, number>,
-  wisdomMultiplier = 1,
+  globalMultiplier = 1,
   boosterMultiplier = 1,
 ): number {
   let total = 0;
@@ -77,5 +83,5 @@ export function getTotalTdPerSecond(
     total +=
       upgrade.baseTdPerSecond * count * milestoneMultiplier * synergyMultiplier;
   }
-  return total * wisdomMultiplier * boosterMultiplier;
+  return total * globalMultiplier * boosterMultiplier;
 }

@@ -5,6 +5,7 @@ import { initialGameState, useGameStore } from "../store/gameStore";
 import {
   applySave,
   exportSave,
+  migrateSave,
   parseSaveFile,
   resetGame,
   validateSave,
@@ -33,6 +34,8 @@ const validSave: GameState = {
   comboCount: 0,
   lastClickTime: 0,
   crossedMilestones: [],
+  prestigeUpgrades: {},
+  prestigeTokenBalance: 0,
 };
 
 beforeEach(() => {
@@ -149,6 +152,42 @@ describe("exportSave", () => {
     exportSave();
 
     expect(capturedDownload).toMatch(/glorp-save-\d+\.json/);
+  });
+});
+
+describe("migrateSave", () => {
+  it("converts wisdomTokens to prestigeTokenBalance for old saves", () => {
+    const oldSave = { ...validSave, wisdomTokens: 10 } as GameState;
+    // Remove prestige fields to simulate an old save
+    const record = oldSave as unknown as Record<string, unknown>;
+    delete record.prestigeTokenBalance;
+    delete record.prestigeUpgrades;
+
+    const migrated = migrateSave(oldSave);
+    expect(migrated.prestigeTokenBalance).toBe(10);
+    expect(migrated.prestigeUpgrades).toEqual({});
+  });
+
+  it("preserves existing prestige fields for new saves", () => {
+    const newSave: GameState = {
+      ...validSave,
+      prestigeUpgrades: { "quick-start": 2 },
+      prestigeTokenBalance: 5,
+    };
+    const migrated = migrateSave(newSave);
+    expect(migrated.prestigeTokenBalance).toBe(5);
+    expect(migrated.prestigeUpgrades).toEqual({ "quick-start": 2 });
+  });
+
+  it("defaults prestigeTokenBalance to 0 when wisdomTokens is also 0", () => {
+    const oldSave = { ...validSave, wisdomTokens: 0 } as GameState;
+    const record = oldSave as unknown as Record<string, unknown>;
+    delete record.prestigeTokenBalance;
+    delete record.prestigeUpgrades;
+
+    const migrated = migrateSave(oldSave);
+    expect(migrated.prestigeTokenBalance).toBe(0);
+    expect(migrated.prestigeUpgrades).toEqual({});
   });
 });
 

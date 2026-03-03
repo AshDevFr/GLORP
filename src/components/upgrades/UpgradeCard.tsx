@@ -21,6 +21,7 @@ interface UpgradeCardProps {
   trainingData: number;
   buyMode: BuyMode;
   onPurchase: (id: string, count: number) => void;
+  costMultiplier?: number;
 }
 
 export function UpgradeCard({
@@ -30,12 +31,13 @@ export function UpgradeCard({
   trainingData,
   buyMode,
   onPurchase,
+  costMultiplier,
 }: UpgradeCardProps) {
   const count =
     buyMode === "max"
-      ? getMaxAffordable(upgrade, owned, trainingData)
+      ? getMaxAffordable(upgrade, owned, trainingData, costMultiplier)
       : buyMode;
-  const cost = getBulkCost(upgrade, owned, count);
+  const cost = getBulkCost(upgrade, owned, count, costMultiplier);
   const canAfford = count > 0 && trainingData >= cost;
 
   const milestoneLevel = getMilestoneLevel(owned);

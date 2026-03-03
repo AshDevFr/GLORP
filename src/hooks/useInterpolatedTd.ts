@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { getIdleBoostMultiplier } from "../data/prestigeShop";
+import { getSpeciesBonus } from "../data/species";
 import { UPGRADES } from "../data/upgrades";
-import { computeWisdomMultiplier } from "../engine/rebirthEngine";
 import { getTotalTdPerSecond } from "../engine/upgradeEngine";
 import { useGameStore } from "../store";
 
@@ -57,11 +58,14 @@ export function useInterpolatedTd(): number {
       lastTimeRef.current = now;
 
       const state = useGameStore.getState();
-      const wisdomMultiplier = computeWisdomMultiplier(state.wisdomTokens);
+      const idleBoost = getIdleBoostMultiplier(
+        state.prestigeUpgrades["idle-boost"] ?? 0,
+      );
+      const speciesAutoGen = getSpeciesBonus(state.currentSpecies).autoGen;
       const tdPerSecond = getTotalTdPerSecond(
         UPGRADES,
         state.upgradeOwned,
-        wisdomMultiplier,
+        idleBoost * speciesAutoGen,
       );
 
       setDisplayTd((prev) =>

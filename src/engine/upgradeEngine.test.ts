@@ -58,6 +58,16 @@ describe("getUpgradeCost", () => {
     expect(getUpgradeCost(mockUpgrade2, 0)).toBe(500);
     expect(getUpgradeCost(mockUpgrade2, 3)).toBe(Math.floor(500 * 1.15 ** 3));
   });
+
+  it("applies custom costMultiplier", () => {
+    expect(getUpgradeCost(mockUpgrade, 1, 1.1)).toBe(Math.floor(100 * 1.1));
+  });
+
+  it("defaults to COST_MULTIPLIER when costMultiplier is omitted", () => {
+    expect(getUpgradeCost(mockUpgrade, 3)).toBe(
+      getUpgradeCost(mockUpgrade, 3, COST_MULTIPLIER),
+    );
+  });
 });
 
 describe("getBulkCost", () => {
@@ -176,7 +186,7 @@ describe("getTotalTdPerSecond", () => {
     expect(getTotalTdPerSecond([], { "test-upgrade": 5 })).toBe(0);
   });
 
-  it("applies wisdomMultiplier correctly", () => {
+  it("applies globalMultiplier correctly", () => {
     const owned = { "test-upgrade": 1 };
     expect(getTotalTdPerSecond([mockUpgrade], owned, 2)).toBeCloseTo(3);
   });

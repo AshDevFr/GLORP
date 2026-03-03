@@ -2,6 +2,8 @@ import { Badge, Button, Group, Stack, Text } from "@mantine/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getAsciiArt } from "../data/asciiArt";
 import { CLICK_UPGRADES } from "../data/clickUpgrades";
+import { getClickMasteryBonus } from "../data/prestigeShop";
+import { getSpeciesBonus } from "../data/species";
 import { STAGES } from "../data/stages";
 import {
   COMBO_DECAY_MS,
@@ -17,6 +19,7 @@ import { useGameStore } from "../store";
 import { useUIStore } from "../store/uiStore";
 import { formatNumber } from "../utils/formatNumber";
 import { FloatingParticles } from "./FloatingParticles";
+import { PrestigeShop } from "./PrestigeShop";
 import { RebirthModal } from "./RebirthModal";
 import { SpeechBubble } from "./SpeechBubble";
 
@@ -35,11 +38,14 @@ export function PetDisplay() {
   const mood = useGameStore((s) => s.mood);
   const setMood = useGameStore((s) => s.setMood);
   const currentSpecies = useGameStore((s) => s.currentSpecies);
-  const wisdomTokens = useGameStore((s) => s.wisdomTokens);
   const totalTdEarned = useGameStore((s) => s.totalTdEarned);
   const performRebirth = useGameStore((s) => s.performRebirth);
   const clickUpgradesPurchased = useGameStore((s) => s.clickUpgradesPurchased);
   const comboCount = useGameStore((s) => s.comboCount);
+  const prestigeUpgrades = useGameStore((s) => s.prestigeUpgrades);
+  const prestigeTokenBalance = useGameStore((s) => s.prestigeTokenBalance);
+  const rebirthCount = useGameStore((s) => s.rebirthCount);
+  const unlockedSpecies = useGameStore((s) => s.unlockedSpecies);
 
   const art = getAsciiArt(currentSpecies, evolutionStage);
   const stageMeta = STAGES[evolutionStage] ?? STAGES[0];
@@ -47,6 +53,7 @@ export function PetDisplay() {
   const nextSpecies = getNextSpecies(currentSpecies);
 
   const [rebirthModalOpen, setRebirthModalOpen] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
   const [displayCombo, setDisplayCombo] = useState(0);
 
   const dialogueLine = useDialogue();
@@ -88,6 +95,10 @@ export function PetDisplay() {
   // ────────────────────────────────────────────────────────────────────────
 
   // Compute current click power for display (without combo since it fluctuates)
+  const clickMastery = getClickMasteryBonus(
+    prestigeUpgrades["click-mastery"] ?? 0,
+  );
+  const speciesClickPower = getSpeciesBonus(currentSpecies).clickPower;
   const baseClickPower = computeClickPower(
     {
       evolutionStage,
@@ -97,6 +108,8 @@ export function PetDisplay() {
     },
     CLICK_UPGRADES,
     Date.now(),
+    clickMastery,
+    speciesClickPower,
   );
 
   // Decay combo display when not clicking
@@ -216,6 +229,17 @@ export function PetDisplay() {
               [ REBIRTH ]
             </Button>
           )}
+          {rebirthCount > 0 && (
+            <Button
+              size="lg"
+              variant="outline"
+              color="yellow"
+              onClick={() => setShopOpen(true)}
+              style={{ fontFamily: "monospace" }}
+            >
+              [ PRESTIGE SHOP ]
+            </Button>
+          )}
         </Group>
         {displayCombo >= COMBO_THRESHOLD && (
           <Badge
@@ -231,14 +255,19 @@ export function PetDisplay() {
       <RebirthModal
         opened={rebirthModalOpen}
         onClose={() => setRebirthModalOpen(false)}
-        onConfirm={() => {
-          performRebirth();
+        onConfirm={(selectedSpecies) => {
+          performRebirth(selectedSpecies);
           setRebirthModalOpen(false);
         }}
         totalTdEarned={totalTdEarned}
-        currentWisdomTokens={wisdomTokens}
+        currentBalance={prestigeTokenBalance}
         nextSpecies={nextSpecies}
+        currentSpecies={currentSpecies}
+        unlockedSpecies={unlockedSpecies}
+        hasUnlockAll={(prestigeUpgrades["unlock-all-species"] ?? 0) >= 1}
+        tokenMagnetLevel={prestigeUpgrades["token-magnet"] ?? 0}
       />
+      <PrestigeShop opened={shopOpen} onClose={() => setShopOpen(false)} />
     </div>
   );
 }

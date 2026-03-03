@@ -2,7 +2,17 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { BOOSTERS } from "../data/boosters";
 import { CLICK_UPGRADES } from "../data/clickUpgrades";
+import {
+  getClickMasteryBonus,
+  getEvolutionThresholdMultiplier,
+  getGeneratorCostMultiplier,
+  getQuickStartTd,
+  getRetainedTiers,
+  getTokenMagnetMultiplier,
+  PRESTIGE_UPGRADES,
+} from "../data/prestigeShop";
 import type { Species } from "../data/species";
+import { getSpeciesBonus, SPECIES_ORDER } from "../data/species";
 import { UPGRADES } from "../data/upgrades";
 import { computeClickPower, getNextComboCount } from "../engine/clickEngine";
 import { getEvolutionStage } from "../engine/evolutionEngine";
@@ -34,6 +44,9 @@ export interface GameState {
   rebirthCount: number;
   currentSpecies: Species;
   unlockedSpecies: Species[];
+  // Prestige shop state — persists across rebirths
+  prestigeUpgrades: Record<string, number>;
+  prestigeTokenBalance: number;
   // Achievements — persists across rebirths
   unlockedAchievements: string[];
   // Booster upgrades — resets on rebirth
@@ -53,11 +66,12 @@ interface GameActions {
   purchaseBulkUpgrade: (id: string, count: number) => void;
   purchaseBooster: (id: string) => void;
   purchaseClickUpgrade: (id: string) => void;
+  purchasePrestigeUpgrade: (id: string) => void;
   markFirstEvolutionSeen: () => void;
   markFirstUpgradeSeen: () => void;
   setMood: (mood: Mood) => void;
   updateLastSaved: () => void;
-  performRebirth: () => void;
+  performRebirth: (selectedSpecies?: Species) => void;
   unlockAchievements: (ids: string[]) => void;
   unlockEasterEgg: (id: string) => void;
   incrementTimePlayed: (seconds: number) => void;
@@ -84,12 +98,19 @@ export const initialGameState: GameState = {
   rebirthCount: 0,
   currentSpecies: "GLORP",
   unlockedSpecies: ["GLORP"],
+  prestigeUpgrades: {},
+  prestigeTokenBalance: 0,
   boostersPurchased: [],
   unlockedAchievements: [],
   easterEggsUnlocked: [],
   totalTimePlayed: 0,
   crossedMilestones: [],
 };
+
+/** Helper: get a prestige upgrade level from state. */
+function pLevel(prestigeUpgrades: Record<string, number>, id: string): number {
+  return prestigeUpgrades[id] ?? 0;
+}
 
 export const useGameStore = create<GameStore>()(
   persist(
@@ -103,6 +124,10 @@ export const useGameStore = create<GameStore>()(
             state.lastClickTime,
             now,
           );
+          const clickMastery = getClickMasteryBonus(
+            pLevel(state.prestigeUpgrades, "click-mastery"),
+          );
+          const speciesBonus = getSpeciesBonus(state.currentSpecies);
           const clickPower = computeClickPower(
             {
               evolutionStage: state.evolutionStage,
@@ -112,13 +137,18 @@ export const useGameStore = create<GameStore>()(
             },
             CLICK_UPGRADES,
             now,
+            clickMastery,
+            speciesBonus.clickPower,
           );
           const newTotalTdEarned = state.totalTdEarned + clickPower;
+          const evoMultiplier = getEvolutionThresholdMultiplier(
+            pLevel(state.prestigeUpgrades, "evolution-accelerator"),
+          );
           return {
             trainingData: state.trainingData + clickPower,
             totalClicks: state.totalClicks + 1,
             totalTdEarned: newTotalTdEarned,
-            evolutionStage: getEvolutionStage(newTotalTdEarned),
+            evolutionStage: getEvolutionStage(newTotalTdEarned, evoMultiplier),
             lastSaved: now,
             comboCount: newComboCount,
             lastClickTime: now,
@@ -127,10 +157,13 @@ export const useGameStore = create<GameStore>()(
       addTrainingData: (amount) =>
         set((state) => {
           const newTotalTdEarned = state.totalTdEarned + amount;
+          const evoMultiplier = getEvolutionThresholdMultiplier(
+            pLevel(state.prestigeUpgrades, "evolution-accelerator"),
+          );
           return {
             trainingData: state.trainingData + amount,
             totalTdEarned: newTotalTdEarned,
-            evolutionStage: getEvolutionStage(newTotalTdEarned),
+            evolutionStage: getEvolutionStage(newTotalTdEarned, evoMultiplier),
             lastSaved: Date.now(),
           };
         }),
@@ -140,7 +173,10 @@ export const useGameStore = create<GameStore>()(
           if (!upgrade) return state;
 
           const owned = state.upgradeOwned[id] ?? 0;
-          const cost = getUpgradeCost(upgrade, owned);
+          const costMultiplier = getGeneratorCostMultiplier(
+            pLevel(state.prestigeUpgrades, "generator-discount"),
+          );
+          const cost = getUpgradeCost(upgrade, owned, costMultiplier);
 
           if (state.trainingData < cost) return state;
 
@@ -159,7 +195,10 @@ export const useGameStore = create<GameStore>()(
           if (!upgrade) return state;
 
           const owned = state.upgradeOwned[id] ?? 0;
-          const cost = getBulkCost(upgrade, owned, count);
+          const costMultiplier = getGeneratorCostMultiplier(
+            pLevel(state.prestigeUpgrades, "generator-discount"),
+          );
+          const cost = getBulkCost(upgrade, owned, count, costMultiplier);
 
           if (state.trainingData < cost) return state;
 
@@ -176,13 +215,8 @@ export const useGameStore = create<GameStore>()(
           const booster = BOOSTERS.find((b) => b.id === id);
           if (!booster) return state;
 
-          // Already purchased (one-time only)
           if (state.boostersPurchased.includes(id)) return state;
-
-          // Stage requirement not met
           if (state.evolutionStage < booster.unlockStage) return state;
-
-          // Not enough TD
           if (state.trainingData < booster.cost) return state;
 
           return {
@@ -198,13 +232,8 @@ export const useGameStore = create<GameStore>()(
           const upgrade = CLICK_UPGRADES.find((u) => u.id === id);
           if (!upgrade) return state;
 
-          // Already purchased (one-time only)
           if (state.clickUpgradesPurchased.includes(id)) return state;
-
-          // Not enough TD
           if (state.trainingData < upgrade.cost) return state;
-
-          // Stage requirement not met
           if (state.evolutionStage < upgrade.unlockStage) return state;
 
           return {
@@ -213,6 +242,25 @@ export const useGameStore = create<GameStore>()(
             lastSaved: Date.now(),
             mood: "Excited" as Mood,
             moodChangedAt: Date.now(),
+          };
+        }),
+      purchasePrestigeUpgrade: (id) =>
+        set((state) => {
+          const upgrade = PRESTIGE_UPGRADES.find((u) => u.id === id);
+          if (!upgrade) return state;
+
+          const currentLevel = pLevel(state.prestigeUpgrades, id);
+          if (currentLevel >= upgrade.maxLevel) return state;
+
+          const cost = upgrade.costPerLevel;
+          if (state.prestigeTokenBalance < cost) return state;
+
+          return {
+            prestigeUpgrades: {
+              ...state.prestigeUpgrades,
+              [id]: currentLevel + 1,
+            },
+            prestigeTokenBalance: state.prestigeTokenBalance - cost,
           };
         }),
       markFirstEvolutionSeen: () => set({ hasSeenFirstEvolution: true }),
@@ -237,24 +285,74 @@ export const useGameStore = create<GameStore>()(
         set((state) => ({
           crossedMilestones: [...state.crossedMilestones, ...thresholds],
         })),
-      performRebirth: () =>
+      performRebirth: (selectedSpecies) =>
         set((state) => {
           if (!canRebirth(state.evolutionStage)) return state;
 
-          const earned = computeWisdomTokens(state.totalTdEarned);
+          // Token Magnet bonus
+          const tokenMagnet = getTokenMagnetMultiplier(
+            pLevel(state.prestigeUpgrades, "token-magnet"),
+          );
+          // Species wisdom bonus
+          const speciesBonus = getSpeciesBonus(state.currentSpecies);
+          const earned = computeWisdomTokens(
+            state.totalTdEarned,
+            tokenMagnet * speciesBonus.wisdomBonus,
+          );
           const newWisdomTokens = state.wisdomTokens + earned;
-          const nextSpecies = getNextSpecies(state.currentSpecies);
-          const newUnlocked = state.unlockedSpecies.includes(nextSpecies)
-            ? state.unlockedSpecies
-            : [...state.unlockedSpecies, nextSpecies];
+          const newBalance = state.prestigeTokenBalance + earned;
+
+          // Unlock All Species check
+          const hasUnlockAll =
+            pLevel(state.prestigeUpgrades, "unlock-all-species") >= 1;
+
+          // Determine next species
+          let nextSpecies: Species;
+          if (selectedSpecies && hasUnlockAll) {
+            nextSpecies = selectedSpecies;
+          } else {
+            nextSpecies = getNextSpecies(state.currentSpecies);
+          }
+
+          // Unlocked species list
+          let newUnlocked: Species[];
+          if (hasUnlockAll) {
+            newUnlocked = [...SPECIES_ORDER];
+          } else {
+            newUnlocked = state.unlockedSpecies.includes(nextSpecies)
+              ? [...state.unlockedSpecies]
+              : [...state.unlockedSpecies, nextSpecies];
+          }
+
+          // Species Memory: retain owned generators in retained tiers
+          const retainedTiers = getRetainedTiers(
+            pLevel(state.prestigeUpgrades, "species-memory"),
+          );
+          const retainedUpgrades: Record<string, number> = {};
+          if (retainedTiers.length > 0) {
+            for (const u of UPGRADES) {
+              if (retainedTiers.includes(u.tier)) {
+                const count = state.upgradeOwned[u.id];
+                if (count && count > 0) {
+                  retainedUpgrades[u.id] = count;
+                }
+              }
+            }
+          }
+
+          // Quick Start TD
+          const quickStartTd = getQuickStartTd(
+            pLevel(state.prestigeUpgrades, "quick-start"),
+          );
 
           return {
             // Reset progression
-            trainingData: 0,
+            trainingData: quickStartTd,
             totalClicks: 0,
-            totalTdEarned: 0,
-            evolutionStage: 0,
-            upgradeOwned: {},
+            totalTdEarned: quickStartTd,
+            evolutionStage:
+              quickStartTd > 0 ? getEvolutionStage(quickStartTd) : 0,
+            upgradeOwned: retainedUpgrades,
             mood: "Neutral" as Mood,
             moodChangedAt: Date.now(),
             hasSeenFirstEvolution: false,
@@ -268,15 +366,28 @@ export const useGameStore = create<GameStore>()(
             crossedMilestones: [],
             // Persist rebirth rewards
             wisdomTokens: newWisdomTokens,
+            prestigeTokenBalance: newBalance,
             rebirthCount: state.rebirthCount + 1,
             currentSpecies: nextSpecies,
             unlockedSpecies: newUnlocked,
-            // easterEggsUnlocked and totalTimePlayed persist across rebirths
           };
         }),
     }),
     {
       name: "glorp-game-state",
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<GameState> | undefined;
+        if (!saved) return current;
+        // Migrate old saves: convert wisdomTokens to spendable balance
+        const merged = { ...current, ...saved };
+        if (saved.prestigeUpgrades === undefined) {
+          merged.prestigeUpgrades = {};
+        }
+        if (saved.prestigeTokenBalance === undefined) {
+          merged.prestigeTokenBalance = saved.wisdomTokens ?? 0;
+        }
+        return merged;
+      },
     },
   ),
 );

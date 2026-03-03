@@ -295,6 +295,72 @@ describe("gameStore", () => {
     });
   });
 
+  describe("prestige", () => {
+    it("initial state has empty prestige fields", () => {
+      const state = useGameStore.getState();
+      expect(state.prestigeUpgrades).toEqual({});
+      expect(state.prestigeTokenBalance).toBe(0);
+    });
+
+    it("purchasePrestigeUpgrade deducts tokens and increments level", () => {
+      useGameStore.setState({ prestigeTokenBalance: 10 });
+      useGameStore.getState().purchasePrestigeUpgrade("click-mastery");
+      const state = useGameStore.getState();
+      expect(state.prestigeUpgrades["click-mastery"]).toBe(1);
+      expect(state.prestigeTokenBalance).toBe(7); // 10 - 3 cost
+    });
+
+    it("purchasePrestigeUpgrade no-ops at max level", () => {
+      // click-mastery has maxLevel 10, costPerLevel 3
+      useGameStore.setState({
+        prestigeTokenBalance: 100,
+        prestigeUpgrades: { "click-mastery": 10 },
+      });
+      useGameStore.getState().purchasePrestigeUpgrade("click-mastery");
+      const state = useGameStore.getState();
+      expect(state.prestigeUpgrades["click-mastery"]).toBe(10);
+      expect(state.prestigeTokenBalance).toBe(100);
+    });
+
+    it("purchasePrestigeUpgrade no-ops when cannot afford", () => {
+      useGameStore.setState({ prestigeTokenBalance: 0 });
+      useGameStore.getState().purchasePrestigeUpgrade("click-mastery");
+      const state = useGameStore.getState();
+      expect(state.prestigeUpgrades["click-mastery"]).toBeUndefined();
+    });
+
+    it("purchasePrestigeUpgrade no-ops for unknown id", () => {
+      useGameStore.setState({ prestigeTokenBalance: 100 });
+      useGameStore.getState().purchasePrestigeUpgrade("nonexistent");
+      expect(useGameStore.getState().prestigeTokenBalance).toBe(100);
+    });
+
+    it("performRebirth awards tokens and increments balance", () => {
+      useGameStore.setState({
+        totalTdEarned: 400_000, // floor(sqrt(400K/100K)) = 2 tokens
+        evolutionStage: 5,
+        prestigeTokenBalance: 0,
+        wisdomTokens: 0,
+      });
+      useGameStore.getState().performRebirth();
+      const state = useGameStore.getState();
+      expect(state.wisdomTokens).toBe(2);
+      expect(state.prestigeTokenBalance).toBe(2);
+    });
+
+    it("performRebirth preserves prestige upgrades", () => {
+      useGameStore.setState({
+        totalTdEarned: 400_000,
+        evolutionStage: 5,
+        prestigeUpgrades: { "click-mastery": 3 },
+      });
+      useGameStore.getState().performRebirth();
+      expect(useGameStore.getState().prestigeUpgrades).toEqual({
+        "click-mastery": 3,
+      });
+    });
+  });
+
   describe("crossedMilestones", () => {
     it("appends milestones via crossMilestones", () => {
       useGameStore.getState().crossMilestones([1_000, 10_000]);
