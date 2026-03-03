@@ -1,8 +1,12 @@
 import { Group, Text } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
+import { BOOSTERS } from "../data/boosters";
 import { UPGRADES } from "../data/upgrades";
 import { computeWisdomMultiplier } from "../engine/rebirthEngine";
-import { getTotalTdPerSecond } from "../engine/upgradeEngine";
+import {
+  computeBoosterMultiplier,
+  getTotalTdPerSecond,
+} from "../engine/upgradeEngine";
 import { useInterpolatedTd } from "../hooks/useInterpolatedTd";
 import { useGameStore } from "../store";
 import { useSettingsStore } from "../store/settingsStore";
@@ -14,11 +18,17 @@ export function StatsBar() {
   const trainingData = useInterpolatedTd();
   const upgradeOwned = useGameStore((s) => s.upgradeOwned);
   const wisdomTokens = useGameStore((s) => s.wisdomTokens);
+  const boostersPurchased = useGameStore((s) => s.boostersPurchased);
   const wisdomMultiplier = computeWisdomMultiplier(wisdomTokens);
+  const boosterMultiplier = computeBoosterMultiplier(
+    BOOSTERS,
+    boostersPurchased,
+  );
   const tdPerSecond = getTotalTdPerSecond(
     UPGRADES,
     upgradeOwned,
     wisdomMultiplier,
+    boosterMultiplier,
   );
   const numberFormat = useSettingsStore((s) => s.numberFormat);
   const fmt = numberFormat === "full" ? formatNumberFull : formatNumber;
