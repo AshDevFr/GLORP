@@ -17,6 +17,9 @@ const REQUIRED_KEYS: (keyof GameState)[] = [
   "currentSpecies",
   "unlockedSpecies",
   "unlockedAchievements",
+  "clickUpgradesPurchased",
+  "comboCount",
+  "lastClickTime",
 ];
 
 export function validateSave(data: unknown): data is GameState {

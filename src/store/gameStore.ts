@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { CLICK_UPGRADES } from "../data/clickUpgrades";
 import type { Species } from "../data/species";
 import { UPGRADES } from "../data/upgrades";
+import { computeClickPower, getNextComboCount } from "../engine/clickEngine";
 import { getEvolutionStage } from "../engine/evolutionEngine";
 import type { Mood } from "../engine/moodEngine";
 import {
@@ -22,6 +24,10 @@ export interface GameState {
   hasSeenFirstUpgrade: boolean;
   mood: Mood;
   moodChangedAt: number;
+  // Click power state
+  clickUpgradesPurchased: string[];
+  comboCount: number;
+  lastClickTime: number;
   // Rebirth state — persists across rebirths
   wisdomTokens: number;
   rebirthCount: number;
@@ -39,6 +45,7 @@ interface GameActions {
   clickFeed: () => void;
   addTrainingData: (amount: number) => void;
   purchaseUpgrade: (id: string) => void;
+  purchaseClickUpgrade: (id: string) => void;
   markFirstEvolutionSeen: () => void;
   markFirstUpgradeSeen: () => void;
   setMood: (mood: Mood) => void;
@@ -62,6 +69,9 @@ export const initialGameState: GameState = {
   hasSeenFirstUpgrade: false,
   mood: "Neutral",
   moodChangedAt: 0,
+  clickUpgradesPurchased: [],
+  comboCount: 0,
+  lastClickTime: 0,
   wisdomTokens: 0,
   rebirthCount: 0,
   currentSpecies: "GLORP",
@@ -77,13 +87,31 @@ export const useGameStore = create<GameStore>()(
       ...initialGameState,
       clickFeed: () =>
         set((state) => {
-          const newTotalTdEarned = state.totalTdEarned + 1;
+          const now = Date.now();
+          const newComboCount = getNextComboCount(
+            state.comboCount,
+            state.lastClickTime,
+            now,
+          );
+          const clickPower = computeClickPower(
+            {
+              evolutionStage: state.evolutionStage,
+              clickUpgradesPurchased: state.clickUpgradesPurchased,
+              comboCount: newComboCount,
+              lastClickTime: now,
+            },
+            CLICK_UPGRADES,
+            now,
+          );
+          const newTotalTdEarned = state.totalTdEarned + clickPower;
           return {
-            trainingData: state.trainingData + 1,
+            trainingData: state.trainingData + clickPower,
             totalClicks: state.totalClicks + 1,
             totalTdEarned: newTotalTdEarned,
             evolutionStage: getEvolutionStage(newTotalTdEarned),
-            lastSaved: Date.now(),
+            lastSaved: now,
+            comboCount: newComboCount,
+            lastClickTime: now,
           };
         }),
       addTrainingData: (amount) =>
@@ -109,6 +137,28 @@ export const useGameStore = create<GameStore>()(
           return {
             trainingData: state.trainingData - cost,
             upgradeOwned: { ...state.upgradeOwned, [id]: owned + 1 },
+            lastSaved: Date.now(),
+            mood: "Excited" as Mood,
+            moodChangedAt: Date.now(),
+          };
+        }),
+      purchaseClickUpgrade: (id) =>
+        set((state) => {
+          const upgrade = CLICK_UPGRADES.find((u) => u.id === id);
+          if (!upgrade) return state;
+
+          // Already purchased (one-time only)
+          if (state.clickUpgradesPurchased.includes(id)) return state;
+
+          // Not enough TD
+          if (state.trainingData < upgrade.cost) return state;
+
+          // Stage requirement not met
+          if (state.evolutionStage < upgrade.unlockStage) return state;
+
+          return {
+            trainingData: state.trainingData - upgrade.cost,
+            clickUpgradesPurchased: [...state.clickUpgradesPurchased, id],
             lastSaved: Date.now(),
             mood: "Excited" as Mood,
             moodChangedAt: Date.now(),
@@ -155,6 +205,10 @@ export const useGameStore = create<GameStore>()(
             hasSeenFirstEvolution: false,
             hasSeenFirstUpgrade: false,
             lastSaved: Date.now(),
+            // Reset click power state
+            clickUpgradesPurchased: [],
+            comboCount: 0,
+            lastClickTime: 0,
             // Persist rebirth rewards
             wisdomTokens: newWisdomTokens,
             rebirthCount: state.rebirthCount + 1,

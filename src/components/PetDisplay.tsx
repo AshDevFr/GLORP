@@ -1,13 +1,20 @@
-import { Button, Group, Stack, Text } from "@mantine/core";
+import { Badge, Button, Group, Stack, Text } from "@mantine/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getAsciiArt } from "../data/asciiArt";
+import { CLICK_UPGRADES } from "../data/clickUpgrades";
 import { STAGES } from "../data/stages";
+import {
+  COMBO_DECAY_MS,
+  COMBO_THRESHOLD,
+  computeClickPower,
+} from "../engine/clickEngine";
 import { getClickMood } from "../engine/moodEngine";
 import { canRebirth, getNextSpecies } from "../engine/rebirthEngine";
 import { useClickParticles } from "../hooks/useClickParticles";
 import { useDialogue } from "../hooks/useDialogue";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useGameStore } from "../store";
+import { formatNumber } from "../utils/formatNumber";
 import { FloatingParticles } from "./FloatingParticles";
 import { RebirthModal } from "./RebirthModal";
 import { SpeechBubble } from "./SpeechBubble";
@@ -30,6 +37,8 @@ export function PetDisplay() {
   const wisdomTokens = useGameStore((s) => s.wisdomTokens);
   const totalTdEarned = useGameStore((s) => s.totalTdEarned);
   const performRebirth = useGameStore((s) => s.performRebirth);
+  const clickUpgradesPurchased = useGameStore((s) => s.clickUpgradesPurchased);
+  const comboCount = useGameStore((s) => s.comboCount);
 
   const art = getAsciiArt(currentSpecies, evolutionStage);
   const stageMeta = STAGES[evolutionStage] ?? STAGES[0];
@@ -37,6 +46,7 @@ export function PetDisplay() {
   const nextSpecies = getNextSpecies(currentSpecies);
 
   const [rebirthModalOpen, setRebirthModalOpen] = useState(false);
+  const [displayCombo, setDisplayCombo] = useState(0);
 
   const dialogueLine = useDialogue();
   const [isFlashing, setIsFlashing] = useState(false);
@@ -46,6 +56,31 @@ export function PetDisplay() {
   const prefersReduced = useReducedMotion();
 
   const { particles, spawn } = useClickParticles();
+
+  // Compute current click power for display (without combo since it fluctuates)
+  const baseClickPower = computeClickPower(
+    {
+      evolutionStage,
+      clickUpgradesPurchased,
+      comboCount: 0,
+      lastClickTime: 0,
+    },
+    CLICK_UPGRADES,
+    Date.now(),
+  );
+
+  // Decay combo display when not clicking
+  useEffect(() => {
+    if (comboCount < COMBO_THRESHOLD) {
+      setDisplayCombo(0);
+      return;
+    }
+    setDisplayCombo(comboCount);
+    const timer = setTimeout(() => {
+      setDisplayCombo(0);
+    }, COMBO_DECAY_MS);
+    return () => clearTimeout(timer);
+  }, [comboCount]);
 
   useEffect(() => {
     if (evolutionStage !== prevStageRef.current) {
@@ -87,7 +122,7 @@ export function PetDisplay() {
         animation: isShaking ? "screen-shake 0.5s ease-in-out" : undefined,
       }}
     >
-      <FloatingParticles particles={particles} />
+      <FloatingParticles particles={particles} clickPower={baseClickPower} />
       <Stack align="center" justify="center" gap="lg" h="100%">
         <SpeechBubble text={dialogueLine} />
         <Text size="xs" ff="monospace" c="dimmed">
@@ -125,7 +160,7 @@ export function PetDisplay() {
             onClick={handleFeed}
             style={{ fontFamily: "monospace" }}
           >
-            [ FEED {currentSpecies} ]
+            [ FEED {currentSpecies} +{formatNumber(baseClickPower)} TD ]
           </Button>
           {rebirthAvailable && (
             <Button
@@ -139,6 +174,16 @@ export function PetDisplay() {
             </Button>
           )}
         </Group>
+        {displayCombo >= COMBO_THRESHOLD && (
+          <Badge
+            size="lg"
+            variant="light"
+            color="yellow"
+            style={{ fontFamily: "monospace" }}
+          >
+            COMBO x{displayCombo} (1.5x)
+          </Badge>
+        )}
       </Stack>
       <RebirthModal
         opened={rebirthModalOpen}
