@@ -1,5 +1,6 @@
 import type { Booster } from "../data/boosters";
 import type { Upgrade } from "../data/upgrades";
+import { getMilestoneMultiplier } from "./milestoneEngine";
 
 export const COST_MULTIPLIER = 1.15;
 
@@ -57,9 +58,9 @@ export function computeBoosterMultiplier(
 }
 
 /**
- * Returns the total TD/s from owned upgrades, multiplied by the permanent
- * wisdom multiplier (1 + wisdomTokens * 0.05) and an optional booster
- * multiplier. Defaults to no bonus (×1) for both.
+ * Returns the total TD/s from owned upgrades, applying per-generator milestone
+ * multipliers, then the global wisdom and booster multipliers.
+ * Defaults to no bonus (×1) for wisdom and booster multipliers.
  */
 export function getTotalTdPerSecond(
   upgrades: readonly Upgrade[],
@@ -70,7 +71,8 @@ export function getTotalTdPerSecond(
   let total = 0;
   for (const upgrade of upgrades) {
     const count = owned[upgrade.id] ?? 0;
-    total += upgrade.baseTdPerSecond * count;
+    const milestoneMultiplier = getMilestoneMultiplier(count);
+    total += upgrade.baseTdPerSecond * count * milestoneMultiplier;
   }
   return total * wisdomMultiplier * boosterMultiplier;
 }

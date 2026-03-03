@@ -191,6 +191,39 @@ describe("getTotalTdPerSecond", () => {
     // base 1.5 * wisdom 2 * booster 3 = 9
     expect(getTotalTdPerSecond([mockUpgrade], owned, 2, 3)).toBeCloseTo(9);
   });
+
+  it("applies milestone multiplier at 10 owned (×1.5)", () => {
+    const owned = { "test-upgrade": 10 };
+    // 10 * 1.5 baseTdPerSecond * 1.5 milestone = 22.5
+    expect(getTotalTdPerSecond([mockUpgrade], owned)).toBeCloseTo(22.5);
+  });
+
+  it("applies milestone multiplier at 25 owned (×2)", () => {
+    const owned = { "test-upgrade": 25 };
+    // 25 * 1.5 * 2 = 75
+    expect(getTotalTdPerSecond([mockUpgrade], owned)).toBeCloseTo(75);
+  });
+
+  it("applies milestone multiplier at 50 owned (×3)", () => {
+    const owned = { "test-upgrade": 50 };
+    // 50 * 1.5 * 3 = 225
+    expect(getTotalTdPerSecond([mockUpgrade], owned)).toBeCloseTo(225);
+  });
+
+  it("applies milestone multiplier at 100 owned (×6)", () => {
+    const owned = { "test-upgrade": 100 };
+    // 100 * 1.5 * 6 = 900
+    expect(getTotalTdPerSecond([mockUpgrade], owned)).toBeCloseTo(900);
+  });
+
+  it("applies milestone per-generator independently", () => {
+    // mockUpgrade: 10 owned → ×1.5 milestone; mockUpgrade2: 3 owned → ×1 milestone
+    const owned = { "test-upgrade": 10, "test-upgrade-2": 3 };
+    // 10 * 1.5 * 1.5 + 3 * 5 * 1 = 22.5 + 15 = 37.5
+    expect(getTotalTdPerSecond([mockUpgrade, mockUpgrade2], owned)).toBeCloseTo(
+      37.5,
+    );
+  });
 });
 
 const mockBooster1: Booster = {
