@@ -28,6 +28,8 @@ jobs:
 
       - run: npm run lint
 
+      - run: npm test
+
       - run: npm run build
 
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
@@ -36,6 +38,7 @@ jobs:
 
   deploy:
     needs: build
+    if: github.repository == 'AshDevFr/GLORP'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
