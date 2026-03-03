@@ -25,7 +25,7 @@ export const initialSettings: SettingsState = {
   crtEnabled: false,
   animationsDisabled: false,
   buyMode: 1,
-  numberFormat: "compact",
+  numberFormat: "full",
 };
 
 export const useSettingsStore = create<SettingsStore>()(

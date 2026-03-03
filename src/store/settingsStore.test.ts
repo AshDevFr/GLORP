@@ -10,7 +10,7 @@ describe("useSettingsStore", () => {
     const state = useSettingsStore.getState();
     expect(state.crtEnabled).toBe(false);
     expect(state.animationsDisabled).toBe(false);
-    expect(state.numberFormat).toBe("compact");
+    expect(state.numberFormat).toBe("full");
   });
 
   it("setCrtEnabled sets crtEnabled to true", () => {

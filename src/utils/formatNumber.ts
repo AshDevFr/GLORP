@@ -1,49 +1,31 @@
-const SUFFIXES: ReadonlyArray<{ threshold: number; suffix: string }> = [
-  { threshold: 1_000_000_000_000_000_000, suffix: "Qi" },
-  { threshold: 1_000_000_000_000_000, suffix: "Qa" },
-  { threshold: 1_000_000_000_000, suffix: "T" },
-  { threshold: 1_000_000_000, suffix: "B" },
-  { threshold: 1_000_000, suffix: "M" },
-  { threshold: 1_000, suffix: "K" },
-];
-
 /**
- * Format a number with K / M / B / T / Qa / Qi suffixes for compact display.
+ * Format a number with locale-aware comma separators for full display.
  *
- * - Values < 1,000 → plain integer (e.g. "42")
- * - Values >= 1,000 → 2 decimal places + suffix (e.g. "1.23K")
+ * - Values >= 1 → comma-separated integer (e.g. "1,234,567")
+ * - Values between 0 and 1 → 2 decimal places (e.g. "0.50")
  * - Negative values are prefixed with "-" and formatted the same way.
+ * - Very large numbers display cleanly without exponential notation.
  */
 export function formatNumber(n: number): string {
   if (n < 0) {
     return `-${formatNumber(-n)}`;
   }
 
-  for (const { threshold, suffix } of SUFFIXES) {
-    if (n >= threshold) {
-      return `${(n / threshold).toFixed(2)}${suffix}`;
-    }
-  }
-
   if (n > 0 && n < 1) {
     return n.toFixed(2);
   }
 
-  return Math.floor(n).toString();
+  if (n === 0) return "0";
+
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(
+    Math.floor(n),
+  );
 }
 
 /**
  * Format a number with full comma-separated digits (e.g. "1,234,567,890").
- * Used when the player selects "Full" number display mode.
+ * Alias for formatNumber.
  */
 export function formatNumberFull(n: number): string {
-  if (n < 0) {
-    return `-${formatNumberFull(-n)}`;
-  }
-
-  if (n > 0 && n < 1) {
-    return n.toFixed(2);
-  }
-
-  return Math.floor(n).toLocaleString("en-US");
+  return formatNumber(n);
 }

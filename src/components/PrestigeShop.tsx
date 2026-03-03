@@ -12,6 +12,7 @@ import {
 import { useEffect } from "react";
 import { PRESTIGE_UPGRADES } from "../data/prestigeShop";
 import { useGameStore } from "../store";
+import { formatNumber } from "../utils/formatNumber";
 
 interface PrestigeShopProps {
   opened: boolean;
@@ -48,7 +49,7 @@ export function PrestigeShop({ opened, onClose }: PrestigeShopProps) {
         <Text ta="center" size="sm" ff="monospace" c="yellow.4" fw={600}>
           Wisdom Tokens:{" "}
           <Text span fw={700}>
-            {prestigeTokenBalance} ✦
+            {formatNumber(prestigeTokenBalance)} ✦
           </Text>
         </Text>
 
