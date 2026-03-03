@@ -28,6 +28,13 @@ const emptyState: GameState = {
   prestigeUpgrades: {},
   prestigeTokenBalance: 0,
   hasOpenedPrestigeShop: false,
+  runStart: 0,
+  peakTdPerSecond: 0,
+  peakGeneratorsOwned: 0,
+  lifetimeTdEarned: 0,
+  lifetimePeakTdPerSecond: 0,
+  lifetimeBestRunTd: 0,
+  lifetimeWisdomEarned: 0,
 };
 
 describe("ACHIEVEMENTS", () => {

@@ -58,6 +58,15 @@ export interface GameState {
   totalTimePlayed: number;
   // Milestone celebrations — resets on rebirth
   crossedMilestones: number[];
+  // Per-run stats — reset on rebirth
+  runStart: number;
+  peakTdPerSecond: number;
+  peakGeneratorsOwned: number;
+  // Cumulative lifetime stats — persist across rebirths
+  lifetimeTdEarned: number;
+  lifetimePeakTdPerSecond: number;
+  lifetimeBestRunTd: number;
+  lifetimeWisdomEarned: number;
 }
 
 interface GameActions {
@@ -78,6 +87,7 @@ interface GameActions {
   unlockEasterEgg: (id: string) => void;
   incrementTimePlayed: (seconds: number) => void;
   crossMilestones: (thresholds: number[]) => void;
+  updatePeakStats: (tdPerSecond: number, generatorsOwned: number) => void;
 }
 
 export type GameStore = GameState & GameActions;
@@ -108,6 +118,13 @@ export const initialGameState: GameState = {
   easterEggsUnlocked: [],
   totalTimePlayed: 0,
   crossedMilestones: [],
+  runStart: 0,
+  peakTdPerSecond: 0,
+  peakGeneratorsOwned: 0,
+  lifetimeTdEarned: 0,
+  lifetimePeakTdPerSecond: 0,
+  lifetimeBestRunTd: 0,
+  lifetimeWisdomEarned: 0,
 };
 
 /** Helper: get a prestige upgrade level from state. */
@@ -289,6 +306,18 @@ export const useGameStore = create<GameStore>()(
         set((state) => ({
           crossedMilestones: [...state.crossedMilestones, ...thresholds],
         })),
+      updatePeakStats: (tdPerSecond, generatorsOwned) =>
+        set((state) => ({
+          peakTdPerSecond: Math.max(state.peakTdPerSecond, tdPerSecond),
+          peakGeneratorsOwned: Math.max(
+            state.peakGeneratorsOwned,
+            generatorsOwned,
+          ),
+          lifetimePeakTdPerSecond: Math.max(
+            state.lifetimePeakTdPerSecond,
+            tdPerSecond,
+          ),
+        })),
       performRebirth: (selectedSpecies) =>
         set((state) => {
           if (!canRebirth(state.evolutionStage)) return state;
@@ -349,6 +378,10 @@ export const useGameStore = create<GameStore>()(
             pLevel(state.prestigeUpgrades, "quick-start"),
           );
 
+          // Capture run stats before reset
+          const runTd = state.totalTdEarned;
+          const now = Date.now();
+
           return {
             // Reset progression
             trainingData: quickStartTd,
@@ -358,22 +391,34 @@ export const useGameStore = create<GameStore>()(
               quickStartTd > 0 ? getEvolutionStage(quickStartTd) : 0,
             upgradeOwned: retainedUpgrades,
             mood: "Neutral" as Mood,
-            moodChangedAt: Date.now(),
+            moodChangedAt: now,
             hasSeenFirstEvolution: false,
             hasSeenFirstUpgrade: false,
-            lastSaved: Date.now(),
+            lastSaved: now,
             // Reset click power and booster state
             clickUpgradesPurchased: [],
             boostersPurchased: [],
             comboCount: 0,
             lastClickTime: 0,
             crossedMilestones: [],
+            // Reset per-run stats
+            runStart: now,
+            peakTdPerSecond: 0,
+            peakGeneratorsOwned: 0,
             // Persist rebirth rewards
             wisdomTokens: newWisdomTokens,
             prestigeTokenBalance: newBalance,
             rebirthCount: state.rebirthCount + 1,
             currentSpecies: nextSpecies,
             unlockedSpecies: newUnlocked,
+            // Accumulate lifetime stats
+            lifetimeTdEarned: state.lifetimeTdEarned + runTd,
+            lifetimePeakTdPerSecond: Math.max(
+              state.lifetimePeakTdPerSecond,
+              state.peakTdPerSecond,
+            ),
+            lifetimeBestRunTd: Math.max(state.lifetimeBestRunTd, runTd),
+            lifetimeWisdomEarned: state.lifetimeWisdomEarned + earned,
           };
         }),
     }),
@@ -392,6 +437,9 @@ export const useGameStore = create<GameStore>()(
         }
         if (saved.hasOpenedPrestigeShop === undefined) {
           merged.hasOpenedPrestigeShop = false;
+        }
+        if (saved.runStart === undefined) {
+          merged.runStart = Date.now();
         }
         return merged;
       },

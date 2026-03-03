@@ -48,6 +48,9 @@ export function PetDisplay() {
   const prestigeTokenBalance = useGameStore((s) => s.prestigeTokenBalance);
   const rebirthCount = useGameStore((s) => s.rebirthCount);
   const unlockedSpecies = useGameStore((s) => s.unlockedSpecies);
+  const totalClicks = useGameStore((s) => s.totalClicks);
+  const peakTdPerSecond = useGameStore((s) => s.peakTdPerSecond);
+  const runStart = useGameStore((s) => s.runStart);
 
   const artFrames = getAsciiFrames(currentSpecies, evolutionStage);
   const stageMeta = STAGES[evolutionStage] ?? STAGES[0];
@@ -279,6 +282,10 @@ export function PetDisplay() {
         unlockedSpecies={unlockedSpecies}
         hasUnlockAll={(prestigeUpgrades["unlock-all-species"] ?? 0) >= 1}
         tokenMagnetLevel={prestigeUpgrades["token-magnet"] ?? 0}
+        totalClicks={totalClicks}
+        evolutionStage={evolutionStage}
+        peakTdPerSecond={peakTdPerSecond}
+        runStart={runStart}
       />
       <PrestigeShop opened={shopOpen} onClose={() => setShopOpen(false)} />
     </div>

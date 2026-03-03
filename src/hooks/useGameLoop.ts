@@ -1,6 +1,7 @@
 import { notifications } from "@mantine/notifications";
 import { useEffect, useRef } from "react";
 import { ACHIEVEMENTS } from "../data/achievements";
+import { BOOSTERS } from "../data/boosters";
 import {
   getGeneratorCostMultiplier,
   getIdleBoostMultiplier,
@@ -14,7 +15,11 @@ import {
 } from "../engine/easterEggEngine";
 import { checkMilestones } from "../engine/milestoneEngine";
 import { computeTick } from "../engine/tickEngine";
-import { getUpgradeCost } from "../engine/upgradeEngine";
+import {
+  computeBoosterMultiplier,
+  getTotalTdPerSecond,
+  getUpgradeCost,
+} from "../engine/upgradeEngine";
 import { useGameStore } from "../store";
 import { useUIStore } from "../store/uiStore";
 
@@ -107,6 +112,32 @@ export function useGameLoop() {
 
       // Increment total time played each tick
       state.incrementTimePlayed(deltaSeconds);
+
+      // Track peak TD/s and generators for run stats
+      {
+        const peakState = useGameStore.getState();
+        const boosterMult = computeBoosterMultiplier(
+          BOOSTERS,
+          peakState.boostersPurchased ?? [],
+        );
+        const idleBoostMult = getIdleBoostMultiplier(
+          peakState.prestigeUpgrades["idle-boost"] ?? 0,
+        );
+        const speciesAutoGenMult = getSpeciesBonus(
+          peakState.currentSpecies,
+        ).autoGen;
+        const currentTdPerSecond = getTotalTdPerSecond(
+          UPGRADES,
+          peakState.upgradeOwned,
+          idleBoostMult * speciesAutoGenMult,
+          boosterMult,
+        );
+        const currentGenerators = Object.values(peakState.upgradeOwned).reduce(
+          (sum, n) => sum + n,
+          0,
+        );
+        peakState.updatePeakStats(currentTdPerSecond, currentGenerators);
+      }
 
       // Auto-Buy: purchase cheapest affordable generator once per tick
       const autoBuyLevel = state.prestigeUpgrades["auto-buy"] ?? 0;
