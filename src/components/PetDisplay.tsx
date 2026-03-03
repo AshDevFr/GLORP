@@ -1,6 +1,6 @@
 import { Badge, Button, Group, Stack, Text } from "@mantine/core";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getAsciiArt } from "../data/asciiArt";
+import { getAsciiFrames } from "../data/asciiArt";
 import { CLICK_UPGRADES } from "../data/clickUpgrades";
 import { STAGES } from "../data/stages";
 import {
@@ -10,6 +10,7 @@ import {
 } from "../engine/clickEngine";
 import { getClickMood } from "../engine/moodEngine";
 import { canRebirth, getNextSpecies } from "../engine/rebirthEngine";
+import { useAsciiAnimation } from "../hooks/useAsciiAnimation";
 import { useClickParticles } from "../hooks/useClickParticles";
 import { useDialogue } from "../hooks/useDialogue";
 import { useReducedMotion } from "../hooks/useReducedMotion";
@@ -41,13 +42,14 @@ export function PetDisplay() {
   const clickUpgradesPurchased = useGameStore((s) => s.clickUpgradesPurchased);
   const comboCount = useGameStore((s) => s.comboCount);
 
-  const art = getAsciiArt(currentSpecies, evolutionStage);
+  const artFrames = getAsciiFrames(currentSpecies, evolutionStage);
   const stageMeta = STAGES[evolutionStage] ?? STAGES[0];
   const rebirthAvailable = canRebirth(evolutionStage);
   const nextSpecies = getNextSpecies(currentSpecies);
 
   const [rebirthModalOpen, setRebirthModalOpen] = useState(false);
   const [displayCombo, setDisplayCombo] = useState(0);
+  const [isGlitching, setIsGlitching] = useState(false);
 
   const dialogueLine = useDialogue();
   const [isFlashing, setIsFlashing] = useState(false);
@@ -55,6 +57,8 @@ export function PetDisplay() {
   const prevStageRef = useRef(evolutionStage);
   const containerRef = useRef<HTMLDivElement>(null);
   const prefersReduced = useReducedMotion();
+
+  const currentFrame = useAsciiAnimation(artFrames, 2000, isGlitching);
 
   const { particles, spawn, spawnBurst } = useClickParticles();
 
@@ -120,10 +124,13 @@ export function PetDisplay() {
 
       if (!prefersReduced) {
         setIsShaking(true);
+        setIsGlitching(true);
         const shakeTimer = setTimeout(() => setIsShaking(false), 500);
+        const glitchTimer = setTimeout(() => setIsGlitching(false), 600);
         return () => {
           clearTimeout(flashTimer);
           clearTimeout(shakeTimer);
+          clearTimeout(glitchTimer);
         };
       }
 
@@ -174,14 +181,14 @@ export function PetDisplay() {
         <div
           role="img"
           aria-label={`${currentSpecies} pet stage ${evolutionStage}: ${stageMeta.name}`}
+          className={`ascii-art-container${isGlitching ? " ascii-glitch" : ""}`}
           onClick={handlePetClick}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") handlePetClick();
+          onKeyDown={(ev) => {
+            if (ev.key === "Enter" || ev.key === " ") handlePetClick();
           }}
           style={{
             fontFamily: "monospace",
             whiteSpace: "pre",
-            fontSize: "1.5rem",
             lineHeight: 1.4,
             color: isFlashing ? "#fff" : "var(--mantine-color-green-4)",
             textAlign: "center",
@@ -191,10 +198,13 @@ export function PetDisplay() {
               ? "0 0 20px #39ff14, 0 0 40px #39ff14"
               : "none",
             transition: "color 0.3s, text-shadow 0.3s",
+            animation: isGlitching
+              ? "ascii-glitch 0.6s ease-in-out"
+              : undefined,
           }}
-        >
-          {art}
-        </div>
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: art is static data, not user input
+          dangerouslySetInnerHTML={{ __html: currentFrame }}
+        />
         <Group gap="sm">
           <Button
             size="lg"
