@@ -53,7 +53,9 @@ export function computeClickPower(
 
 /**
  * Compute the combo multiplier based on current combo count and timing.
- * Returns COMBO_MULTIPLIER if combo >= COMBO_THRESHOLD and not decayed, else 1.
+ * Scales with combo count using sqrt growth:
+ *   1 + (COMBO_MULTIPLIER - 1) * sqrt(comboCount / COMBO_THRESHOLD)
+ * Returns 1 if combo is below threshold or has decayed.
  */
 export function computeComboMultiplier(
   comboCount: number,
@@ -65,7 +67,7 @@ export function computeComboMultiplier(
     comboCount >= COMBO_THRESHOLD &&
     currentTime - lastClickTime < COMBO_DECAY_MS
   ) {
-    return COMBO_MULTIPLIER;
+    return 1 + (COMBO_MULTIPLIER - 1) * Math.sqrt(comboCount / COMBO_THRESHOLD);
   }
   return 1;
 }

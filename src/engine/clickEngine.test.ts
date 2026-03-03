@@ -143,18 +143,20 @@ describe("computeClickPower", () => {
 
   it("combines all three: stage + upgrades + combo", () => {
     const now = Date.now();
+    const comboCount = COMBO_THRESHOLD + 5;
+    const expectedCombo = computeComboMultiplier(comboCount, now, now);
     const power = computeClickPower(
       {
         evolutionStage: 5,
         clickUpgradesPurchased: ["upgrade-a", "upgrade-b"],
-        comboCount: COMBO_THRESHOLD + 5,
+        comboCount,
         lastClickTime: now,
       },
       mockUpgrades,
       now,
     );
-    // (1+5) * 2 * 3 * 1.5 = 54
-    expect(power).toBe(54);
+    // (1+5) * 2 * 3 * expectedCombo = 36 * expectedCombo
+    expect(power).toBeCloseTo(36 * expectedCombo, 5);
   });
 
   it("ignores non-existent upgrade IDs", () => {
@@ -207,11 +209,10 @@ describe("computeComboMultiplier", () => {
     );
   });
 
-  it("returns COMBO_MULTIPLIER when combo is above threshold and not decayed", () => {
+  it("returns higher multiplier when combo is above threshold (scales with count)", () => {
     const now = Date.now();
-    expect(computeComboMultiplier(COMBO_THRESHOLD + 10, now, now)).toBe(
-      COMBO_MULTIPLIER,
-    );
+    const result = computeComboMultiplier(COMBO_THRESHOLD + 10, now, now);
+    expect(result).toBeGreaterThan(COMBO_MULTIPLIER);
   });
 
   it("returns 1 when combo has decayed (time exceeded COMBO_DECAY_MS)", () => {
@@ -226,6 +227,38 @@ describe("computeComboMultiplier", () => {
     expect(computeComboMultiplier(COMBO_THRESHOLD, lastClick, now)).toBe(
       COMBO_MULTIPLIER,
     );
+  });
+
+  it("returns 1 for a 1-click combo (below threshold)", () => {
+    const now = Date.now();
+    expect(computeComboMultiplier(1, now, now)).toBe(1);
+  });
+
+  it("returns higher multiplier for 5-click combo than at threshold", () => {
+    const now = Date.now();
+    const at5 = computeComboMultiplier(5, now, now);
+    const atThreshold = computeComboMultiplier(COMBO_THRESHOLD, now, now);
+    expect(at5).toBeGreaterThan(atThreshold);
+  });
+
+  it("returns higher multiplier for 20-click combo than for 5-click combo", () => {
+    const now = Date.now();
+    const at20 = computeComboMultiplier(20, now, now);
+    const at5 = computeComboMultiplier(5, now, now);
+    expect(at20).toBeGreaterThan(at5);
+  });
+
+  it("10-click combo produces noticeably higher multiplier than 2-click combo", () => {
+    const now = Date.now();
+    const at10 = computeComboMultiplier(10, now, now);
+    const at2 = computeComboMultiplier(2, now, now); // below threshold → 1
+    expect(at10).toBeGreaterThan(at2 + 0.5); // at least 0.5 more
+  });
+
+  it("resets to 1 after decay (combo count irrelevant once time expires)", () => {
+    const now = Date.now();
+    const lastClick = now - COMBO_DECAY_MS - 1;
+    expect(computeComboMultiplier(20, lastClick, now)).toBe(1);
   });
 });
 

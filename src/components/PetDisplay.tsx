@@ -9,6 +9,7 @@ import {
   COMBO_DECAY_MS,
   COMBO_THRESHOLD,
   computeClickPower,
+  computeComboMultiplier,
 } from "../engine/clickEngine";
 import { getClickMood } from "../engine/moodEngine";
 import { canRebirth, getNextSpecies } from "../engine/rebirthEngine";
@@ -261,7 +262,7 @@ export function PetDisplay() {
           }}
           aria-hidden={displayCombo < COMBO_THRESHOLD}
         >
-          COMBO x{displayCombo} (1.5x)
+          COMBO x{displayCombo} ({computeComboMultiplier(displayCombo, Date.now(), Date.now()).toFixed(2)}x)
         </Badge>
       </Stack>
       <RebirthModal
