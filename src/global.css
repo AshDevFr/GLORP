@@ -177,6 +177,21 @@ body {
   }
 }
 
+/* ── Game layout: lock panels to viewport height on desktop ─────────── */
+
+.game-main-grid {
+  min-height: calc(100vh - 44px);
+}
+
+@media (min-width: 62em) {
+  /* On desktop the panels sit side-by-side; lock the grid to the viewport
+     so each panel scrolls internally rather than growing the page. */
+  .game-main-grid {
+    height: calc(100vh - 44px);
+    overflow: hidden;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .float-particle {
     animation: none;

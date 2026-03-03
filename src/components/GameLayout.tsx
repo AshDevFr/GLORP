@@ -120,7 +120,7 @@ export function GameLayout() {
       </AppShell.Header>
 
       <AppShell.Main>
-        <Grid gutter={0} style={{ minHeight: "calc(100vh - 44px)" }}>
+        <Grid gutter={0} className="game-main-grid">
           <Grid.Col span={{ base: 12, md: 8 }}>
             <PetDisplay />
           </Grid.Col>

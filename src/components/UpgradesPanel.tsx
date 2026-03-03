@@ -82,6 +82,13 @@ export function UpgradesPanel() {
     (tc) => evolutionStage >= tc.unlockStage,
   );
 
+  // Use a 2-column grid for generator cards when there are enough to warrant it
+  const totalVisibleUpgrades = visibleTiers.reduce(
+    (sum, tc) => sum + UPGRADES.filter((u) => u.tier === tc.tier).length,
+    0,
+  );
+  const useMultiColumn = totalVisibleUpgrades >= 6;
+
   // Show click upgrades that are unlocked at or below current stage
   const visibleClickUpgrades = CLICK_UPGRADES.filter(
     (u) => evolutionStage >= u.unlockStage,
@@ -148,18 +155,35 @@ export function UpgradesPanel() {
                 <Text size="xs" fw={700} ff="monospace" c="dimmed" mb="xs">
                   {tc.label}
                 </Text>
-                {tierUpgrades.map((upgrade) => (
-                  <UpgradeCard
-                    key={upgrade.id}
-                    upgrade={upgrade}
-                    owned={upgradeOwned[upgrade.id] ?? 0}
-                    allOwned={upgradeOwned}
-                    trainingData={trainingData}
-                    buyMode={buyMode}
-                    onPurchase={purchaseBulkUpgrade}
-                    costMultiplier={costMultiplier}
-                  />
-                ))}
+                <div
+                  style={
+                    useMultiColumn
+                      ? {
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fill, minmax(280px, 1fr))",
+                          gap: "var(--mantine-spacing-xs)",
+                        }
+                      : {
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "var(--mantine-spacing-xs)",
+                        }
+                  }
+                >
+                  {tierUpgrades.map((upgrade) => (
+                    <UpgradeCard
+                      key={upgrade.id}
+                      upgrade={upgrade}
+                      owned={upgradeOwned[upgrade.id] ?? 0}
+                      allOwned={upgradeOwned}
+                      trainingData={trainingData}
+                      buyMode={buyMode}
+                      onPurchase={purchaseBulkUpgrade}
+                      costMultiplier={costMultiplier}
+                    />
+                  ))}
+                </div>
               </div>
             );
           })}
