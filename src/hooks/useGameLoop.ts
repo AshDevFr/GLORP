@@ -10,6 +10,11 @@ import { getSpeciesBonus } from "../data/species";
 import { UPGRADES } from "../data/upgrades";
 import { checkAchievements } from "../engine/achievementEngine";
 import {
+  checkObjectiveCompletion,
+  getCurrentDateUTC,
+  pickDailyObjectives,
+} from "../engine/dailyObjectivesEngine";
+import {
   checkEasterEggs,
   EASTER_EGG_MESSAGES,
 } from "../engine/easterEggEngine";
@@ -21,6 +26,7 @@ import {
   getUpgradeCost,
 } from "../engine/upgradeEngine";
 import { useGameStore } from "../store";
+import { useDailyStore } from "../store/dailyStore";
 import { useUIStore } from "../store/uiStore";
 
 const TICK_INTERVAL_MS = 1000;
@@ -185,6 +191,28 @@ export function useGameLoop() {
           freshState.unlockEasterEgg(egg);
         }
         notifyEasterEggs(newEasterEggs);
+      }
+
+      // Daily objectives: refresh date, then check completions and award tokens
+      const daily = useDailyStore.getState();
+      daily.refreshIfNeeded();
+
+      const gameForObjectives = useGameStore.getState();
+      const todayObjectives = pickDailyObjectives(getCurrentDateUTC());
+      for (const obj of todayObjectives) {
+        if (!daily.completedObjectiveIds.includes(obj.id)) {
+          const done = checkObjectiveCompletion(obj, gameForObjectives, daily);
+          if (done) {
+            useDailyStore.getState().markCompleted(obj.id);
+            gameForObjectives.awardDailyWisdomTokens(obj.reward);
+            notifications.show({
+              title: "🎯 Daily Objective Complete!",
+              message: `${obj.description} — +${obj.reward} wisdom tokens`,
+              color: "cyan",
+              autoClose: 5000,
+            });
+          }
+        }
       }
     }, TICK_INTERVAL_MS);
 

@@ -9,10 +9,12 @@ import { getSpeciesBonus } from "../data/species";
 import { EASTER_EGG_MESSAGES } from "../engine/easterEggEngine";
 import type { OfflineProgressResult } from "../engine/offlineEngine";
 import { computeOfflineProgress } from "../engine/offlineEngine";
+import { useDailyObjectiveTracking } from "../hooks/useDailyObjectiveTracking";
 import { useGameLoop } from "../hooks/useGameLoop";
 import { useKonamiCode } from "../hooks/useKonamiCode";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useGameStore } from "../store";
+import { useDailyStore } from "../store/dailyStore";
 import { AchievementsModal } from "./AchievementsModal";
 import { CrtOverlay } from "./CrtOverlay";
 import { OfflineProgressModal } from "./OfflineProgressModal";
@@ -24,6 +26,7 @@ import { UpgradesPanel } from "./UpgradesPanel";
 
 export function GameLayout() {
   useGameLoop();
+  useDailyObjectiveTracking();
 
   const [offlineResult, setOfflineResult] =
     useState<OfflineProgressResult | null>(null);
@@ -57,6 +60,7 @@ export function GameLayout() {
     if (result) {
       state.addTrainingData(result.earned);
       setOfflineResult(result);
+      useDailyStore.getState().recordOfflineBonus();
     }
   }, []);
 

@@ -88,6 +88,7 @@ interface GameActions {
   incrementTimePlayed: (seconds: number) => void;
   crossMilestones: (thresholds: number[]) => void;
   updatePeakStats: (tdPerSecond: number, generatorsOwned: number) => void;
+  awardDailyWisdomTokens: (amount: number) => void;
 }
 
 export type GameStore = GameState & GameActions;
@@ -317,6 +318,12 @@ export const useGameStore = create<GameStore>()(
             state.lifetimePeakTdPerSecond,
             tdPerSecond,
           ),
+        })),
+      awardDailyWisdomTokens: (amount) =>
+        set((state) => ({
+          wisdomTokens: state.wisdomTokens + amount,
+          prestigeTokenBalance: state.prestigeTokenBalance + amount,
+          lifetimeWisdomEarned: state.lifetimeWisdomEarned + amount,
         })),
       performRebirth: (selectedSpecies) =>
         set((state) => {

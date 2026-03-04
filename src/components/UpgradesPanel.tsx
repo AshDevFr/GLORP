@@ -16,6 +16,7 @@ import { UPGRADES } from "../data/upgrades";
 import { useGameStore } from "../store";
 import type { BuyMode } from "../store/settingsStore";
 import { useSettingsStore } from "../store/settingsStore";
+import { DailyObjectivesPanel } from "./DailyObjectivesPanel";
 import { BoosterCard } from "./upgrades/BoosterCard";
 import { ClickUpgradeCard } from "./upgrades/ClickUpgradeCard";
 import { UpgradeCard } from "./upgrades/UpgradeCard";
@@ -101,112 +102,114 @@ export function UpgradesPanel() {
 
   return (
     <Stack
-      gap="sm"
-      p="md"
+      gap={0}
       style={{
         borderLeft: "1px solid var(--mantine-color-dark-4)",
         height: "100%",
         overflow: "hidden",
       }}
     >
-      <Title order={4} ff="monospace" c="green">
-        Upgrades
-      </Title>
-      <Group gap="xs">
-        {BUY_MODES.map(({ mode, label, shortcut }) => (
-          <Button
-            key={String(mode)}
-            size="compact-xs"
-            variant={buyMode === mode ? "filled" : "default"}
-            color="green"
-            ff="monospace"
-            onClick={() => setBuyMode(mode)}
-            title={`Buy ${label} (key: ${shortcut})`}
-          >
-            {label}
-          </Button>
-        ))}
-      </Group>
-      <ScrollArea style={{ flex: 1, minHeight: 0 }}>
-        <Stack gap="xs">
-          {visibleClickUpgrades.length > 0 && (
-            <div>
-              <Text size="xs" fw={700} ff="monospace" c="yellow" mb="xs">
-                🖱️ Click Boosters
-              </Text>
-              {visibleClickUpgrades.map((upgrade) => (
-                <ClickUpgradeCard
-                  key={upgrade.id}
-                  upgrade={upgrade}
-                  purchased={clickUpgradesPurchased.includes(upgrade.id)}
-                  trainingData={trainingData}
-                  evolutionStage={evolutionStage}
-                  onPurchase={purchaseClickUpgrade}
-                />
-              ))}
-              <Divider my="xs" />
-            </div>
-          )}
-          {visibleTiers.map((tc, index) => {
-            const tierUpgrades = UPGRADES.filter((u) => u.tier === tc.tier);
-            return (
-              <div key={tc.tier}>
-                {index > 0 && <Divider my="xs" />}
-                <Text size="xs" fw={700} ff="monospace" c="dimmed" mb="xs">
-                  {tc.label}
+      <DailyObjectivesPanel />
+      <Stack gap="sm" p="md" style={{ flex: 1, overflow: "hidden" }}>
+        <Title order={4} ff="monospace" c="green">
+          Upgrades
+        </Title>
+        <Group gap="xs">
+          {BUY_MODES.map(({ mode, label, shortcut }) => (
+            <Button
+              key={String(mode)}
+              size="compact-xs"
+              variant={buyMode === mode ? "filled" : "default"}
+              color="green"
+              ff="monospace"
+              onClick={() => setBuyMode(mode)}
+              title={`Buy ${label} (key: ${shortcut})`}
+            >
+              {label}
+            </Button>
+          ))}
+        </Group>
+        <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+          <Stack gap="xs">
+            {visibleClickUpgrades.length > 0 && (
+              <div>
+                <Text size="xs" fw={700} ff="monospace" c="yellow" mb="xs">
+                  🖱️ Click Boosters
                 </Text>
-                <div
-                  style={
-                    useMultiColumn
-                      ? {
-                          display: "grid",
-                          gridTemplateColumns:
-                            "repeat(auto-fill, minmax(280px, 1fr))",
-                          gap: "var(--mantine-spacing-xs)",
-                        }
-                      : {
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "var(--mantine-spacing-xs)",
-                        }
-                  }
-                >
-                  {tierUpgrades.map((upgrade) => (
-                    <UpgradeCard
-                      key={upgrade.id}
-                      upgrade={upgrade}
-                      owned={upgradeOwned[upgrade.id] ?? 0}
-                      allOwned={upgradeOwned}
-                      trainingData={trainingData}
-                      buyMode={buyMode}
-                      onPurchase={purchaseBulkUpgrade}
-                      costMultiplier={costMultiplier}
-                    />
-                  ))}
-                </div>
+                {visibleClickUpgrades.map((upgrade) => (
+                  <ClickUpgradeCard
+                    key={upgrade.id}
+                    upgrade={upgrade}
+                    purchased={clickUpgradesPurchased.includes(upgrade.id)}
+                    trainingData={trainingData}
+                    evolutionStage={evolutionStage}
+                    onPurchase={purchaseClickUpgrade}
+                  />
+                ))}
+                <Divider my="xs" />
               </div>
-            );
-          })}
-          {visibleBoosters.length > 0 && (
-            <div>
-              <Divider my="xs" />
-              <Text size="xs" fw={700} ff="monospace" c="violet" mb="xs">
-                ⚡ Global Boosters
-              </Text>
-              {visibleBoosters.map((booster) => (
-                <BoosterCard
-                  key={booster.id}
-                  booster={booster}
-                  purchased={boostersPurchased.includes(booster.id)}
-                  trainingData={trainingData}
-                  evolutionStage={evolutionStage}
-                  onPurchase={purchaseBooster}
-                />
-              ))}
-            </div>
-          )}
-        </Stack>
-      </ScrollArea>
+            )}
+            {visibleTiers.map((tc, index) => {
+              const tierUpgrades = UPGRADES.filter((u) => u.tier === tc.tier);
+              return (
+                <div key={tc.tier}>
+                  {index > 0 && <Divider my="xs" />}
+                  <Text size="xs" fw={700} ff="monospace" c="dimmed" mb="xs">
+                    {tc.label}
+                  </Text>
+                  <div
+                    style={
+                      useMultiColumn
+                        ? {
+                            display: "grid",
+                            gridTemplateColumns:
+                              "repeat(auto-fill, minmax(280px, 1fr))",
+                            gap: "var(--mantine-spacing-xs)",
+                          }
+                        : {
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "var(--mantine-spacing-xs)",
+                          }
+                    }
+                  >
+                    {tierUpgrades.map((upgrade) => (
+                      <UpgradeCard
+                        key={upgrade.id}
+                        upgrade={upgrade}
+                        owned={upgradeOwned[upgrade.id] ?? 0}
+                        allOwned={upgradeOwned}
+                        trainingData={trainingData}
+                        buyMode={buyMode}
+                        onPurchase={purchaseBulkUpgrade}
+                        costMultiplier={costMultiplier}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+            {visibleBoosters.length > 0 && (
+              <div>
+                <Divider my="xs" />
+                <Text size="xs" fw={700} ff="monospace" c="violet" mb="xs">
+                  ⚡ Global Boosters
+                </Text>
+                {visibleBoosters.map((booster) => (
+                  <BoosterCard
+                    key={booster.id}
+                    booster={booster}
+                    purchased={boostersPurchased.includes(booster.id)}
+                    trainingData={trainingData}
+                    evolutionStage={evolutionStage}
+                    onPurchase={purchaseBooster}
+                  />
+                ))}
+              </div>
+            )}
+          </Stack>
+        </ScrollArea>
+      </Stack>
     </Stack>
   );
 }
