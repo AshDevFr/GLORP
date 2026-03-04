@@ -105,3 +105,75 @@ export function applySave(save: GameState): void {
 export function resetGame(): void {
   useGameStore.setState({ ...initialGameState, lastSaved: Date.now() });
 }
+
+export const SAVE_ENVELOPE_VERSION = 1;
+
+export interface SaveEnvelope {
+  v: number;
+  data: string;
+}
+
+/**
+ * Encode the current game state as a versioned base64 string and copy it to
+ * the clipboard. Returns the encoded string.
+ */
+export async function exportSaveToClipboard(): Promise<string> {
+  const state = useGameStore.getState();
+  const exportKeys: (keyof GameState)[] = [
+    ...REQUIRED_KEYS,
+    "prestigeUpgrades",
+    "prestigeTokenBalance",
+    "hasOpenedPrestigeShop",
+    "boostersPurchased",
+    "easterEggsUnlocked",
+    "totalTimePlayed",
+    "crossedMilestones",
+  ];
+  const saveData: Partial<GameState> = {};
+  for (const key of exportKeys) {
+    (saveData as Record<string, unknown>)[key] = state[key];
+  }
+  const envelope: SaveEnvelope = {
+    v: SAVE_ENVELOPE_VERSION,
+    data: btoa(JSON.stringify(saveData)),
+  };
+  const encoded = JSON.stringify(envelope);
+  await navigator.clipboard.writeText(encoded);
+  return encoded;
+}
+
+/**
+ * Parse and validate a base64 save string (produced by exportSaveToClipboard).
+ * Throws a descriptive Error if the string is malformed or fails validation.
+ */
+export function importSaveFromString(str: string): GameState {
+  let envelope: unknown;
+  try {
+    envelope = JSON.parse(str);
+  } catch {
+    throw new Error("Invalid save string: not valid JSON");
+  }
+
+  if (
+    typeof envelope !== "object" ||
+    envelope === null ||
+    !("v" in envelope) ||
+    !("data" in envelope) ||
+    typeof (envelope as SaveEnvelope).data !== "string"
+  ) {
+    throw new Error("Invalid save string: missing version envelope");
+  }
+
+  let decoded: unknown;
+  try {
+    decoded = JSON.parse(atob((envelope as SaveEnvelope).data));
+  } catch {
+    throw new Error("Invalid save string: base64 decode failed");
+  }
+
+  if (!validateSave(decoded)) {
+    throw new Error("Invalid save string: missing required game state fields");
+  }
+
+  return migrateSave(decoded);
+}

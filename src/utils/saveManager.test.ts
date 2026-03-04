@@ -5,9 +5,12 @@ import { initialGameState, useGameStore } from "../store/gameStore";
 import {
   applySave,
   exportSave,
+  exportSaveToClipboard,
+  importSaveFromString,
   migrateSave,
   parseSaveFile,
   resetGame,
+  SAVE_ENVELOPE_VERSION,
   validateSave,
 } from "./saveManager";
 
@@ -221,5 +224,93 @@ describe("parseSaveFile", () => {
       type: "application/json",
     });
     await expect(parseSaveFile(file)).rejects.toThrow("Invalid save file");
+  });
+});
+
+describe("exportSaveToClipboard", () => {
+  beforeEach(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+      writable: true,
+    });
+    useGameStore.setState({ ...initialGameState, trainingData: 42 });
+  });
+
+  it("copies a JSON string to clipboard", async () => {
+    await exportSaveToClipboard();
+    expect(navigator.clipboard.writeText).toHaveBeenCalledTimes(1);
+    const written = (navigator.clipboard.writeText as ReturnType<typeof vi.fn>)
+      .mock.calls[0][0] as string;
+    expect(typeof written).toBe("string");
+  });
+
+  it("uses the version envelope", async () => {
+    await exportSaveToClipboard();
+    const written = (navigator.clipboard.writeText as ReturnType<typeof vi.fn>)
+      .mock.calls[0][0] as string;
+    const envelope = JSON.parse(written) as { v: number; data: string };
+    expect(envelope.v).toBe(SAVE_ENVELOPE_VERSION);
+    expect(typeof envelope.data).toBe("string");
+  });
+
+  it("round-trips the game state", async () => {
+    await exportSaveToClipboard();
+    const written = (navigator.clipboard.writeText as ReturnType<typeof vi.fn>)
+      .mock.calls[0][0] as string;
+    const imported = importSaveFromString(written);
+    expect(imported.trainingData).toBe(42);
+  });
+});
+
+describe("importSaveFromString", () => {
+  function makeEnvelope(data: unknown): string {
+    return JSON.stringify({
+      v: SAVE_ENVELOPE_VERSION,
+      data: btoa(JSON.stringify(data)),
+    });
+  }
+
+  it("returns a valid GameState for a correct envelope", () => {
+    const result = importSaveFromString(makeEnvelope(validSave));
+    expect(result.trainingData).toBe(100);
+    expect(result.rebirthCount).toBe(1);
+  });
+
+  it("throws for non-JSON input", () => {
+    expect(() => importSaveFromString("not json")).toThrow("not valid JSON");
+  });
+
+  it("throws when envelope is missing the v field", () => {
+    expect(() =>
+      importSaveFromString(JSON.stringify({ data: btoa("{}") })),
+    ).toThrow("missing version envelope");
+  });
+
+  it("throws when envelope is missing the data field", () => {
+    expect(() => importSaveFromString(JSON.stringify({ v: 1 }))).toThrow(
+      "missing version envelope",
+    );
+  });
+
+  it("throws when data is not valid base64 JSON", () => {
+    expect(() =>
+      importSaveFromString(JSON.stringify({ v: 1, data: "!!!not-base64!!!" })),
+    ).toThrow("base64 decode failed");
+  });
+
+  it("throws when decoded object is missing required fields", () => {
+    expect(() => importSaveFromString(makeEnvelope({ foo: "bar" }))).toThrow(
+      "missing required game state fields",
+    );
+  });
+
+  it("does not modify game state on failure", () => {
+    useGameStore.setState({ trainingData: 9999 });
+    try {
+      importSaveFromString("garbage");
+    } catch {
+      // expected
+    }
+    expect(useGameStore.getState().trainingData).toBe(9999);
   });
 });
