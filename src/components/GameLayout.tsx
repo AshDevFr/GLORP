@@ -1,4 +1,11 @@
-import { AppShell, Button, Grid, Group } from "@mantine/core";
+import {
+  AppShell,
+  Button,
+  Drawer,
+  Group,
+  SegmentedControl,
+} from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -16,13 +23,14 @@ import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useGameStore } from "../store";
 import { useDailyStore } from "../store/dailyStore";
 import { AchievementsModal } from "./AchievementsModal";
+import { BonusesSidebar } from "./BonusesSidebar";
 import { CrtOverlay } from "./CrtOverlay";
 import { OfflineProgressModal } from "./OfflineProgressModal";
 import { PetDisplay } from "./PetDisplay";
 import { SettingsPanel } from "./SettingsPanel";
 import { StatsBar } from "./StatsBar";
 import { StatsPanel } from "./StatsPanel";
-import { UpgradesPanel } from "./UpgradesPanel";
+import { UpgradesSidebar } from "./UpgradesSidebar";
 
 export function GameLayout() {
   useGameLoop();
@@ -34,9 +42,15 @@ export function GameLayout() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [konamiVisible, setKonamiVisible] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerTab, setDrawerTab] = useState("upgrades");
   const konamiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unlockedCount = useGameStore((s) => s.unlockedAchievements.length);
   const reducedMotion = useReducedMotion();
+
+  // Responsive breakpoints
+  const isDesktop = useMediaQuery("(min-width: 1280px)");
+  const isMedium = useMediaQuery("(min-width: 900px)");
 
   useEffect(() => {
     const state = useGameStore.getState();
@@ -85,12 +99,36 @@ export function GameLayout() {
 
   useKonamiCode(handleKonami);
 
+  // Close drawer when viewport grows past breakpoint
+  useEffect(() => {
+    if (isDesktop) setDrawerOpen(false);
+  }, [isDesktop]);
+
+  // Determine which sidebar(s) show as drawers
+  const showUpgradesSidebar = isMedium;
+  const showBonusesSidebar = isDesktop;
+  const needsDrawer = !isDesktop;
+
   return (
     <AppShell header={{ height: 44 }} padding={0}>
       <AppShell.Header>
         <Group h="100%" px="xs" justify="space-between" wrap="nowrap">
           <StatsBar />
           <Group gap="xs" wrap="nowrap">
+            {needsDrawer && (
+              <Button
+                size="xs"
+                variant="subtle"
+                color="green"
+                onClick={() => setDrawerOpen(true)}
+                style={{ fontFamily: "monospace" }}
+                aria-label={
+                  isMedium ? "Open bonuses panel" : "Open upgrades and bonuses"
+                }
+              >
+                {isMedium ? "⚡ Bonuses" : "📋 Panels"}
+              </Button>
+            )}
             <Button
               size="xs"
               variant="subtle"
@@ -124,15 +162,55 @@ export function GameLayout() {
       </AppShell.Header>
 
       <AppShell.Main>
-        <Grid gutter={0} className="game-main-grid">
-          <Grid.Col span={{ base: 12, md: 8 }}>
+        <div className="game-layout">
+          {showUpgradesSidebar && <UpgradesSidebar />}
+          <div className="game-center">
             <PetDisplay />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 4 }}>
-            <UpgradesPanel />
-          </Grid.Col>
-        </Grid>
+          </div>
+          {showBonusesSidebar && <BonusesSidebar />}
+        </div>
       </AppShell.Main>
+
+      {/* Bottom drawer for responsive layouts */}
+      <Drawer
+        opened={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        position="bottom"
+        size="70vh"
+        title={null}
+        styles={{
+          body: {
+            padding: 0,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+          },
+          content: { display: "flex", flexDirection: "column" },
+        }}
+      >
+        {!isMedium && (
+          <SegmentedControl
+            value={drawerTab}
+            onChange={setDrawerTab}
+            fullWidth
+            data={[
+              { label: "🔧 Upgrades", value: "upgrades" },
+              { label: "⚡ Bonuses", value: "bonuses" },
+            ]}
+            style={{ margin: "0 var(--mantine-spacing-sm)" }}
+            styles={{ root: { fontFamily: "monospace" } }}
+          />
+        )}
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          {isMedium ? (
+            <BonusesSidebar />
+          ) : drawerTab === "upgrades" ? (
+            <UpgradesSidebar />
+          ) : (
+            <BonusesSidebar />
+          )}
+        </div>
+      </Drawer>
 
       <OfflineProgressModal
         result={offlineResult}

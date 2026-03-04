@@ -114,6 +114,39 @@ body {
   }
 }
 
+/* ── New-item pulse animation (300ms scale pulse with yellow shadow) ──── */
+
+@keyframes new-item-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow:
+      0 0 12px rgba(255, 215, 0, 0.6),
+      0 0 24px rgba(255, 215, 0, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+  }
+}
+
+/* ── Purchase snap-back animation ──────────────────────────────────────── */
+
+@keyframes purchase-snap {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 /* ── ASCII art color classes ─────────────────────────── */
 
 .ascii-eyes {
@@ -177,35 +210,46 @@ body {
   }
 }
 
-/* ── Game layout: lock panels to viewport height on desktop ─────────── */
+/* ── Game layout: dual-sidebar three-column layout ─────────────────────── */
 
-.game-main-grid {
-  min-height: calc(100dvh - 44px);
+.game-layout {
+  display: flex;
+  height: calc(100dvh - 44px);
+  overflow: hidden;
 }
 
-@media (min-width: 62em) {
-  /* On desktop the panels sit side-by-side; lock the grid to the viewport
-     so each panel scrolls internally rather than growing the page.
-     Use 100dvh (dynamic viewport height) so the calculation stays correct
-     at non-100 % browser zoom levels. */
-  .game-main-grid {
-    height: calc(100dvh - 44px);
-    overflow: hidden;
-  }
+.game-center {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
 
-  /* Propagate the bounded height through Mantine Grid's inner flex wrapper
-     so that Grid.Col children can resolve percentage heights. */
-  .game-main-grid > div {
-    height: 100%;
-  }
+/* ── Sidebar common styles ─────────────────────────────────────────────── */
 
-  /* Grid.Col items need an explicit height (align-self:stretch alone does
-     not count for %-height resolution) and min-height:0 so content taller
-     than the viewport doesn't force the flex row to grow. */
-  .game-main-grid > div > div {
-    height: 100%;
-    min-height: 0;
-  }
+.sidebar-upgrades,
+.sidebar-bonuses {
+  height: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-upgrades {
+  width: 280px;
+  border-right: 1px solid var(--mantine-color-dark-4);
+}
+
+.sidebar-bonuses {
+  width: 300px;
+  border-left: 1px solid var(--mantine-color-dark-4);
+}
+
+/* ── Bonuses grid: 2-column card layout ────────────────────────────────── */
+
+.bonuses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--mantine-spacing-xs);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -224,6 +268,12 @@ body {
     opacity: 0;
   }
   .ascii-glitch {
+    animation: none;
+  }
+  .new-item-pulse {
+    animation: none;
+  }
+  .purchase-snap {
     animation: none;
   }
 }
