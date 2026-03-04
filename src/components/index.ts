@@ -1,4 +1,5 @@
 export { AchievementsModal } from "./AchievementsModal";
+export { BonusesSidebar } from "./BonusesSidebar";
 export { CrtOverlay } from "./CrtOverlay";
 export { FloatingParticles } from "./FloatingParticles";
 export { GameLayout } from "./GameLayout";
@@ -9,5 +10,4 @@ export { SettingsPanel } from "./SettingsPanel";
 export { SpeechBubble } from "./SpeechBubble";
 export { StatsBar } from "./StatsBar";
 export { StatsPanel } from "./StatsPanel";
-export { BonusesSidebar } from "./BonusesSidebar";
 export { UpgradesSidebar } from "./UpgradesSidebar";
