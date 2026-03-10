@@ -215,12 +215,13 @@ body {
 .game-layout {
   display: flex;
   height: calc(100dvh - 44px);
+  min-width: 860px;
   overflow: hidden;
 }
 
 .game-center {
   flex: 1;
-  min-width: 0;
+  min-width: 300px;
   height: 100%;
   overflow: hidden;
 }
@@ -230,25 +231,34 @@ body {
 .sidebar-upgrades,
 .sidebar-bonuses {
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
   flex-shrink: 0;
 }
 
 .sidebar-upgrades {
-  width: 280px;
+  width: 320px;
   border-right: 1px solid var(--mantine-color-dark-4);
 }
 
 .sidebar-bonuses {
-  width: 300px;
+  width: 240px;
   border-left: 1px solid var(--mantine-color-dark-4);
 }
 
-/* ── Bonuses grid: 2-column card layout ────────────────────────────────── */
+/* ── Upgrades grid: 2-column card layout inside each tier ──────────────── */
+
+.upgrades-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+/* ── Bonuses grid: single-column generator list ────────────────────────── */
 
 .bonuses-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--mantine-spacing-xs);
 }
 
