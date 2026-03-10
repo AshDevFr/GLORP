@@ -196,7 +196,7 @@ export function UpgradesSidebar() {
                     in={openCategories["click-boosters"] ?? true}
                     transitionDuration={200}
                   >
-                    <Stack gap="xs" mt={4}>
+                    <div className="upgrades-grid" style={{ marginTop: 4 }}>
                       {visibleClickUpgrades.map((upgrade) => {
                         const purchased = clickUpgradesPurchased.includes(
                           upgrade.id,
@@ -218,7 +218,7 @@ export function UpgradesSidebar() {
                           </div>
                         );
                       })}
-                    </Stack>
+                    </div>
                   </Collapse>
                 </div>
               )}
@@ -237,7 +237,7 @@ export function UpgradesSidebar() {
                       in={openCategories[tc.tier] ?? true}
                       transitionDuration={200}
                     >
-                      <Stack gap="xs" mt={4}>
+                      <div className="upgrades-grid" style={{ marginTop: 4 }}>
                         {tierUpgrades.map((upgrade) => (
                           <UpgradeCard
                             key={upgrade.id}
@@ -250,7 +250,7 @@ export function UpgradesSidebar() {
                             costMultiplier={costMultiplier}
                           />
                         ))}
-                      </Stack>
+                      </div>
                     </Collapse>
                   </div>
                 );

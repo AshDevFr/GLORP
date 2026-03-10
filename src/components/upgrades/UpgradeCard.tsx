@@ -123,6 +123,7 @@ export function UpgradeCard({
       padding="sm"
       radius="sm"
       withBorder
+      aria-disabled={!canAfford ? "true" : undefined}
       style={{
         borderColor: isMilestoneGlowing
           ? "var(--mantine-color-yellow-6)"
