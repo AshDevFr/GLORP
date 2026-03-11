@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { UPGRADES } from "../data/upgrades";
+import { COMBO_THRESHOLD } from "../engine/clickEngine";
 import { getUpgradeCost } from "../engine/upgradeEngine";
 import { initialGameState, useGameStore } from "./gameStore";
 
@@ -69,6 +70,27 @@ describe("gameStore", () => {
       expect(state.trainingData).toBe(3);
       expect(state.totalClicks).toBe(3);
       expect(state.totalTdEarned).toBe(3);
+    });
+
+    it("awards floor(1 × comboMultiplier) TD per click when combo is active", () => {
+      // Set comboCount to 11 so the next click brings it to 12 (= COMBO_THRESHOLD * 4).
+      // At comboCount 12 the multiplier is exactly 2.0:
+      //   1 + (COMBO_MULTIPLIER - 1) * sqrt(12 / COMBO_THRESHOLD)
+      //   = 1 + (1.5 - 1) * sqrt(4) = 1 + 0.5 * 2 = 2.0
+      // With no generators (tdPerSecond = 0) the base is 1 TD, so the click
+      // should award floor(1 * 2.0) = 2 TD.
+      const now = 5000;
+      vi.spyOn(Date, "now").mockImplementation(() => now);
+      useGameStore.setState({
+        ...initialGameState,
+        comboCount: COMBO_THRESHOLD * 4 - 1, // 11
+        lastClickTime: now - 100, // 100 ms ago — within COMBO_DECAY_MS
+      });
+
+      useGameStore.getState().clickFeed();
+
+      expect(useGameStore.getState().trainingData).toBe(2);
+      expect(useGameStore.getState().totalTdEarned).toBe(2);
     });
   });
 
