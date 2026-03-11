@@ -156,6 +156,26 @@ describe("computeClickPower", () => {
     expect(power).toBeCloseTo(expectedBase * COMBO_MULTIPLIER);
   });
 
+  it("applies combo multiplier to the base-1 floor when tdPerSecond is 0", () => {
+    const now = Date.now();
+    // comboCount COMBO_THRESHOLD * 4 = 12 → multiplier is exactly 2.0:
+    //   1 + (COMBO_MULTIPLIER - 1) * sqrt(12 / COMBO_THRESHOLD)
+    //   = 1 + 0.5 * sqrt(4) = 1 + 0.5 * 2 = 2.0
+    // floor(max(1, 0) * 2.0) = floor(2.0) = 2
+    const power = computeClickPower(
+      {
+        clickUpgradesPurchased: [],
+        comboCount: COMBO_THRESHOLD * 4,
+        lastClickTime: now,
+      },
+      mockUpgrades,
+      0,
+      now,
+    );
+    expect(power).toBe(2);
+  });
+
+
   it("applies species click multiplier", () => {
     const tdPerSecond = 1000;
     const power = computeClickPower(
