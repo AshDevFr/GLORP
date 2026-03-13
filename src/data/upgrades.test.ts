@@ -31,39 +31,39 @@ describe("UPGRADES", () => {
     }
   });
 
-  it("garage-lab upgrades cost between 10 and 500", () => {
+  it("garage-lab upgrades cost between 10 and 1,000", () => {
     const garageLab = UPGRADES.filter((u) => u.tier === "garage-lab");
     expect(garageLab.length).toBeGreaterThanOrEqual(3);
     for (const u of garageLab) {
       expect(u.baseCost).toBeGreaterThanOrEqual(10);
-      expect(u.baseCost).toBeLessThanOrEqual(500);
+      expect(u.baseCost).toBeLessThanOrEqual(1_000);
     }
   });
 
-  it("startup upgrades cost between 1K and 50K", () => {
+  it("startup upgrades cost between 10K and 1M", () => {
     const startup = UPGRADES.filter((u) => u.tier === "startup");
     expect(startup.length).toBeGreaterThanOrEqual(3);
     for (const u of startup) {
-      expect(u.baseCost).toBeGreaterThanOrEqual(1_000);
-      expect(u.baseCost).toBeLessThanOrEqual(50_000);
+      expect(u.baseCost).toBeGreaterThanOrEqual(10_000);
+      expect(u.baseCost).toBeLessThanOrEqual(1_000_000);
     }
   });
 
-  it("scale-up tier has at least 4 upgrades with costs 100K–5M", () => {
+  it("scale-up tier has at least 4 upgrades with costs 10M–10B", () => {
     const scaleUp = UPGRADES.filter((u) => u.tier === "scale-up");
     expect(scaleUp.length).toBeGreaterThanOrEqual(4);
     for (const u of scaleUp) {
-      expect(u.baseCost).toBeGreaterThanOrEqual(100_000);
-      expect(u.baseCost).toBeLessThanOrEqual(5_000_000);
+      expect(u.baseCost).toBeGreaterThanOrEqual(10_000_000);
+      expect(u.baseCost).toBeLessThanOrEqual(10_000_000_000);
     }
   });
 
-  it("mega-corp tier has at least 4 upgrades with costs 50M–500M", () => {
+  it("mega-corp tier has at least 4 upgrades with costs 100B–100T", () => {
     const megaCorp = UPGRADES.filter((u) => u.tier === "mega-corp");
     expect(megaCorp.length).toBeGreaterThanOrEqual(4);
     for (const u of megaCorp) {
-      expect(u.baseCost).toBeGreaterThanOrEqual(50_000_000);
-      expect(u.baseCost).toBeLessThanOrEqual(500_000_000);
+      expect(u.baseCost).toBeGreaterThanOrEqual(100_000_000_000);
+      expect(u.baseCost).toBeLessThanOrEqual(100_000_000_000_000);
     }
   });
 
@@ -88,5 +88,29 @@ describe("UPGRADES", () => {
     for (const u of earlyTier) {
       expect(u.unlockStage).toBe(0);
     }
+  });
+
+  it("each consecutive generator produces 8-12x the previous tier", () => {
+    for (let i = 1; i < UPGRADES.length; i++) {
+      const ratio =
+        UPGRADES[i].baseTdPerSecond / UPGRADES[i - 1].baseTdPerSecond;
+      expect(ratio).toBeGreaterThanOrEqual(8);
+      expect(ratio).toBeLessThanOrEqual(12);
+    }
+  });
+
+  it("each consecutive generator costs approximately 10x the previous", () => {
+    for (let i = 1; i < UPGRADES.length; i++) {
+      const ratio = UPGRADES[i].baseCost / UPGRADES[i - 1].baseCost;
+      expect(ratio).toBeGreaterThanOrEqual(5);
+      expect(ratio).toBeLessThanOrEqual(15);
+    }
+  });
+
+  it("cheapest generator pays for itself within 30-60 seconds", () => {
+    const cheapest = UPGRADES[0];
+    const payback = cheapest.baseCost / cheapest.baseTdPerSecond;
+    expect(payback).toBeGreaterThanOrEqual(30);
+    expect(payback).toBeLessThanOrEqual(60);
   });
 });
