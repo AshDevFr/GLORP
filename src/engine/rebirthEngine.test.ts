@@ -3,6 +3,8 @@ import {
   canRebirth,
   computeWisdomTokens,
   getNextSpecies,
+  getRebirthProgress,
+  getRebirthThresholdTd,
   REBIRTH_MIN_STAGE,
   WISDOM_TOKENS_DIVISOR,
 } from "./rebirthEngine";
@@ -121,5 +123,161 @@ describe("getNextSpecies", () => {
 
   it("stays at MEGA-GLORP when already at last species", () => {
     expect(getNextSpecies("MEGA-GLORP")).toBe("MEGA-GLORP");
+  });
+});
+
+describe("getRebirthThresholdTd", () => {
+  it("returns Stage 4 unlockAt (10 M) by default", () => {
+    expect(getRebirthThresholdTd()).toBe(10_000_000);
+  });
+
+  it("applies thresholdMultiplier (Evolution Accelerator level 1 = 0.9×)", () => {
+    expect(getRebirthThresholdTd(0.9)).toBeCloseTo(9_000_000);
+  });
+
+  it("applies full Evolution Accelerator (3 levels = 0.7×)", () => {
+    expect(getRebirthThresholdTd(0.7)).toBeCloseTo(7_000_000);
+  });
+});
+
+describe("getRebirthProgress", () => {
+  it("returns 0 at 0 TD earned", () => {
+    expect(getRebirthProgress(0)).toBe(0);
+  });
+
+  it("returns 0.5 at half the threshold (5 M TD)", () => {
+    expect(getRebirthProgress(5_000_000)).toBeCloseTo(0.5);
+  });
+
+  it("returns 1 at exactly the threshold (10 M TD)", () => {
+    expect(getRebirthProgress(10_000_000)).toBe(1);
+  });
+
+  it("clamps to 1 above the threshold", () => {
+    expect(getRebirthProgress(20_000_000)).toBe(1);
+  });
+
+  it("clamps to 0 for negative input", () => {
+    expect(getRebirthProgress(-1)).toBe(0);
+  });
+
+  it("accounts for thresholdMultiplier (Evolution Accelerator lvl 1)", () => {
+    // threshold = 9 M; 9 M / 9 M = 1
+    expect(getRebirthProgress(9_000_000, 0.9)).toBe(1);
+  });
+
+  it("returns fractional progress with multiplier", () => {
+    // threshold = 7 M; 3.5 M / 7 M = 0.5
+    expect(getRebirthProgress(3_500_000, 0.7)).toBeCloseTo(0.5);
+  });
+});
+
+// ── Pacing simulation ─────────────────────────────────────────────────────────────────────────────
+// Validates that a new player reaches Stage 4 (10 M total TD) within the
+// design target of 2–4 hours. Full methodology in docs/prestige-pacing.md.
+describe("pacing: time-to-Stage-4 simulation (Issue #108)", () => {
+  /**
+   * Greedy idle+click simulation using the post-#107 economy parameters.
+   *
+   * Strategy: each second, earn TD from generators + clicks, then buy
+   * the generator with the best TD/s per marginal-cost ratio that is
+   * currently affordable. Milestone multipliers (×1.5/×2/×3/×6 at
+   * 10/25/50/100 owned) are applied; synergies are omitted for conservatism.
+   *
+   * Returns the simulated time in seconds, or 100 000 if target is never reached.
+   */
+  function simulateTimeToPrestage4(
+    targetTd: number,
+    clicksPerSecond: number,
+    baseClickPower: number,
+  ): number {
+    const generators = [
+      { baseCost: 10, baseTdPerSec: 0.2 }, // neural-notepad
+      { baseCost: 100, baseTdPerSec: 2 }, // data-hamster-wheel
+      { baseCost: 1_000, baseTdPerSec: 20 }, // pattern-antenna
+      { baseCost: 10_000, baseTdPerSec: 200 }, // intern-algorithm
+      { baseCost: 100_000, baseTdPerSec: 2_000 }, // cloud-crumb
+      { baseCost: 1_000_000, baseTdPerSec: 20_000 }, // gpu-toaster
+    ];
+
+    const MILESTONES = [
+      { threshold: 100, mult: 6.0 },
+      { threshold: 50, mult: 3.0 },
+      { threshold: 25, mult: 2.0 },
+      { threshold: 10, mult: 1.5 },
+    ];
+
+    function milestoneMult(owned: number): number {
+      for (const m of MILESTONES) {
+        if (owned >= m.threshold) return m.mult;
+      }
+      return 1;
+    }
+
+    const owned = new Array(generators.length).fill(0) as number[];
+    let td = 0;
+    let totalTdEarned = 0;
+    const DT = 1; // 1-second timestep
+    let time = 0;
+
+    while (totalTdEarned < targetTd && time < 100_000) {
+      // Earn TD: generators + active clicking
+      let genTdPerSec = 0;
+      for (let i = 0; i < generators.length; i++) {
+        genTdPerSec +=
+          generators[i].baseTdPerSec * owned[i] * milestoneMult(owned[i]);
+      }
+      const earned =
+        (genTdPerSec + clicksPerSecond * baseClickPower) * DT;
+      td += earned;
+      totalTdEarned += earned;
+
+      // Buy the generator with the best TD/s per marginal-cost ratio
+      let bestIdx = -1;
+      let bestRatio = -1;
+      for (let i = 0; i < generators.length; i++) {
+        const marginalCost =
+          generators[i].baseCost * Math.pow(1.15, owned[i]);
+        if (td >= marginalCost) {
+          const ratio = generators[i].baseTdPerSec / marginalCost;
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            bestIdx = i;
+          }
+        }
+      }
+      if (bestIdx >= 0) {
+        const cost =
+          generators[bestIdx].baseCost * Math.pow(1.15, owned[bestIdx]);
+        td -= cost;
+        owned[bestIdx]++;
+      }
+
+      time += DT;
+    }
+
+    return time;
+  }
+
+  it("active player (4 clicks/s) reaches Stage 4 within 4 hours (14\u202f400 s)", () => {
+    const seconds = simulateTimeToPrestage4(10_000_000, 4, 1);
+    expect(seconds).toBeLessThan(14_400);
+  });
+
+  it("active player (4 clicks/s) reaches Stage 4 after at least 30 min (1\u202f800 s)", () => {
+    const seconds = simulateTimeToPrestage4(10_000_000, 4, 1);
+    expect(seconds).toBeGreaterThan(1_800);
+  });
+
+  it("casual player (1 click/s) reaches Stage 4 within 4 hours (14\u202f400 s)", () => {
+    const seconds = simulateTimeToPrestage4(10_000_000, 1, 1);
+    expect(seconds).toBeLessThan(14_400);
+  });
+
+  it("second-run player with Evolution Accelerator (0.9× threshold) is faster", () => {
+    const firstRunSeconds = simulateTimeToPrestage4(10_000_000, 4, 1);
+    // Second run: Evolution Accelerator level 1 reduces threshold to 9 M TD
+    const secondRunSeconds = simulateTimeToPrestage4(9_000_000, 4, 1);
+    expect(secondRunSeconds).toBeLessThan(firstRunSeconds);
   });
 });

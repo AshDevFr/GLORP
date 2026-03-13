@@ -1,5 +1,6 @@
 import type { Species } from "../data/species";
 import { SPECIES_ORDER } from "../data/species";
+import { STAGES } from "../data/stages";
 
 /** Minimum evolution stage required to trigger a Rebirth. */
 export const REBIRTH_MIN_STAGE = 4;
@@ -25,6 +26,34 @@ export function computeWisdomTokens(
 /** Returns true when the player is eligible to Rebirth. */
 export function canRebirth(evolutionStage: number): boolean {
   return evolutionStage >= REBIRTH_MIN_STAGE;
+}
+
+/**
+ * Returns the total-TD-earned threshold for the Rebirth-eligible stage (Stage 4).
+ * `thresholdMultiplier` mirrors the Evolution Accelerator prestige upgrade
+ * (level 3 → multiplier 0.7, reducing the threshold by 30%).
+ */
+export function getRebirthThresholdTd(thresholdMultiplier = 1): number {
+  const rebirthStage = STAGES.find((s) => s.stage === REBIRTH_MIN_STAGE);
+  return (rebirthStage?.unlockAt ?? 10_000_000) * thresholdMultiplier;
+}
+
+/**
+ * Returns progress toward first Rebirth as a value in [0, 1].
+ *
+ * - 0  = no progress
+ * - 1  = Stage 4 threshold reached (Rebirth available)
+ *
+ * Values above the threshold are clamped to 1.
+ * `thresholdMultiplier` mirrors the Evolution Accelerator prestige upgrade.
+ */
+export function getRebirthProgress(
+  totalTdEarned: number,
+  thresholdMultiplier = 1,
+): number {
+  const threshold = getRebirthThresholdTd(thresholdMultiplier);
+  if (totalTdEarned >= threshold) return 1;
+  return Math.max(0, totalTdEarned / threshold);
 }
 
 /**
