@@ -1,9 +1,9 @@
 import { Badge, Progress, Stack, Text } from "@mantine/core";
 import { getEvolutionThresholdMultiplier } from "../data/prestigeShop";
 import {
-  REBIRTH_MIN_STAGE,
   getRebirthProgress,
   getRebirthThresholdTd,
+  REBIRTH_MIN_STAGE,
 } from "../engine/rebirthEngine";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useGameStore } from "../store";

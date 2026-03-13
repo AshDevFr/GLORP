@@ -227,8 +227,7 @@ describe("pacing: time-to-Stage-4 simulation (Issue #108)", () => {
         genTdPerSec +=
           generators[i].baseTdPerSec * owned[i] * milestoneMult(owned[i]);
       }
-      const earned =
-        (genTdPerSec + clicksPerSecond * baseClickPower) * DT;
+      const earned = (genTdPerSec + clicksPerSecond * baseClickPower) * DT;
       td += earned;
       totalTdEarned += earned;
 
@@ -236,8 +235,7 @@ describe("pacing: time-to-Stage-4 simulation (Issue #108)", () => {
       let bestIdx = -1;
       let bestRatio = -1;
       for (let i = 0; i < generators.length; i++) {
-        const marginalCost =
-          generators[i].baseCost * Math.pow(1.15, owned[i]);
+        const marginalCost = generators[i].baseCost * 1.15 ** owned[i];
         if (td >= marginalCost) {
           const ratio = generators[i].baseTdPerSec / marginalCost;
           if (ratio > bestRatio) {
@@ -247,8 +245,7 @@ describe("pacing: time-to-Stage-4 simulation (Issue #108)", () => {
         }
       }
       if (bestIdx >= 0) {
-        const cost =
-          generators[bestIdx].baseCost * Math.pow(1.15, owned[bestIdx]);
+        const cost = generators[bestIdx].baseCost * 1.15 ** owned[bestIdx];
         td -= cost;
         owned[bestIdx]++;
       }
