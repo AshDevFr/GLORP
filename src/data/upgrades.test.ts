@@ -11,12 +11,13 @@ describe("UPGRADES", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("includes all four tiers", () => {
+  it("includes all five tiers", () => {
     const tiers = new Set(UPGRADES.map((u) => u.tier));
     expect(tiers.has("garage-lab")).toBe(true);
     expect(tiers.has("startup")).toBe(true);
     expect(tiers.has("scale-up")).toBe(true);
     expect(tiers.has("mega-corp")).toBe(true);
+    expect(tiers.has("transcendence")).toBe(true);
   });
 
   it("each upgrade has required fields", () => {
@@ -31,7 +32,7 @@ describe("UPGRADES", () => {
     }
   });
 
-  it("garage-lab upgrades cost between 10 and 1,000", () => {
+  it("garage-lab upgrades cost between 10 and 1_000", () => {
     const garageLab = UPGRADES.filter((u) => u.tier === "garage-lab");
     expect(garageLab.length).toBeGreaterThanOrEqual(3);
     for (const u of garageLab) {
@@ -49,7 +50,7 @@ describe("UPGRADES", () => {
     }
   });
 
-  it("scale-up tier has at least 4 upgrades with costs 10M–10B", () => {
+  it("scale-up tier has at least 4 upgrades with costs 10M\u201310B", () => {
     const scaleUp = UPGRADES.filter((u) => u.tier === "scale-up");
     expect(scaleUp.length).toBeGreaterThanOrEqual(4);
     for (const u of scaleUp) {
@@ -58,7 +59,7 @@ describe("UPGRADES", () => {
     }
   });
 
-  it("mega-corp tier has at least 4 upgrades with costs 100B–100T", () => {
+  it("mega-corp tier has at least 4 upgrades with costs 100B\u2013100T", () => {
     const megaCorp = UPGRADES.filter((u) => u.tier === "mega-corp");
     expect(megaCorp.length).toBeGreaterThanOrEqual(4);
     for (const u of megaCorp) {
@@ -90,7 +91,15 @@ describe("UPGRADES", () => {
     }
   });
 
-  it("each consecutive generator produces 8-12x the previous tier", () => {
+  it("transcendence upgrades have unlockStage 4", () => {
+    const transcendence = UPGRADES.filter((u) => u.tier === "transcendence");
+    expect(transcendence.length).toBeGreaterThanOrEqual(3);
+    for (const u of transcendence) {
+      expect(u.unlockStage).toBe(4);
+    }
+  });
+
+  it("consecutive generators maintain 8-12\u00d7 production ratio", () => {
     for (let i = 1; i < UPGRADES.length; i++) {
       const ratio =
         UPGRADES[i].baseTdPerSecond / UPGRADES[i - 1].baseTdPerSecond;
@@ -99,18 +108,18 @@ describe("UPGRADES", () => {
     }
   });
 
-  it("each consecutive generator costs approximately 10x the previous", () => {
+  it("consecutive generators maintain ~10\u00d7 cost ratio", () => {
     for (let i = 1; i < UPGRADES.length; i++) {
       const ratio = UPGRADES[i].baseCost / UPGRADES[i - 1].baseCost;
-      expect(ratio).toBeGreaterThanOrEqual(5);
-      expect(ratio).toBeLessThanOrEqual(15);
+      expect(ratio).toBeGreaterThanOrEqual(8);
+      expect(ratio).toBeLessThanOrEqual(12);
     }
   });
 
-  it("cheapest generator pays for itself within 30-60 seconds", () => {
+  it("cheapest generator pays back within 30-60 seconds", () => {
     const cheapest = UPGRADES[0];
-    const payback = cheapest.baseCost / cheapest.baseTdPerSecond;
-    expect(payback).toBeGreaterThanOrEqual(30);
-    expect(payback).toBeLessThanOrEqual(60);
+    const paybackSeconds = cheapest.baseCost / cheapest.baseTdPerSecond;
+    expect(paybackSeconds).toBeGreaterThanOrEqual(30);
+    expect(paybackSeconds).toBeLessThanOrEqual(60);
   });
 });

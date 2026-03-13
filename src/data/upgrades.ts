@@ -10,6 +10,9 @@ export interface Upgrade {
 }
 
 export const UPGRADES: readonly Upgrade[] = [
+  // ── Garage Lab ── (unlockStage 0)
+  // Ratios: 10× prod / 10× cost between consecutive generators
+  // Base payback: 50 s per unit at quantity 1
   {
     id: "neural-notepad",
     name: "Neural Notepad",
@@ -40,6 +43,7 @@ export const UPGRADES: readonly Upgrade[] = [
     icon: "📡",
     unlockStage: 0,
   },
+  // ── Startup ── (unlockStage 0)
   {
     id: "intern-algorithm",
     name: "Intern Algorithm",
@@ -71,6 +75,7 @@ export const UPGRADES: readonly Upgrade[] = [
     icon: "🍞",
     unlockStage: 0,
   },
+  // ── Scale-Up ── (unlockStage 2)
   {
     id: "server-farm",
     name: "Server Farm",
@@ -112,6 +117,7 @@ export const UPGRADES: readonly Upgrade[] = [
     icon: "🧠",
     unlockStage: 2,
   },
+  // ── Mega-Corp ── (unlockStage 3)
   {
     id: "quantum-processor",
     name: "Quantum Processor",
@@ -154,6 +160,7 @@ export const UPGRADES: readonly Upgrade[] = [
     icon: "💫",
     unlockStage: 3,
   },
+  // ── Transcendence ── (unlockStage 4)
   {
     id: "mind-singularity",
     name: "Mind Singularity",

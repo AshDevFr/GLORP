@@ -47,7 +47,7 @@ describe("computeOfflineProgress", () => {
       // At exactly 300s, elapsed === threshold, so it should proceed
       const state = makeState({ "neural-notepad": 1 });
       const result = computeOfflineProgress(lastSaved, BASE_NOW, state);
-      // 300s >= 300s threshold → should compute (earned > 0)
+      // 300s >= 300s threshold \u2192 should compute (earned > 0)
       expect(result).not.toBeNull();
     });
 

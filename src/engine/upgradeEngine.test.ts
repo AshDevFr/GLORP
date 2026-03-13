@@ -17,7 +17,7 @@ const mockUpgrade: Upgrade = {
   baseCost: 100,
   baseTdPerSecond: 1.5,
   tier: "garage-lab",
-  icon: "🧪",
+  icon: "\uD83E\uDDEA",
   unlockStage: 0,
 };
 
@@ -28,7 +28,7 @@ const mockUpgrade2: Upgrade = {
   baseCost: 500,
   baseTdPerSecond: 5,
   tier: "startup",
-  icon: "🔬",
+  icon: "\uD83D\uDD2C",
   unlockStage: 0,
 };
 
@@ -202,32 +202,32 @@ describe("getTotalTdPerSecond", () => {
     expect(getTotalTdPerSecond([mockUpgrade], owned, 2, 3)).toBeCloseTo(9);
   });
 
-  it("applies milestone multiplier at 10 owned (×1.5)", () => {
+  it("applies milestone multiplier at 10 owned (\u00d71.5)", () => {
     const owned = { "test-upgrade": 10 };
     // 10 * 1.5 baseTdPerSecond * 1.5 milestone = 22.5
     expect(getTotalTdPerSecond([mockUpgrade], owned)).toBeCloseTo(22.5);
   });
 
-  it("applies milestone multiplier at 25 owned (×2)", () => {
+  it("applies milestone multiplier at 25 owned (\u00d72)", () => {
     const owned = { "test-upgrade": 25 };
     // 25 * 1.5 * 2 = 75
     expect(getTotalTdPerSecond([mockUpgrade], owned)).toBeCloseTo(75);
   });
 
-  it("applies milestone multiplier at 50 owned (×3)", () => {
+  it("applies milestone multiplier at 50 owned (\u00d73)", () => {
     const owned = { "test-upgrade": 50 };
     // 50 * 1.5 * 3 = 225
     expect(getTotalTdPerSecond([mockUpgrade], owned)).toBeCloseTo(225);
   });
 
-  it("applies milestone multiplier at 100 owned (×6)", () => {
+  it("applies milestone multiplier at 100 owned (\u00d76)", () => {
     const owned = { "test-upgrade": 100 };
     // 100 * 1.5 * 6 = 900
     expect(getTotalTdPerSecond([mockUpgrade], owned)).toBeCloseTo(900);
   });
 
   it("applies milestone per-generator independently", () => {
-    // mockUpgrade: 10 owned → ×1.5 milestone; mockUpgrade2: 3 owned → ×1 milestone
+    // mockUpgrade: 10 owned \u2192 \u00d71.5 milestone; mockUpgrade2: 3 owned \u2192 \u00d71 milestone
     const owned = { "test-upgrade": 10, "test-upgrade-2": 3 };
     // 10 * 1.5 * 1.5 + 3 * 5 * 1 = 22.5 + 15 = 37.5
     expect(getTotalTdPerSecond([mockUpgrade, mockUpgrade2], owned)).toBeCloseTo(
@@ -238,14 +238,14 @@ describe("getTotalTdPerSecond", () => {
   it("applies no synergy for custom IDs not in the synergy map", () => {
     // test-upgrade and test-upgrade-2 are not synergy sources or targets
     const owned = { "test-upgrade": 50, "test-upgrade-2": 50 };
-    // milestone at 50 → ×3; no synergy; 50*1.5*3 + 50*5*3 = 225 + 750 = 975
+    // milestone at 50 \u2192 \u00d73; no synergy; 50*1.5*3 + 50*5*3 = 225 + 750 = 975
     expect(getTotalTdPerSecond([mockUpgrade, mockUpgrade2], owned)).toBeCloseTo(
       975,
     );
   });
 });
 
-describe("getTotalTdPerSecond — synergy integration", () => {
+describe("getTotalTdPerSecond \u2014 synergy integration", () => {
   const neuralNotepad: Upgrade = {
     id: "neural-notepad",
     name: "Neural Notepad",
@@ -253,7 +253,7 @@ describe("getTotalTdPerSecond — synergy integration", () => {
     baseCost: 10,
     baseTdPerSecond: 1,
     tier: "garage-lab",
-    icon: "📝",
+    icon: "\uD83D\uDCDD",
     unlockStage: 0,
   };
 
@@ -261,17 +261,17 @@ describe("getTotalTdPerSecond — synergy integration", () => {
     id: "pattern-antenna",
     name: "Pattern Antenna",
     description: "Test",
-    baseCost: 250,
+    baseCost: 1_000,
     baseTdPerSecond: 2,
     tier: "garage-lab",
-    icon: "📡",
+    icon: "\uD83D\uDCE1",
     unlockStage: 0,
   };
 
   it("applies no synergy when source is below threshold", () => {
     const owned = { "neural-notepad": 49, "pattern-antenna": 5 };
-    // neural-notepad: 49 owned → milestone ×2 (10 and 25 crossed), no synergy → 49*1*2=98
-    // pattern-antenna: 5 owned → milestone ×1, no synergy → 5*2*1=10
+    // neural-notepad: 49 owned \u2192 milestone \u00d72 (10 and 25 crossed), no synergy \u2192 49*1*2=98
+    // pattern-antenna: 5 owned \u2192 milestone \u00d71, no synergy \u2192 5*2*1=10
     expect(
       getTotalTdPerSecond([neuralNotepad, patternAntenna], owned),
     ).toBeCloseTo(108);
@@ -279,15 +279,15 @@ describe("getTotalTdPerSecond — synergy integration", () => {
 
   it("applies +100% synergy to garage-lab generators when neural-notepad reaches 50", () => {
     const owned = { "neural-notepad": 50, "pattern-antenna": 5 };
-    // neural-notepad: 50 owned → milestone ×3, synergy ×2 (target of itself) → 50*1*3*2=300
-    // pattern-antenna: 5 owned → milestone ×1, synergy ×2 → 5*2*1*2=20
+    // neural-notepad: 50 owned \u2192 milestone \u00d73, synergy \u00d72 (target of itself) \u2192 50*1*3*2=300
+    // pattern-antenna: 5 owned \u2192 milestone \u00d71, synergy \u00d72 \u2192 5*2*1*2=20
     expect(
       getTotalTdPerSecond([neuralNotepad, patternAntenna], owned),
     ).toBeCloseTo(320);
   });
 
   it("synergy multiplier stacks multiplicatively with milestone", () => {
-    // neural-notepad at 50: milestone ×3, synergy (self) ×2 → effective rate 1*3*2=6 per unit
+    // neural-notepad at 50: milestone \u00d73, synergy (self) \u00d72 \u2192 effective rate 1*3*2=6 per unit
     const owned = { "neural-notepad": 50 };
     // 50 * 1 * 3 * 2 = 300
     expect(getTotalTdPerSecond([neuralNotepad], owned)).toBeCloseTo(300);
@@ -301,7 +301,7 @@ const mockBooster1: Booster = {
   multiplier: 2,
   cost: 1000,
   unlockStage: 1,
-  icon: "🅰️",
+  icon: "\uD83C\uDD70\uFE0F",
 };
 
 const mockBooster2: Booster = {
@@ -311,7 +311,7 @@ const mockBooster2: Booster = {
   multiplier: 3,
   cost: 5000,
   unlockStage: 2,
-  icon: "🅱️",
+  icon: "\uD83C\uDD71\uFE0F",
 };
 
 describe("computeBoosterMultiplier", () => {

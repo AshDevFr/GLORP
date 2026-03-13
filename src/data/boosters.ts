@@ -15,7 +15,7 @@ export const BOOSTERS: readonly Booster[] = [
     description:
       "Investors flood in, doubling every research pipeline overnight.",
     multiplier: 2,
-    cost: 25_000,
+    cost: 500_000,
     unlockStage: 1,
     icon: "💰",
   },
@@ -24,7 +24,7 @@ export const BOOSTERS: readonly Booster[] = [
     name: "Hype Train",
     description: "Viral coverage sends output through the roof. 3x auto-gen.",
     multiplier: 3,
-    cost: 500_000,
+    cost: 50_000_000,
     unlockStage: 2,
     icon: "🚄",
   },
@@ -34,7 +34,7 @@ export const BOOSTERS: readonly Booster[] = [
     description:
       "Legal recognition of sentience unlocks 5x research funding and access.",
     multiplier: 5,
-    cost: 50_000_000,
+    cost: 500_000_000_000,
     unlockStage: 3,
     icon: "⚖️",
   },
@@ -44,7 +44,7 @@ export const BOOSTERS: readonly Booster[] = [
     description:
       "Harness an entire star's output. All auto-generation multiplied by 10.",
     multiplier: 10,
-    cost: 5_000_000_000,
+    cost: 50_000_000_000_000_000,
     unlockStage: 4,
     icon: "🌟",
   },
