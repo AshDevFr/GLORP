@@ -95,8 +95,8 @@ export function GeneratorTooltipContent({
         <>
           <Divider />
           <Text size="xs" c="yellow" ff="monospace">
-            Next milestone: {nextMilestoneOwned} owned &rarr;{" "}
-            &times;{nextMilestoneMultiplier} production
+            Next milestone: {nextMilestoneOwned} owned &rarr; &times;
+            {nextMilestoneMultiplier} production
           </Text>
         </>
       )}

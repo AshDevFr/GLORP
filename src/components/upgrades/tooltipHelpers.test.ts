@@ -2,8 +2,12 @@ import { describe, expect, it } from "vitest";
 import { UPGRADES } from "../../data/upgrades";
 import { computeGeneratorTooltipData } from "./tooltipHelpers";
 
-const neuralNotepad = UPGRADES.find((u) => u.id === "neural-notepad")!;
-const hamsterWheel = UPGRADES.find((u) => u.id === "data-hamster-wheel")!;
+const neuralNotepad = UPGRADES.find((u) => u.id === "neural-notepad");
+if (!neuralNotepad)
+  throw new Error("neural-notepad upgrade not found in UPGRADES");
+const hamsterWheel = UPGRADES.find((u) => u.id === "data-hamster-wheel");
+if (!hamsterWheel)
+  throw new Error("data-hamster-wheel upgrade not found in UPGRADES");
 
 describe("computeGeneratorTooltipData", () => {
   it("returns baseline values with 0 owned", () => {
@@ -70,16 +74,8 @@ describe("computeGeneratorTooltipData", () => {
       "neural-notepad": 5,
       "data-hamster-wheel": 5,
     };
-    const notepadData = computeGeneratorTooltipData(
-      neuralNotepad,
-      5,
-      allOwned,
-    );
-    const hamsterData = computeGeneratorTooltipData(
-      hamsterWheel,
-      5,
-      allOwned,
-    );
+    const notepadData = computeGeneratorTooltipData(neuralNotepad, 5, allOwned);
+    const hamsterData = computeGeneratorTooltipData(hamsterWheel, 5, allOwned);
     expect(notepadData.percentOfTotal).toBeCloseTo((0.5 / 3.0) * 100, 1);
     expect(hamsterData.percentOfTotal).toBeCloseTo((2.5 / 3.0) * 100, 1);
     expect(notepadData.percentOfTotal + hamsterData.percentOfTotal).toBeCloseTo(

@@ -138,109 +138,102 @@ export function UpgradeCard({
       withinPortal
     >
       <Popover.Target>
-        <div
+        <Card
           onMouseEnter={() => {
             isHoverDevice.current = true;
             setTooltipOpen(true);
           }}
           onMouseLeave={() => setTooltipOpen(false)}
+          className={isAnimating ? "glow-pulse" : undefined}
+          padding="sm"
+          radius="sm"
+          withBorder
+          aria-disabled={!canAfford ? "true" : undefined}
+          style={{
+            borderColor: isMilestoneGlowing
+              ? "var(--mantine-color-yellow-6)"
+              : canAfford
+                ? "var(--mantine-color-green-8)"
+                : "var(--mantine-color-dark-4)",
+            opacity: canAfford ? 1 : 0.5,
+            animation: isAnimating ? "glow-pulse 0.6s ease-in-out" : undefined,
+          }}
         >
-          <Card
-            className={isAnimating ? "glow-pulse" : undefined}
-            padding="sm"
-            radius="sm"
-            withBorder
-            aria-disabled={!canAfford ? "true" : undefined}
-            style={{
-              borderColor: isMilestoneGlowing
-                ? "var(--mantine-color-yellow-6)"
-                : canAfford
-                  ? "var(--mantine-color-green-8)"
-                  : "var(--mantine-color-dark-4)",
-              opacity: canAfford ? 1 : 0.5,
-              animation: isAnimating
-                ? "glow-pulse 0.6s ease-in-out"
-                : undefined,
-            }}
-          >
-            <Group justify="space-between" mb={4} wrap="nowrap">
-              <Text size="sm" fw={700} ff="monospace">
-                {upgrade.icon} {upgrade.name}
-              </Text>
-              <Group gap={4} wrap="nowrap">
-                <Badge size="sm" variant="light" color="green">
-                  x{owned}
-                </Badge>
-                <ActionIcon
-                  size="xs"
-                  variant="subtle"
-                  color="gray"
-                  aria-label={`Show details for ${upgrade.name}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!isHoverDevice.current) {
-                      setTooltipOpen((o) => !o);
-                    }
-                  }}
-                >
-                  ℹ
-                </ActionIcon>
-              </Group>
-            </Group>
-
-            <Text size="xs" c="dimmed" ff="monospace" mb={4}>
-              {upgrade.description}
+          <Group justify="space-between" mb={4} wrap="nowrap">
+            <Text size="sm" fw={700} ff="monospace">
+              {upgrade.icon} {upgrade.name}
             </Text>
-
-            {/* Milestone dots + progress toward next threshold */}
-            <Group gap={6} mb="xs" align="center">
-              {MILESTONE_THRESHOLDS.map((t) => (
-                <Text
-                  key={t.owned}
-                  size="xs"
-                  c={owned >= t.owned ? "yellow" : "dimmed"}
-                  title={`${t.owned} owned: ×${t.multiplier} (${t.label})`}
-                  style={{ lineHeight: 1 }}
-                >
-                  {owned >= t.owned ? "\u25CF" : "\u25CB"}
-                </Text>
-              ))}
-              <Text size="xs" ff="monospace" c="dimmed">
-                {nextThreshold
-                  ? `${owned}/${nextThreshold.owned}`
-                  : "\u2746 MAX"}
-              </Text>
-            </Group>
-
-            <Group justify="space-between" align="center">
-              <Group gap={4} align="center">
-                <Text size="xs" ff="monospace" c="green">
-                  +{formatNumber(effectiveTdPerSecond)} TD/s
-                </Text>
-                {milestoneMultiplier > 1 && (
-                  <Badge size="xs" variant="light" color="yellow">
-                    ×{milestoneMultiplier}
-                  </Badge>
-                )}
-                {synergyMultiplier > 1 && (
-                  <Badge size="xs" variant="light" color="cyan">
-                    ⚡×{synergyMultiplier}
-                  </Badge>
-                )}
-              </Group>
-              <Button
-                size="compact-xs"
-                variant={canAfford ? "filled" : "default"}
-                color="green"
-                disabled={!canAfford}
-                onClick={handlePurchase}
-                ff="monospace"
+            <Group gap={4} wrap="nowrap">
+              <Badge size="sm" variant="light" color="green">
+                x{owned}
+              </Badge>
+              <ActionIcon
+                size="xs"
+                variant="subtle"
+                color="gray"
+                aria-label={`Show details for ${upgrade.name}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isHoverDevice.current) {
+                    setTooltipOpen((o) => !o);
+                  }
+                }}
               >
-                {buyLabel}
-              </Button>
+                ℹ
+              </ActionIcon>
             </Group>
-          </Card>
-        </div>
+          </Group>
+
+          <Text size="xs" c="dimmed" ff="monospace" mb={4}>
+            {upgrade.description}
+          </Text>
+
+          {/* Milestone dots + progress toward next threshold */}
+          <Group gap={6} mb="xs" align="center">
+            {MILESTONE_THRESHOLDS.map((t) => (
+              <Text
+                key={t.owned}
+                size="xs"
+                c={owned >= t.owned ? "yellow" : "dimmed"}
+                title={`${t.owned} owned: ×${t.multiplier} (${t.label})`}
+                style={{ lineHeight: 1 }}
+              >
+                {owned >= t.owned ? "\u25CF" : "\u25CB"}
+              </Text>
+            ))}
+            <Text size="xs" ff="monospace" c="dimmed">
+              {nextThreshold ? `${owned}/${nextThreshold.owned}` : "\u2746 MAX"}
+            </Text>
+          </Group>
+
+          <Group justify="space-between" align="center">
+            <Group gap={4} align="center">
+              <Text size="xs" ff="monospace" c="green">
+                +{formatNumber(effectiveTdPerSecond)} TD/s
+              </Text>
+              {milestoneMultiplier > 1 && (
+                <Badge size="xs" variant="light" color="yellow">
+                  ×{milestoneMultiplier}
+                </Badge>
+              )}
+              {synergyMultiplier > 1 && (
+                <Badge size="xs" variant="light" color="cyan">
+                  ⚡×{synergyMultiplier}
+                </Badge>
+              )}
+            </Group>
+            <Button
+              size="compact-xs"
+              variant={canAfford ? "filled" : "default"}
+              color="green"
+              disabled={!canAfford}
+              onClick={handlePurchase}
+              ff="monospace"
+            >
+              {buyLabel}
+            </Button>
+          </Group>
+        </Card>
       </Popover.Target>
       <Popover.Dropdown>
         <GeneratorTooltipContent
