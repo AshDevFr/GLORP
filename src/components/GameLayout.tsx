@@ -13,6 +13,7 @@ import { useDailyObjectiveTracking } from "../hooks/useDailyObjectiveTracking";
 import { useGameLoop } from "../hooks/useGameLoop";
 import { useKonamiCode } from "../hooks/useKonamiCode";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+import { useSound } from "../hooks/useSound";
 import { useGameStore } from "../store";
 import { useDailyStore } from "../store/dailyStore";
 import { AchievementsModal } from "./AchievementsModal";
@@ -38,6 +39,7 @@ export function GameLayout() {
   const konamiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unlockedCount = useGameStore((s) => s.unlockedAchievements.length);
   const reducedMotion = useReducedMotion();
+  const { playWelcomeBack } = useSound();
 
   useEffect(() => {
     const state = useGameStore.getState();
@@ -61,9 +63,10 @@ export function GameLayout() {
     if (result) {
       state.addTrainingData(result.earned);
       setOfflineResult(result);
+      playWelcomeBack();
       useDailyStore.getState().recordOfflineBonus();
     }
-  }, []);
+  }, [playWelcomeBack]);
 
   const handleKonami = useCallback(() => {
     const state = useGameStore.getState();

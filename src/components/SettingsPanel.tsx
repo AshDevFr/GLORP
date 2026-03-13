@@ -36,6 +36,8 @@ export function SettingsPanel({
     (s) => s.setAnimationsDisabled,
   );
   const setNumberFormat = useSettingsStore((s) => s.setNumberFormat);
+  const soundEnabled = useSettingsStore((s) => s.soundEnabled);
+  const setSoundEnabled = useSettingsStore((s) => s.setSoundEnabled);
 
   const [resetStage, setResetStage] = useState(0);
   const [importError, setImportError] = useState<string | null>(null);
@@ -186,6 +188,13 @@ export function SettingsPanel({
             onChange={(e) =>
               setNumberFormat(e.currentTarget.checked ? "full" : "compact")
             }
+            styles={{ label: { fontFamily: "monospace" } }}
+          />
+          <Switch
+            label="Sound Effects"
+            description="Play synthesised audio feedback for clicks, purchases and events"
+            checked={soundEnabled}
+            onChange={(e) => setSoundEnabled(e.currentTarget.checked)}
             styles={{ label: { fontFamily: "monospace" } }}
           />
 

@@ -61,4 +61,26 @@ describe("useSettingsStore", () => {
     expect(useSettingsStore.getState().crtEnabled).toBe(false);
     expect(useSettingsStore.getState().animationsDisabled).toBe(false);
   });
+
+  it("has soundEnabled defaulting to true", () => {
+    const state = useSettingsStore.getState();
+    expect(state.soundEnabled).toBe(true);
+  });
+
+  it("setSoundEnabled sets soundEnabled to false", () => {
+    useSettingsStore.getState().setSoundEnabled(false);
+    expect(useSettingsStore.getState().soundEnabled).toBe(false);
+  });
+
+  it("setSoundEnabled sets soundEnabled back to true", () => {
+    useSettingsStore.setState({ soundEnabled: false });
+    useSettingsStore.getState().setSoundEnabled(true);
+    expect(useSettingsStore.getState().soundEnabled).toBe(true);
+  });
+
+  it("setSoundEnabled does not affect other settings", () => {
+    useSettingsStore.getState().setSoundEnabled(false);
+    expect(useSettingsStore.getState().crtEnabled).toBe(false);
+    expect(useSettingsStore.getState().animationsDisabled).toBe(false);
+  });
 });

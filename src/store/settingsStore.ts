@@ -10,6 +10,7 @@ export interface SettingsState {
   animationsDisabled: boolean;
   buyMode: BuyMode;
   numberFormat: NumberFormat;
+  soundEnabled: boolean;
 }
 
 interface SettingsActions {
@@ -17,6 +18,7 @@ interface SettingsActions {
   setAnimationsDisabled: (disabled: boolean) => void;
   setBuyMode: (mode: BuyMode) => void;
   setNumberFormat: (format: NumberFormat) => void;
+  setSoundEnabled: (enabled: boolean) => void;
 }
 
 export type SettingsStore = SettingsState & SettingsActions;
@@ -26,6 +28,7 @@ export const initialSettings: SettingsState = {
   animationsDisabled: false,
   buyMode: 1,
   numberFormat: "full",
+  soundEnabled: true,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -37,6 +40,7 @@ export const useSettingsStore = create<SettingsStore>()(
         set({ animationsDisabled }),
       setBuyMode: (buyMode) => set({ buyMode }),
       setNumberFormat: (numberFormat) => set({ numberFormat }),
+      setSoundEnabled: (soundEnabled) => set({ soundEnabled }),
     }),
     { name: "glorp-settings" },
   ),
