@@ -76,7 +76,7 @@ describe("computeTick", () => {
   });
 
   it("handles fractional delta seconds", () => {
-    // gpu-toaster: 20,000 * 1 = 20,000 TD/s, delta = 0.016s => 320
+    // gpu-toaster: 20_000 * 1 = 20_000 TD/s, delta = 0.016s => 320
     const result = computeTick(
       makeState({ "gpu-toaster": 1 }),
       0.016,
@@ -87,7 +87,7 @@ describe("computeTick", () => {
 
   it("handles all upgrade types combined", () => {
     // All 6 early upgrades, 1 each:
-    // 0.2 + 2 + 20 + 200 + 2,000 + 20,000 = 22,222.2 TD/s
+    // 0.2 + 2 + 20 + 200 + 2_000 + 20_000 = 22_222.2 TD/s
     const result = computeTick(
       makeState({
         "neural-notepad": 1,

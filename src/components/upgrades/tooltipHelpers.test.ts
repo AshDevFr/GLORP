@@ -13,10 +13,10 @@ describe("computeGeneratorTooltipData", () => {
   it("returns baseline values with 0 owned", () => {
     const data = computeGeneratorTooltipData(neuralNotepad, 0, {});
     expect(data.owned).toBe(0);
-    expect(data.baseTdPerUnit).toBe(neuralNotepad.baseTdPerSecond);
+    expect(data.baseTdPerUnit).toBe(0.2);
     expect(data.milestoneMultiplier).toBe(1);
     expect(data.synergyMultiplier).toBe(1);
-    expect(data.effectiveTdPerUnit).toBe(neuralNotepad.baseTdPerSecond);
+    expect(data.effectiveTdPerUnit).toBe(0.2);
     expect(data.totalTdForGenerator).toBe(0);
     expect(data.percentOfTotal).toBe(0);
   });
@@ -34,12 +34,8 @@ describe("computeGeneratorTooltipData", () => {
     const allOwned = { "neural-notepad": 10 };
     const data = computeGeneratorTooltipData(neuralNotepad, 10, allOwned);
     expect(data.milestoneMultiplier).toBe(1.5);
-    expect(data.effectiveTdPerUnit).toBeCloseTo(
-      neuralNotepad.baseTdPerSecond * 1.5,
-    );
-    expect(data.totalTdForGenerator).toBeCloseTo(
-      neuralNotepad.baseTdPerSecond * 1.5 * 10,
-    );
+    expect(data.effectiveTdPerUnit).toBeCloseTo(0.2 * 1.5);
+    expect(data.totalTdForGenerator).toBeCloseTo(0.2 * 1.5 * 10);
     expect(data.nextMilestoneOwned).toBe(25);
   });
 
@@ -73,26 +69,15 @@ describe("computeGeneratorTooltipData", () => {
   });
 
   it("computes correct % share with two generators", () => {
-    const notepadTd = neuralNotepad.baseTdPerSecond;
-    const hamsterTd = hamsterWheel.baseTdPerSecond;
-    // notepad: 5 * notepadTd, hamster: 5 * hamsterTd
-    const notepadTotal = 5 * notepadTd;
-    const hamsterTotal = 5 * hamsterTd;
-    const grandTotal = notepadTotal + hamsterTotal;
+    // notepad: 5 x 0.2 = 1 TD/s, hamster: 5 x 2 = 10 TD/s, total = 11
     const allOwned = {
       "neural-notepad": 5,
       "data-hamster-wheel": 5,
     };
     const notepadData = computeGeneratorTooltipData(neuralNotepad, 5, allOwned);
     const hamsterData = computeGeneratorTooltipData(hamsterWheel, 5, allOwned);
-    expect(notepadData.percentOfTotal).toBeCloseTo(
-      (notepadTotal / grandTotal) * 100,
-      1,
-    );
-    expect(hamsterData.percentOfTotal).toBeCloseTo(
-      (hamsterTotal / grandTotal) * 100,
-      1,
-    );
+    expect(notepadData.percentOfTotal).toBeCloseTo((1 / 11) * 100, 1);
+    expect(hamsterData.percentOfTotal).toBeCloseTo((10 / 11) * 100, 1);
     expect(notepadData.percentOfTotal + hamsterData.percentOfTotal).toBeCloseTo(
       100,
       1,
