@@ -117,6 +117,35 @@ Do NOT rely on training data for version numbers. Always verify. Use exact versi
 
 ### Git Workflow
 
+Always sync with upstream before branching and validate locally before pushing — this prevents merge conflicts and catches lint/build errors before CI runs.
+
+#### Starting a new branch
+
+Sync your fork with the latest upstream `main` before creating any branch. A stale base causes avoidable merge conflicts in PRs:
+
+```bash
+git fetch upstream
+git checkout main
+git merge upstream/main --ff-only
+# If fast-forward fails (fork has diverged): git reset --hard upstream/main && git push origin main --force
+git push origin main
+git checkout -b feat/my-feature    # or fix/, chore/, docs/
+```
+
+#### Before pushing
+
+Run all three checks locally before every push. Do not push code that fails any of them — CI enforces the same rules, but fixing locally is faster and avoids broken-CI commits (see PRs #110 and #115 for past lint incidents):
+
+```bash
+npm run lint    # Biome lint + format check
+npm run test    # Full Vitest suite (623+ unit tests)
+npm run build   # Vite production build (catches TypeScript and bundling errors)
+```
+
+Use `npm run *` commands exclusively — do not invoke `npx biome check .` or `npm test` directly.
+
+#### General rules
+
 - Branch per story/issue.
 - Commit messages reference the GitHub issue number.
 - PRs target `main`. GitHub Pages auto-deploys on merge via GitHub Actions.
