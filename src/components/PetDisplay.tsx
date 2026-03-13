@@ -27,6 +27,7 @@ import { useAsciiAnimation } from "../hooks/useAsciiAnimation";
 import { useClickParticles } from "../hooks/useClickParticles";
 import { useDialogue } from "../hooks/useDialogue";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+import { useSound } from "../hooks/useSound";
 import { useGameStore } from "../store";
 import { useUIStore } from "../store/uiStore";
 import { formatNumber } from "../utils/formatNumber";
@@ -82,6 +83,7 @@ export function PetDisplay() {
   const prevStageRef = useRef(evolutionStage);
   const containerRef = useRef<HTMLDivElement>(null);
   const prefersReduced = useReducedMotion();
+  const { playClick, playEvolution } = useSound();
 
   const currentFrame = useAsciiAnimation(artFrames, 2000, isGlitching);
 
@@ -156,6 +158,7 @@ export function PetDisplay() {
   useEffect(() => {
     if (evolutionStage !== prevStageRef.current) {
       prevStageRef.current = evolutionStage;
+      playEvolution();
       setIsFlashing(true);
       const flashTimer = setTimeout(() => setIsFlashing(false), 600);
 
@@ -173,18 +176,19 @@ export function PetDisplay() {
 
       return () => clearTimeout(flashTimer);
     }
-  }, [evolutionStage, prefersReduced]);
+  }, [evolutionStage, prefersReduced, playEvolution]);
 
   const handlePetClick = () => {
     setMood(getClickMood());
   };
 
   const handleFeed = useCallback(() => {
+    playClick();
     clickFeed();
     if (containerRef.current) {
       spawn(containerRef.current.getBoundingClientRect());
     }
-  }, [clickFeed, spawn]);
+  }, [clickFeed, playClick, spawn]);
 
   return (
     <div

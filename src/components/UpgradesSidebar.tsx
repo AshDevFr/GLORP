@@ -9,11 +9,12 @@ import {
   Title,
   UnstyledButton,
 } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CLICK_UPGRADES } from "../data/clickUpgrades";
 import { getGeneratorCostMultiplier } from "../data/prestigeShop";
 import type { Upgrade } from "../data/upgrades";
 import { UPGRADES } from "../data/upgrades";
+import { useSound } from "../hooks/useSound";
 import { useGameStore } from "../store";
 import type { BuyMode } from "../store/settingsStore";
 import { useSettingsStore } from "../store/settingsStore";
@@ -100,6 +101,24 @@ export function UpgradesSidebar() {
 
   const buyMode = useSettingsStore((s) => s.buyMode);
   const setBuyMode = useSettingsStore((s) => s.setBuyMode);
+
+  const { playPurchase } = useSound();
+
+  const handleBulkPurchase = useCallback(
+    (id: string, qty: number) => {
+      playPurchase();
+      purchaseBulkUpgrade(id, qty);
+    },
+    [purchaseBulkUpgrade, playPurchase],
+  );
+
+  const handleClickUpgradePurchase = useCallback(
+    (id: string) => {
+      playPurchase();
+      purchaseClickUpgrade(id);
+    },
+    [purchaseClickUpgrade, playPurchase],
+  );
 
   // Collapsible state — all open by default
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(
@@ -213,7 +232,7 @@ export function UpgradesSidebar() {
                               purchased={purchased}
                               trainingData={trainingData}
                               evolutionStage={evolutionStage}
-                              onPurchase={purchaseClickUpgrade}
+                              onPurchase={handleClickUpgradePurchase}
                             />
                           </div>
                         );
@@ -246,7 +265,7 @@ export function UpgradesSidebar() {
                             allOwned={upgradeOwned}
                             trainingData={trainingData}
                             buyMode={buyMode}
-                            onPurchase={purchaseBulkUpgrade}
+                            onPurchase={handleBulkPurchase}
                             costMultiplier={costMultiplier}
                           />
                         ))}
