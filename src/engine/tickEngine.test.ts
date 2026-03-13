@@ -33,27 +33,27 @@ describe("computeTick", () => {
   });
 
   it("computes correct delta for one upgrade owned", () => {
-    // neural-notepad: baseTdPerSecond = 0.1, 1 owned => 0.1 TD/s
+    // neural-notepad: baseTdPerSecond = 0.2, 1 owned => 0.2 TD/s
     const result = computeTick(
       makeState({ "neural-notepad": 1 }),
       1,
       BASE_TIME,
     );
-    expect(result.trainingDataDelta).toBeCloseTo(0.1);
+    expect(result.trainingDataDelta).toBeCloseTo(0.2);
   });
 
   it("scales with number of upgrades owned", () => {
-    // neural-notepad: 0.1 * 3 = 0.3 TD/s
+    // neural-notepad: 0.2 * 3 = 0.6 TD/s
     const result = computeTick(
       makeState({ "neural-notepad": 3 }),
       1,
       BASE_TIME,
     );
-    expect(result.trainingDataDelta).toBeCloseTo(0.3);
+    expect(result.trainingDataDelta).toBeCloseTo(0.6);
   });
 
   it("sums across multiple upgrade types", () => {
-    // neural-notepad: 0.1 * 2 = 0.2, data-hamster-wheel: 0.5 * 1 = 0.5 => 0.7
+    // neural-notepad: 0.2 * 2 = 0.4, data-hamster-wheel: 2 * 1 = 2 => 2.4
     const result = computeTick(
       makeState({
         "neural-notepad": 2,
@@ -62,32 +62,32 @@ describe("computeTick", () => {
       1,
       BASE_TIME,
     );
-    expect(result.trainingDataDelta).toBeCloseTo(0.7);
+    expect(result.trainingDataDelta).toBeCloseTo(2.4);
   });
 
   it("scales with delta time", () => {
-    // neural-notepad: 0.1 * 1 = 0.1 TD/s, delta = 2.5s => 0.25
+    // neural-notepad: 0.2 * 1 = 0.2 TD/s, delta = 2.5s => 0.5
     const result = computeTick(
       makeState({ "neural-notepad": 1 }),
       2.5,
       BASE_TIME,
     );
-    expect(result.trainingDataDelta).toBeCloseTo(0.25);
+    expect(result.trainingDataDelta).toBeCloseTo(0.5);
   });
 
   it("handles fractional delta seconds", () => {
-    // gpu-toaster: 100 * 1 = 100 TD/s, delta = 0.016s => 1.6
+    // gpu-toaster: 20,000 * 1 = 20,000 TD/s, delta = 0.016s => 320
     const result = computeTick(
       makeState({ "gpu-toaster": 1 }),
       0.016,
       BASE_TIME,
     );
-    expect(result.trainingDataDelta).toBeCloseTo(1.6);
+    expect(result.trainingDataDelta).toBeCloseTo(320);
   });
 
   it("handles all upgrade types combined", () => {
-    // All 6 upgrades, 1 each:
-    // 0.1 + 0.5 + 2 + 5 + 20 + 100 = 127.6 TD/s
+    // All 6 early upgrades, 1 each:
+    // 0.2 + 2 + 20 + 200 + 2,000 + 20,000 = 22,222.2 TD/s
     const result = computeTick(
       makeState({
         "neural-notepad": 1,
@@ -100,7 +100,7 @@ describe("computeTick", () => {
       1,
       BASE_TIME,
     );
-    expect(result.trainingDataDelta).toBeCloseTo(127.6);
+    expect(result.trainingDataDelta).toBeCloseTo(22_222.2);
   });
 
   describe("booster multiplier in tick", () => {
@@ -110,7 +110,7 @@ describe("computeTick", () => {
         1,
         BASE_TIME,
       );
-      expect(result.trainingDataDelta).toBeCloseTo(0.1);
+      expect(result.trainingDataDelta).toBeCloseTo(0.2);
     });
 
     it("applies series-a-funding 2x multiplier", () => {
@@ -122,8 +122,8 @@ describe("computeTick", () => {
         1,
         BASE_TIME,
       );
-      // neural-notepad 0.1 TD/s * 2 = 0.2
-      expect(result.trainingDataDelta).toBeCloseTo(0.2);
+      // neural-notepad 0.2 TD/s * 2 = 0.4
+      expect(result.trainingDataDelta).toBeCloseTo(0.4);
     });
 
     it("stacks two booster multipliers multiplicatively", () => {
@@ -135,8 +135,8 @@ describe("computeTick", () => {
         1,
         BASE_TIME,
       );
-      // neural-notepad 0.1 TD/s * 2 * 3 = 0.6
-      expect(result.trainingDataDelta).toBeCloseTo(0.6);
+      // neural-notepad 0.2 TD/s * 2 * 3 = 1.2
+      expect(result.trainingDataDelta).toBeCloseTo(1.2);
     });
 
     it("uses default 1x when boostersPurchased is undefined", () => {
@@ -145,7 +145,7 @@ describe("computeTick", () => {
         1,
         BASE_TIME,
       );
-      expect(result.trainingDataDelta).toBeCloseTo(0.1);
+      expect(result.trainingDataDelta).toBeCloseTo(0.2);
     });
   });
 
@@ -231,7 +231,7 @@ describe("computeTick", () => {
         1,
         BASE_TIME,
       );
-      expect(result.trainingDataDelta).toBeCloseTo(0.1);
+      expect(result.trainingDataDelta).toBeCloseTo(0.2);
     });
 
     it("non-click-only challenge does not disable auto-gen", () => {
@@ -243,7 +243,7 @@ describe("computeTick", () => {
         1,
         BASE_TIME,
       );
-      expect(result.trainingDataDelta).toBeCloseTo(0.1);
+      expect(result.trainingDataDelta).toBeCloseTo(0.2);
     });
   });
 });
