@@ -6,6 +6,7 @@ export { GameLayout } from "./GameLayout";
 export { OfflineProgressModal } from "./OfflineProgressModal";
 export { PetDisplay } from "./PetDisplay";
 export { RebirthModal } from "./RebirthModal";
+export { RebirthProgressBar } from "./RebirthProgressBar";
 export { SettingsPanel } from "./SettingsPanel";
 export { SpeechBubble } from "./SpeechBubble";
 export { StatsBar } from "./StatsBar";

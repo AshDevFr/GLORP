@@ -147,6 +147,22 @@ body {
   }
 }
 
+/* -- Rebirth available banner: yellow glow pulse (2 s infinite) ---------- */
+
+@keyframes rebirth-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 4px rgba(255, 215, 0, 0.3);
+    opacity: 1;
+  }
+  50% {
+    box-shadow:
+      0 0 14px rgba(255, 215, 0, 0.8),
+      0 0 28px rgba(255, 215, 0, 0.4);
+    opacity: 0.9;
+  }
+}
+
 /* ── ASCII art color classes ─────────────────────────── */
 
 .ascii-eyes {

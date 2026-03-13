@@ -33,6 +33,7 @@ import { formatNumber } from "../utils/formatNumber";
 import { FloatingParticles } from "./FloatingParticles";
 import { PrestigeShop } from "./PrestigeShop";
 import { RebirthModal } from "./RebirthModal";
+import { RebirthProgressBar } from "./RebirthProgressBar";
 import { SpeechBubble } from "./SpeechBubble";
 
 const MOOD_LABELS: Record<string, string> = {
@@ -86,7 +87,7 @@ export function PetDisplay() {
 
   const { particles, spawn, spawnBurst } = useClickParticles();
 
-  // ── Milestone celebration ────────────────────────────────────────────────
+  // -- Milestone celebration --
   const milestoneEvent = useUIStore((s) => s.milestoneEvent);
   const clearMilestoneEvent = useUIStore((s) => s.clearMilestoneEvent);
   const prevMilestoneIdRef = useRef<number>(-1);
@@ -113,7 +114,6 @@ export function PetDisplay() {
 
     clearMilestoneEvent();
   }, [milestoneEvent, clearMilestoneEvent, prefersReduced, spawnBurst]);
-  // ────────────────────────────────────────────────────────────────────────
 
   // Compute current click power for display (without combo since it fluctuates)
   const ep = activeChallengeId === "no-prestige" ? {} : prestigeUpgrades;
@@ -275,6 +275,7 @@ export function PetDisplay() {
             </Button>
           )}
         </Group>
+        <RebirthProgressBar />
         {activeChallengeId && (
           <Badge
             size="lg"
