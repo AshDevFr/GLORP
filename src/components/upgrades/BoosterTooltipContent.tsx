@@ -1,11 +1,7 @@
-import { Badge, Divider, Group, Stack, Text } from "@mantine/core";
+import { Divider, Group, Stack, Text } from "@mantine/core";
+import type { Booster } from "../../data/boosters";
 import { BOOSTERS } from "../../data/boosters";
-import type { ClickUpgrade } from "../../data/clickUpgrades";
-import { CLICK_UPGRADES } from "../../data/clickUpgrades";
-import {
-  getClickMasteryBonus,
-  getIdleBoostMultiplier,
-} from "../../data/prestigeShop";
+import { getIdleBoostMultiplier } from "../../data/prestigeShop";
 import { getSpeciesBonus } from "../../data/species";
 import { UPGRADES } from "../../data/upgrades";
 import {
@@ -14,18 +10,17 @@ import {
 } from "../../engine/upgradeEngine";
 import { useGameStore } from "../../store";
 import { formatNumber } from "../../utils/formatNumber";
-import { computeClickBonusTooltipData } from "./tooltipHelpers";
+import { computeGlobalMultiplierTooltipData } from "./tooltipHelpers";
 
-interface ClickUpgradeTooltipContentProps {
-  upgrade: ClickUpgrade;
+interface BoosterTooltipContentProps {
+  booster: Booster;
   purchased: boolean;
 }
 
-export function ClickUpgradeTooltipContent({
-  upgrade,
+export function BoosterTooltipContent({
+  booster,
   purchased,
-}: ClickUpgradeTooltipContentProps) {
-  const clickUpgradesPurchased = useGameStore((s) => s.clickUpgradesPurchased);
+}: BoosterTooltipContentProps) {
   const upgradeOwned = useGameStore((s) => s.upgradeOwned);
   const boostersPurchased = useGameStore((s) => s.boostersPurchased);
   const prestigeUpgrades = useGameStore((s) => s.prestigeUpgrades);
@@ -40,77 +35,62 @@ export function ClickUpgradeTooltipContent({
   );
   const speciesBonus = getSpeciesBonus(currentSpecies);
   const boosterMult = computeBoosterMultiplier(BOOSTERS, boostersPurchased);
-  const tdPerSecond = getTotalTdPerSecond(
+  const currentTdPerSecond = getTotalTdPerSecond(
     UPGRADES,
     upgradeOwned,
     idleBoost * speciesBonus.autoGen,
     boosterMult,
   );
-  const clickMasteryBonus = getClickMasteryBonus(
-    (effectivePrestige as Record<string, number>)["click-mastery"] ?? 0,
-  );
 
-  const { deltaClickPower } = computeClickBonusTooltipData(
-    upgrade,
-    clickUpgradesPurchased,
-    CLICK_UPGRADES,
-    tdPerSecond,
-    clickMasteryBonus,
-    speciesBonus.clickPower,
-  );
+  const { currentTdPerSecond: current, newTdPerSecond } =
+    computeGlobalMultiplierTooltipData(booster, currentTdPerSecond);
 
   return (
     <Stack gap="xs" w={220}>
-      <Group justify="space-between" wrap="nowrap">
-        <Text size="sm" fw={700} ff="monospace">
-          {upgrade.icon} {upgrade.name}
-        </Text>
-        {purchased && (
-          <Badge size="xs" variant="light" color="yellow">
-            OWNED
-          </Badge>
-        )}
-      </Group>
+      <Text size="sm" fw={700} ff="monospace">
+        {booster.icon} {booster.name}
+      </Text>
       <Divider />
 
       <Text size="xs" c="dimmed" ff="monospace">
-        {upgrade.description}
+        {booster.description}
       </Text>
 
       <Group justify="space-between">
         <Text size="xs" c="dimmed" ff="monospace">
-          Effect
+          Multiplier
         </Text>
-        <Text size="xs" c="yellow" ff="monospace">
-          +{upgrade.clickSeconds}s per click
+        <Text size="xs" c="violet" fw={700} ff="monospace">
+          ×{booster.multiplier} all TD/s
         </Text>
       </Group>
 
       {!purchased && (
         <>
+          <Divider />
           <Group justify="space-between">
             <Text size="xs" c="dimmed" ff="monospace">
-              Click bonus
+              Current TD/s
             </Text>
-            <Text
-              size="xs"
-              c="yellow"
-              fw={700}
-              ff="monospace"
-              style={{
-                textShadow: "0 0 6px var(--mantine-color-yellow-5)",
-              }}
-            >
-              +{formatNumber(deltaClickPower)} TD/click
+            <Text size="xs" ff="monospace">
+              {formatNumber(current)}
             </Text>
           </Group>
 
           <Group justify="space-between">
             <Text size="xs" c="dimmed" ff="monospace">
-              Cost
+              After purchase
             </Text>
-            <Text size="xs" ff="monospace">
-              {formatNumber(upgrade.cost)} TD
+            <Text
+              size="xs"
+              c="violet"
+              fw={700}
+              ff="monospace"
+              style={{
+                textShadow: "0 0 6px var(--mantine-color-violet-5)",
+              }}
+            >
+              {formatNumber(newTdPerSecond)} TD/s
             </Text>
           </Group>
         </>

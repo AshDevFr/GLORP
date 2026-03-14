@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { BOOSTERS } from "../../data/boosters";
+import { CLICK_UPGRADES } from "../../data/clickUpgrades";
 import { UPGRADES } from "../../data/upgrades";
-import { computeGeneratorTooltipData } from "./tooltipHelpers";
+import {
+  computeClickBonusTooltipData,
+  computeGeneratorTooltipData,
+  computeGlobalMultiplierTooltipData,
+} from "./tooltipHelpers";
 
 const neuralNotepad = UPGRADES.find((u) => u.id === "neural-notepad");
 if (!neuralNotepad)
@@ -146,13 +152,14 @@ describe("computeGeneratorTooltipData", () => {
     });
 
     it("accounts for milestone crossing when buying the 50th unit (49 → 50)", () => {
-      // Buying the 50th unit crosses the x3 milestone.
-      // Current:   0.2 * 49 * 2 = 19.6
-      // Future:    0.2 * 50 * 3 = 30.0
-      // Delta: 30.0 - 19.6 = 10.4
+      // Buying the 50th unit crosses the x3 milestone AND triggers the
+      // neural-notepad self-synergy (+100%, ×2) simultaneously.
+      // Current (49 owned):  synergyMultiplier=1  → 0.2 * 49 * 2 * 1 = 19.6
+      // Future  (50 owned):  synergyMultiplier=2  → 0.2 * 50 * 3 * 2 = 60.0
+      // Delta: 60.0 - 19.6 = 40.4
       const allOwned = { "neural-notepad": 49 };
       const data = computeGeneratorTooltipData(neuralNotepad, 49, allOwned);
-      expect(data.deltaTdPerSecond).toBeCloseTo(10.4);
+      expect(data.deltaTdPerSecond).toBeCloseTo(40.4);
       expect(data.milestoneWillCross).toBe(true);
     });
 
@@ -169,12 +176,13 @@ describe("computeGeneratorTooltipData", () => {
 
     it("applies normal delta at max milestone (owned=100, 100 → 101)", () => {
       // x6 milestone active, no further milestones.
-      // Current:   0.2 * 100 * 6 = 120.0
-      // Future:    0.2 * 101 * 6 = 121.2
-      // Delta: 1.2
+      // The neural-notepad self-synergy (+100%, ×2) is active at 100 owned (≥50).
+      // Current:   0.2 * 100 * 6 * 2 = 240.0
+      // Future:    0.2 * 101 * 6 * 2 = 242.4
+      // Delta: 2.4
       const allOwned = { "neural-notepad": 100 };
       const data = computeGeneratorTooltipData(neuralNotepad, 100, allOwned);
-      expect(data.deltaTdPerSecond).toBeCloseTo(1.2);
+      expect(data.deltaTdPerSecond).toBeCloseTo(2.4);
       expect(data.milestoneWillCross).toBe(false);
     });
 
@@ -184,5 +192,136 @@ describe("computeGeneratorTooltipData", () => {
       });
       expect(data.milestoneWillCross).toBe(false);
     });
+  });
+});
+
+// ── computeClickBonusTooltipData tests ───────────────────────────────────────
+
+const betterDataset = CLICK_UPGRADES.find((u) => u.id === "better-dataset");
+if (!betterDataset)
+  throw new Error("better-dataset click upgrade not found in CLICK_UPGRADES");
+const stackOverflow = CLICK_UPGRADES.find((u) => u.id === "stack-overflow");
+if (!stackOverflow)
+  throw new Error("stack-overflow click upgrade not found in CLICK_UPGRADES");
+
+describe("computeClickBonusTooltipData", () => {
+  it("delta is 0 when tdPerSecond is 0 and floor of 1 already applied to both", () => {
+    // Both current and future floor to 1, so delta is 0
+    const data = computeClickBonusTooltipData(
+      betterDataset,
+      [],
+      CLICK_UPGRADES,
+      0,
+    );
+    expect(data.currentClickPower.toNumber()).toBe(1);
+    expect(data.futureClickPower.toNumber()).toBe(1);
+    expect(data.deltaClickPower.toNumber()).toBe(0);
+  });
+
+  it("returns correct delta when tdPerSecond is large enough to escape the floor", () => {
+    // BASE_CLICK_SECONDS = 0.05; betterDataset.clickSeconds = 0.1; tdPerSecond = 100
+    // currentBase = 0.05 * 100 = 5 → max(1,5) = 5
+    // futureBase  = 0.15 * 100 = 15 → max(1,15) = 15
+    // delta = 10
+    const data = computeClickBonusTooltipData(
+      betterDataset,
+      [],
+      CLICK_UPGRADES,
+      100,
+    );
+    expect(data.currentClickPower.toNumber()).toBeCloseTo(5);
+    expect(data.futureClickPower.toNumber()).toBeCloseTo(15);
+    expect(data.deltaClickPower.toNumber()).toBeCloseTo(10);
+  });
+
+  it("already-purchased upgrade reduces future seconds correctly", () => {
+    // betterDataset already purchased; buying stackOverflow (+0.15s)
+    // currentSeconds = 0.05 + 0.1 = 0.15, tdPerSecond = 100
+    // currentBase = 0.15 * 100 = 15
+    // futureBase  = 0.30 * 100 = 30
+    // delta = 15
+    const data = computeClickBonusTooltipData(
+      stackOverflow,
+      ["better-dataset"],
+      CLICK_UPGRADES,
+      100,
+    );
+    expect(data.currentClickPower.toNumber()).toBeCloseTo(15);
+    expect(data.futureClickPower.toNumber()).toBeCloseTo(30);
+    expect(data.deltaClickPower.toNumber()).toBeCloseTo(15);
+  });
+
+  it("applies clickMasteryBonus to currentSeconds", () => {
+    // clickMasteryBonus=1 adds 0.1s to current seconds
+    // currentSeconds = 0.05 + 0.1 = 0.15, tdPerSecond = 100
+    // futureSeconds  = 0.05 + 0.1 + 0.1 = 0.25
+    // delta = (0.25 - 0.15) * 100 = 10
+    const data = computeClickBonusTooltipData(
+      betterDataset,
+      [],
+      CLICK_UPGRADES,
+      100,
+      1, // clickMasteryBonus
+    );
+    expect(data.deltaClickPower.toNumber()).toBeCloseTo(10);
+  });
+
+  it("applies speciesClickMultiplier to both base values", () => {
+    // speciesClickMultiplier = 1.5; betterDataset; tdPerSecond = 100; no purchased
+    // currentBase = 0.05 * 100 * 1.5 = 7.5
+    // futureBase  = 0.15 * 100 * 1.5 = 22.5
+    // delta = 15
+    const data = computeClickBonusTooltipData(
+      betterDataset,
+      [],
+      CLICK_UPGRADES,
+      100,
+      0,
+      1.5, // speciesClickMultiplier
+    );
+    expect(data.currentClickPower.toNumber()).toBeCloseTo(7.5);
+    expect(data.futureClickPower.toNumber()).toBeCloseTo(22.5);
+    expect(data.deltaClickPower.toNumber()).toBeCloseTo(15);
+  });
+});
+
+// ── computeGlobalMultiplierTooltipData tests ─────────────────────────────────
+
+const seriesAFunding = BOOSTERS.find((b) => b.id === "series-a-funding");
+if (!seriesAFunding)
+  throw new Error("series-a-funding booster not found in BOOSTERS");
+const hypeTrain = BOOSTERS.find((b) => b.id === "hype-train");
+if (!hypeTrain) throw new Error("hype-train booster not found in BOOSTERS");
+
+describe("computeGlobalMultiplierTooltipData", () => {
+  it("doubles TD/s for the 2× booster", () => {
+    const data = computeGlobalMultiplierTooltipData(seriesAFunding, 500);
+    expect(data.multiplier).toBe(2);
+    expect(data.currentTdPerSecond.toNumber()).toBe(500);
+    expect(data.newTdPerSecond.toNumber()).toBe(1000);
+  });
+
+  it("triples TD/s for the 3× booster", () => {
+    const data = computeGlobalMultiplierTooltipData(hypeTrain, 200);
+    expect(data.multiplier).toBe(3);
+    expect(data.currentTdPerSecond.toNumber()).toBe(200);
+    expect(data.newTdPerSecond.toNumber()).toBe(600);
+  });
+
+  it("returns 0 new TD/s when current is 0", () => {
+    const data = computeGlobalMultiplierTooltipData(seriesAFunding, 0);
+    expect(data.currentTdPerSecond.toNumber()).toBe(0);
+    expect(data.newTdPerSecond.toNumber()).toBe(0);
+  });
+
+  it("preserves current TD/s unchanged in the output", () => {
+    const data = computeGlobalMultiplierTooltipData(seriesAFunding, 1234.5);
+    expect(data.currentTdPerSecond.toNumber()).toBeCloseTo(1234.5);
+  });
+
+  it("handles Decimal input for currentTdPerSecond", () => {
+    // Large numbers go through Decimal path
+    const data = computeGlobalMultiplierTooltipData(hypeTrain, 1e15);
+    expect(data.newTdPerSecond.toNumber()).toBeCloseTo(3e15);
   });
 });
