@@ -3,6 +3,7 @@ import {
   checkMilestones,
   getMilestoneLevel,
   getMilestoneMultiplier,
+  getNextMilestone,
 } from "./milestoneEngine";
 
 describe("getMilestoneLevel", () => {
@@ -89,6 +90,46 @@ describe("getMilestoneMultiplier", () => {
   it("returns 6 beyond 100 owned", () => {
     expect(getMilestoneMultiplier(101)).toBe(6);
     expect(getMilestoneMultiplier(500)).toBe(6);
+  });
+});
+
+describe("getNextMilestone", () => {
+  it("returns threshold 10 when owned is 0", () => {
+    const result = getNextMilestone(0);
+    expect(result).toEqual({ threshold: 10, multiplier: 1.5, label: "+50%" });
+  });
+
+  it("returns threshold 10 when owned is 5", () => {
+    const result = getNextMilestone(5);
+    expect(result).toEqual({ threshold: 10, multiplier: 1.5, label: "+50%" });
+  });
+
+  it("returns threshold 25 when owned is exactly 10", () => {
+    const result = getNextMilestone(10);
+    expect(result).toEqual({ threshold: 25, multiplier: 2, label: "+100%" });
+  });
+
+  it("returns threshold 25 when owned is 15", () => {
+    const result = getNextMilestone(15);
+    expect(result).toEqual({ threshold: 25, multiplier: 2, label: "+100%" });
+  });
+
+  it("returns threshold 50 when owned is 25", () => {
+    const result = getNextMilestone(25);
+    expect(result).toEqual({ threshold: 50, multiplier: 3, label: "+200%" });
+  });
+
+  it("returns threshold 100 when owned is 50", () => {
+    const result = getNextMilestone(50);
+    expect(result).toEqual({ threshold: 100, multiplier: 6, label: "+500%" });
+  });
+
+  it("returns null when owned is 100 (all milestones reached)", () => {
+    expect(getNextMilestone(100)).toBeNull();
+  });
+
+  it("returns null when owned exceeds 100", () => {
+    expect(getNextMilestone(200)).toBeNull();
   });
 });
 

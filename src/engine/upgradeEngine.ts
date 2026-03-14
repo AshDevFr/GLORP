@@ -2,7 +2,7 @@ import type { DecimalSource } from "break_infinity.js";
 import type { Booster } from "../data/boosters";
 import type { Upgrade } from "../data/upgrades";
 import { D, Decimal } from "../utils/decimal";
-import { getMilestoneMultiplier } from "./milestoneEngine";
+import { getMilestoneMultiplier, getNextMilestone } from "./milestoneEngine";
 import { getSynergyMultiplier } from "./synergyEngine";
 
 export const COST_MULTIPLIER = 1.15;
@@ -106,6 +106,12 @@ export interface GeneratorCpsRow {
   totalCps: number;
   /** Share of grand total CPS (0–100). */
   percentOfTotal: number;
+  /** Next milestone the player is approaching, or null if all milestones reached. */
+  nextMilestone: {
+    threshold: number;
+    multiplier: number;
+    label: string;
+  } | null;
 }
 
 /**
@@ -140,6 +146,7 @@ export function computeAllGeneratorsCps(
       perUnitCps,
       totalCps,
       percentOfTotal,
+      nextMilestone: getNextMilestone(count),
     };
   });
 }

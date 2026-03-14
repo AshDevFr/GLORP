@@ -26,6 +26,21 @@ export function getMilestoneMultiplier(owned: number): number {
 }
 
 /**
+ * Returns the next milestone threshold the player has not yet reached,
+ * or `null` if all milestones (10/25/50/100) have been passed.
+ */
+export function getNextMilestone(
+  owned: number,
+): { threshold: number; multiplier: number; label: string } | null {
+  for (const m of MILESTONE_THRESHOLDS) {
+    if (owned < m.owned) {
+      return { threshold: m.owned, multiplier: m.multiplier, label: m.label };
+    }
+  }
+  return null;
+}
+
+/**
  * TD-earned milestone thresholds. When total TD earned crosses one of these
  * values the UI triggers a celebration event and records it in crossedMilestones.
  */

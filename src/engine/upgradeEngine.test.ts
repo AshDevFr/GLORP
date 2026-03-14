@@ -394,10 +394,7 @@ describe("computeBoosterMultiplier", () => {
 
 describe("computeAllGeneratorsCps", () => {
   it("returns an entry for every upgrade in the input", () => {
-    const rows = computeAllGeneratorsCps(
-      [mockUpgrade, mockUpgrade2],
-      {},
-    );
+    const rows = computeAllGeneratorsCps([mockUpgrade, mockUpgrade2], {});
     expect(rows).toHaveLength(2);
     expect(rows[0].id).toBe("test-upgrade");
     expect(rows[1].id).toBe("test-upgrade-2");
@@ -421,10 +418,7 @@ describe("computeAllGeneratorsCps", () => {
   });
 
   it("perUnitCps equals baseTdPerSecond when below first milestone (< 10)", () => {
-    const rows = computeAllGeneratorsCps(
-      [mockUpgrade],
-      { "test-upgrade": 3 },
-    );
+    const rows = computeAllGeneratorsCps([mockUpgrade], { "test-upgrade": 3 });
     expect(rows[0].perUnitCps).toBeCloseTo(mockUpgrade.baseTdPerSecond);
   });
 
@@ -475,9 +469,65 @@ describe("computeAllGeneratorsCps", () => {
     // Percentages are based on globalMultiplier=1 so they stay the same
     // regardless of any idle/species/booster multipliers applied at render time.
     const owned = { "test-upgrade": 2, "test-upgrade-2": 1 };
-    const rowsBase = computeAllGeneratorsCps([mockUpgrade, mockUpgrade2], owned);
+    const rowsBase = computeAllGeneratorsCps(
+      [mockUpgrade, mockUpgrade2],
+      owned,
+    );
     // There's no parameter for global multiplier by design — verify the function
     // signature doesn't accept one, and that results are stable.
     expect(rowsBase[0].percentOfTotal).toBeCloseTo(37.5, 1);
+  });
+
+  it("nextMilestone is {threshold:10, multiplier:1.5} when owned < 10", () => {
+    const rows = computeAllGeneratorsCps([mockUpgrade], { "test-upgrade": 5 });
+    expect(rows[0].nextMilestone).toEqual({
+      threshold: 10,
+      multiplier: 1.5,
+      label: "+50%",
+    });
+  });
+
+  it("nextMilestone is {threshold:25, multiplier:2} when owned is 10", () => {
+    const rows = computeAllGeneratorsCps([mockUpgrade], { "test-upgrade": 10 });
+    expect(rows[0].nextMilestone).toEqual({
+      threshold: 25,
+      multiplier: 2,
+      label: "+100%",
+    });
+  });
+
+  it("nextMilestone is {threshold:50, multiplier:3} when owned is 25", () => {
+    const rows = computeAllGeneratorsCps([mockUpgrade], { "test-upgrade": 25 });
+    expect(rows[0].nextMilestone).toEqual({
+      threshold: 50,
+      multiplier: 3,
+      label: "+200%",
+    });
+  });
+
+  it("nextMilestone is {threshold:100, multiplier:6} when owned is 50", () => {
+    const rows = computeAllGeneratorsCps([mockUpgrade], { "test-upgrade": 50 });
+    expect(rows[0].nextMilestone).toEqual({
+      threshold: 100,
+      multiplier: 6,
+      label: "+500%",
+    });
+  });
+
+  it("nextMilestone is null when owned >= 100", () => {
+    const rows = computeAllGeneratorsCps([mockUpgrade], {
+      "test-upgrade": 100,
+    });
+    expect(rows[0].nextMilestone).toBeNull();
+  });
+
+  it("nextMilestone is null for 0 owned (no generators owned yet)", () => {
+    const rows = computeAllGeneratorsCps([mockUpgrade], {});
+    // When owned is 0, the first milestone is at 10
+    expect(rows[0].nextMilestone).toEqual({
+      threshold: 10,
+      multiplier: 1.5,
+      label: "+50%",
+    });
   });
 });
