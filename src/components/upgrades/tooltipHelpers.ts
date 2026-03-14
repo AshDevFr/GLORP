@@ -1,12 +1,17 @@
+import type { Booster } from "../../data/boosters";
+import type { ClickUpgrade } from "../../data/clickUpgrades";
 import { MILESTONE_THRESHOLDS } from "../../data/milestones";
 import type { Upgrade } from "../../data/upgrades";
 import { UPGRADES } from "../../data/upgrades";
+import { computeClickSeconds } from "../../engine/clickEngine";
 import {
   getMilestoneLevel,
   getMilestoneMultiplier,
 } from "../../engine/milestoneEngine";
 import { getSynergyMultiplier } from "../../engine/synergyEngine";
 import { getTotalTdPerSecond } from "../../engine/upgradeEngine";
+import type { DecimalSource } from "../../utils/decimal";
+import { D, Decimal } from "../../utils/decimal";
 
 export interface GeneratorTooltipData {
   name: string;
@@ -63,7 +68,10 @@ export function computeGeneratorTooltipData(
   const newMilestoneMultiplier = getMilestoneMultiplier(newOwned);
   const newSynergyMultiplier = getSynergyMultiplier(upgrade.id, newAllOwned);
   const futureTdForGenerator =
-    upgrade.baseTdPerSecond * newOwned * newMilestoneMultiplier * newSynergyMultiplier;
+    upgrade.baseTdPerSecond *
+    newOwned *
+    newMilestoneMultiplier *
+    newSynergyMultiplier;
   const deltaTdPerSecond = futureTdForGenerator - totalTdForGenerator;
   const milestoneWillCross = getMilestoneLevel(newOwned) > milestoneLevel;
 
@@ -82,5 +90,83 @@ export function computeGeneratorTooltipData(
     nextMilestoneLabel: nextThreshold?.label ?? null,
     deltaTdPerSecond,
     milestoneWillCross,
+  };
+}
+
+// ── Click-bonus tooltip ───────────────────────────────────────────────────────
+
+export interface ClickBonusTooltipData {
+  /** TD gained per click with current upgrades (no combo, floor applied). */
+  currentClickPower: Decimal;
+  /** TD gained per click after purchasing this upgrade (no combo, floor applied). */
+  futureClickPower: Decimal;
+  /** Net increase in click power from buying this upgrade. */
+  deltaClickPower: Decimal;
+}
+
+/**
+ * Computes the click-power delta shown in a click-bonus upgrade tooltip.
+ *
+ * Combo is intentionally excluded because it is transient — the tooltip
+ * reflects the stable base increase, not a snapshot of a lucky combo streak.
+ * The max(1, ...) floor matches the real engine so early-game values (where
+ * tdPerSecond ≈ 0) show truthful numbers.
+ */
+export function computeClickBonusTooltipData(
+  upgrade: ClickUpgrade,
+  purchasedIds: string[],
+  clickUpgrades: readonly ClickUpgrade[],
+  tdPerSecond: DecimalSource,
+  clickMasteryBonus = 0,
+  speciesClickMultiplier = 1,
+): ClickBonusTooltipData {
+  const currentSeconds = computeClickSeconds(
+    purchasedIds,
+    clickUpgrades,
+    clickMasteryBonus,
+  );
+  const futureSeconds = currentSeconds + upgrade.clickSeconds;
+
+  const currentBase = D(currentSeconds)
+    .mul(tdPerSecond)
+    .mul(speciesClickMultiplier);
+  const futureBase = D(futureSeconds)
+    .mul(tdPerSecond)
+    .mul(speciesClickMultiplier);
+
+  const currentClickPower = Decimal.max(1, currentBase);
+  const futureClickPower = Decimal.max(1, futureBase);
+  const deltaClickPower = futureClickPower.sub(currentClickPower);
+
+  return { currentClickPower, futureClickPower, deltaClickPower };
+}
+
+// ── Global-multiplier tooltip ─────────────────────────────────────────────────
+
+export interface GlobalMultiplierTooltipData {
+  multiplier: number;
+  /** Total TD/s right now (with all current booster multipliers applied). */
+  currentTdPerSecond: Decimal;
+  /** Projected total TD/s after purchasing this booster. */
+  newTdPerSecond: Decimal;
+}
+
+/**
+ * Computes the before/after TD/s pair for a global-multiplier (booster) tooltip.
+ *
+ * `currentTdPerSecond` must already include all active booster multipliers.
+ * Purchasing this booster multiplies the entire total by `booster.multiplier`,
+ * so `newTdPerSecond = currentTdPerSecond × booster.multiplier`.
+ */
+export function computeGlobalMultiplierTooltipData(
+  booster: Booster,
+  currentTdPerSecond: DecimalSource,
+): GlobalMultiplierTooltipData {
+  const current = D(currentTdPerSecond);
+  const newTdPerSecond = current.mul(booster.multiplier);
+  return {
+    multiplier: booster.multiplier,
+    currentTdPerSecond: current,
+    newTdPerSecond,
   };
 }
