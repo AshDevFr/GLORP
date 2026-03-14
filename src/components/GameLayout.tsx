@@ -24,6 +24,7 @@ import { PetDisplay } from "./PetDisplay";
 import { SettingsPanel } from "./SettingsPanel";
 import { StatsBar } from "./StatsBar";
 import { StatsPanel } from "./StatsPanel";
+import { StorageBanner } from "./StorageBanner";
 import { UpgradesSidebar } from "./UpgradesSidebar";
 
 export function GameLayout() {
@@ -153,6 +154,7 @@ export function GameLayout() {
         onClose={() => setSettingsOpen(false)}
       />
       <CrtOverlay />
+      <StorageBanner />
 
       {konamiVisible && (
         <div

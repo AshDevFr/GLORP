@@ -130,7 +130,21 @@ export function applySave(save: GameState): void {
   useGameStore.setState(migrateSave(save));
 }
 
+/**
+ * Hard-reset the game to initial state.
+ * Defensive: clears localStorage keys directly, then resets the store.
+ * Succeeds even when localStorage is corrupt or throws on access.
+ */
 export function resetGame(): void {
+  // Best-effort: wipe the persisted save keys so a corrupt save
+  // cannot re-hydrate on next load.
+  for (const key of ["glorp-game-state", "glorp-settings", "glorp-daily"]) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage may be unavailable — that's fine, just reset in-memory.
+    }
+  }
   useGameStore.setState({ ...initialGameState, lastSaved: Date.now() });
 }
 

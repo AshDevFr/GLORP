@@ -125,6 +125,30 @@ describe("resetGame", () => {
     resetGame();
     expect(useGameStore.getState().rebirthCount).toBe(0);
   });
+
+  it("clears stale localStorage save keys before re-persisting", () => {
+    // Put corrupt data in all three keys
+    localStorage.setItem("glorp-game-state", "CORRUPT");
+    localStorage.setItem("glorp-settings", "CORRUPT");
+    localStorage.setItem("glorp-daily", "CORRUPT");
+    resetGame();
+    // Settings and daily should be cleared (game store re-persists fresh state)
+    expect(localStorage.getItem("glorp-settings")).toBeNull();
+    expect(localStorage.getItem("glorp-daily")).toBeNull();
+    // Game state key should be re-written with fresh initial state, not corrupt
+    const stored = localStorage.getItem("glorp-game-state");
+    expect(stored).not.toBe("CORRUPT");
+  });
+
+  it("succeeds even when localStorage throws", () => {
+    useGameStore.setState({ trainingData: D(9999) });
+    vi.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {
+      throw new Error("storage unavailable");
+    });
+    // Should not throw — falls back gracefully
+    resetGame();
+    expect(useGameStore.getState().trainingData.toNumber()).toBe(0);
+  });
 });
 
 describe("exportSave", () => {
