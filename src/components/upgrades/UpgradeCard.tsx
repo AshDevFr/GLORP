@@ -159,6 +159,9 @@ export function UpgradeCard({
                 : "var(--mantine-color-dark-4)",
             opacity: canAfford ? 1 : 0.5,
             animation: isAnimating ? "glow-pulse 0.6s ease-in-out" : undefined,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <Group justify="space-between" mb={4} wrap="nowrap">
@@ -186,7 +189,7 @@ export function UpgradeCard({
             </Group>
           </Group>
 
-          <Text size="xs" c="dimmed" ff="monospace" mb={4}>
+          <Text size="xs" c="dimmed" ff="monospace" mb={4} style={{ flex: 1 }}>
             {upgrade.description}
           </Text>
 
