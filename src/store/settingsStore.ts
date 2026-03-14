@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { safeStorage } from "../utils/safeStorage";
 
 export type BuyMode = 1 | 10 | 100 | "max";
 
@@ -42,6 +43,6 @@ export const useSettingsStore = create<SettingsStore>()(
       setNumberFormat: (numberFormat) => set({ numberFormat }),
       setSoundEnabled: (soundEnabled) => set({ soundEnabled }),
     }),
-    { name: "glorp-settings" },
+    { name: "glorp-settings", storage: safeStorage },
   ),
 );

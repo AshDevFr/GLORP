@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getCurrentDateUTC } from "../engine/dailyObjectivesEngine";
+import { safeStorage } from "../utils/safeStorage";
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
@@ -93,6 +94,6 @@ export const useDailyStore = create<DailyStore>()(
           };
         }),
     }),
-    { name: "glorp-daily" },
+    { name: "glorp-daily", storage: safeStorage },
   ),
 );

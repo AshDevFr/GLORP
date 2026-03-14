@@ -12,4 +12,5 @@ export { SettingsPanel } from "./SettingsPanel";
 export { SpeechBubble } from "./SpeechBubble";
 export { StatsBar } from "./StatsBar";
 export { StatsPanel } from "./StatsPanel";
+export { StorageBanner } from "./StorageBanner";
 export { UpgradesSidebar } from "./UpgradesSidebar";

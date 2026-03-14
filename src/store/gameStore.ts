@@ -31,6 +31,7 @@ import {
   getUpgradeCost,
 } from "../engine/upgradeEngine";
 import { D, Decimal, toDecimal } from "../utils/decimal";
+import { safeStorage } from "../utils/safeStorage";
 
 export interface GameState {
   trainingData: Decimal;
@@ -494,35 +495,46 @@ export const useGameStore = create<GameStore>()(
     }),
     {
       name: "glorp-game-state",
+      storage: safeStorage,
       merge: (persisted, current) => {
-        const saved = persisted as Partial<Record<string, unknown>> | undefined;
-        if (!saved) return current;
+        try {
+          const saved = persisted as
+            | Partial<Record<string, unknown>>
+            | undefined;
+          if (!saved) return current;
 
-        // Convert Decimal fields from persisted strings/numbers back to Decimal
-        const merged = { ...current, ...(saved as Partial<GameState>) };
-        for (const key of DECIMAL_KEYS) {
-          const val = saved[key];
-          if (val !== undefined) {
-            (merged as Record<string, unknown>)[key] = toDecimal(
-              val as string | number | null,
-            );
+          // Convert Decimal fields from persisted strings/numbers back to Decimal
+          const merged = { ...current, ...(saved as Partial<GameState>) };
+          for (const key of DECIMAL_KEYS) {
+            const val = saved[key];
+            if (val !== undefined) {
+              (merged as Record<string, unknown>)[key] = toDecimal(
+                val as string | number | null,
+              );
+            }
           }
-        }
 
-        // Migrate old saves: convert wisdomTokens to spendable balance
-        if (saved.prestigeUpgrades === undefined) {
-          merged.prestigeUpgrades = {};
+          // Migrate old saves: convert wisdomTokens to spendable balance
+          if (saved.prestigeUpgrades === undefined) {
+            merged.prestigeUpgrades = {};
+          }
+          if (saved.prestigeTokenBalance === undefined) {
+            merged.prestigeTokenBalance = (saved.wisdomTokens as number) ?? 0;
+          }
+          if (saved.hasOpenedPrestigeShop === undefined) {
+            merged.hasOpenedPrestigeShop = false;
+          }
+          if (saved.runStart === undefined) {
+            merged.runStart = Date.now();
+          }
+          return merged;
+        } catch (e) {
+          console.error(
+            "[gameStore] Failed to merge persisted state, falling back to defaults:",
+            e,
+          );
+          return current;
         }
-        if (saved.prestigeTokenBalance === undefined) {
-          merged.prestigeTokenBalance = (saved.wisdomTokens as number) ?? 0;
-        }
-        if (saved.hasOpenedPrestigeShop === undefined) {
-          merged.hasOpenedPrestigeShop = false;
-        }
-        if (saved.runStart === undefined) {
-          merged.runStart = Date.now();
-        }
-        return merged;
       },
     },
   ),
