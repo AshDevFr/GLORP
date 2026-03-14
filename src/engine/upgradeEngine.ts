@@ -93,3 +93,53 @@ export function getTotalTdPerSecond(
   }
   return total.mul(globalMultiplier).mul(boosterMultiplier);
 }
+
+/** A single row in the per-generator CPS breakdown panel. */
+export interface GeneratorCpsRow {
+  id: string;
+  name: string;
+  icon: string;
+  owned: number;
+  /** Effective CPS for a single unit (baseTdPerSecond × milestone × synergy). */
+  perUnitCps: number;
+  /** Total CPS contributed by all owned units of this generator. */
+  totalCps: number;
+  /** Share of grand total CPS (0–100). */
+  percentOfTotal: number;
+}
+
+/**
+ * Returns a CPS breakdown row for every generator in `upgrades`.
+ *
+ * Global multipliers (idle boost, species auto-gen, booster) are intentionally
+ * excluded so that percentage shares are valid regardless of which global
+ * bonuses are active — the same exclusion used by GeneratorTooltipContent.
+ */
+export function computeAllGeneratorsCps(
+  upgrades: readonly Upgrade[],
+  owned: Record<string, number>,
+): GeneratorCpsRow[] {
+  const grandTotal = getTotalTdPerSecond(upgrades, owned, 1, 1);
+  const grandTotalNum = grandTotal.toNumber();
+
+  return upgrades.map((upgrade) => {
+    const count = owned[upgrade.id] ?? 0;
+    const milestoneMultiplier = getMilestoneMultiplier(count);
+    const synergyMultiplier = getSynergyMultiplier(upgrade.id, owned);
+    const perUnitCps =
+      upgrade.baseTdPerSecond * milestoneMultiplier * synergyMultiplier;
+    const totalCps = perUnitCps * count;
+    const percentOfTotal =
+      grandTotalNum > 0 ? (totalCps / grandTotalNum) * 100 : 0;
+
+    return {
+      id: upgrade.id,
+      name: upgrade.name,
+      icon: upgrade.icon,
+      owned: count,
+      perUnitCps,
+      totalCps,
+      percentOfTotal,
+    };
+  });
+}
