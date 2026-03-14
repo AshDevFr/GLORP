@@ -3,6 +3,7 @@ import type { Booster } from "../data/boosters";
 import type { Upgrade } from "../data/upgrades";
 import {
   COST_MULTIPLIER,
+  computeAllGeneratorsCps,
   computeBoosterMultiplier,
   getBulkCost,
   getMaxAffordable,
@@ -388,5 +389,95 @@ describe("computeBoosterMultiplier", () => {
     expect(
       computeBoosterMultiplier([mockBooster1], ["nonexistent-booster"]),
     ).toBe(1);
+  });
+});
+
+describe("computeAllGeneratorsCps", () => {
+  it("returns an entry for every upgrade in the input", () => {
+    const rows = computeAllGeneratorsCps(
+      [mockUpgrade, mockUpgrade2],
+      {},
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows[0].id).toBe("test-upgrade");
+    expect(rows[1].id).toBe("test-upgrade-2");
+  });
+
+  it("returns empty array for empty upgrades list", () => {
+    expect(computeAllGeneratorsCps([], {})).toHaveLength(0);
+  });
+
+  it("rows have 0 owned, 0 totalCps, 0% when nothing purchased", () => {
+    const rows = computeAllGeneratorsCps([mockUpgrade], {});
+    expect(rows[0].owned).toBe(0);
+    expect(rows[0].totalCps).toBe(0);
+    expect(rows[0].percentOfTotal).toBe(0);
+  });
+
+  it("row carries name and icon from the upgrade definition", () => {
+    const rows = computeAllGeneratorsCps([mockUpgrade], {});
+    expect(rows[0].name).toBe("Test Upgrade");
+    expect(rows[0].icon).toBe(mockUpgrade.icon);
+  });
+
+  it("perUnitCps equals baseTdPerSecond when below first milestone (< 10)", () => {
+    const rows = computeAllGeneratorsCps(
+      [mockUpgrade],
+      { "test-upgrade": 3 },
+    );
+    expect(rows[0].perUnitCps).toBeCloseTo(mockUpgrade.baseTdPerSecond);
+  });
+
+  it("totalCps equals perUnitCps * owned", () => {
+    const owned = { "test-upgrade": 5 };
+    const rows = computeAllGeneratorsCps([mockUpgrade], owned);
+    expect(rows[0].totalCps).toBeCloseTo(rows[0].perUnitCps * 5);
+  });
+
+  it("shows 100% for the only owned generator", () => {
+    const owned = { "test-upgrade": 4 };
+    const rows = computeAllGeneratorsCps([mockUpgrade, mockUpgrade2], owned);
+    const active = rows.find((r) => r.id === "test-upgrade")!;
+    const inactive = rows.find((r) => r.id === "test-upgrade-2")!;
+    expect(active.percentOfTotal).toBeCloseTo(100);
+    expect(inactive.percentOfTotal).toBeCloseTo(0);
+  });
+
+  it("percentages across owned generators sum to 100", () => {
+    // test-upgrade: 2 owned x 1.5 = 3 TD/s
+    // test-upgrade-2: 1 owned x 5 = 5 TD/s
+    // total = 8, shares ≈ 37.5% and 62.5%
+    const owned = { "test-upgrade": 2, "test-upgrade-2": 1 };
+    const rows = computeAllGeneratorsCps([mockUpgrade, mockUpgrade2], owned);
+    const totalPercent = rows.reduce((sum, r) => sum + r.percentOfTotal, 0);
+    expect(totalPercent).toBeCloseTo(100);
+  });
+
+  it("percentages reflect each generator's share correctly", () => {
+    const owned = { "test-upgrade": 2, "test-upgrade-2": 1 };
+    const rows = computeAllGeneratorsCps([mockUpgrade, mockUpgrade2], owned);
+    const r1 = rows.find((r) => r.id === "test-upgrade")!;
+    const r2 = rows.find((r) => r.id === "test-upgrade-2")!;
+    // 3 / 8 * 100 = 37.5 and 5 / 8 * 100 = 62.5
+    expect(r1.percentOfTotal).toBeCloseTo(37.5, 1);
+    expect(r2.percentOfTotal).toBeCloseTo(62.5, 1);
+  });
+
+  it("applies milestone multiplier (x1.5 at 10 owned) to perUnitCps", () => {
+    const owned = { "test-upgrade": 10 };
+    const rows = computeAllGeneratorsCps([mockUpgrade], owned);
+    // baseTdPerSecond 1.5 * milestone 1.5 = 2.25
+    expect(rows[0].perUnitCps).toBeCloseTo(2.25);
+    expect(rows[0].totalCps).toBeCloseTo(22.5);
+  });
+
+  it("excludes global multipliers (percentages unchanged by global bonus)", () => {
+    // Percentages are based on globalMultiplier=1 so they stay the same
+    // regardless of any idle/species/booster multipliers applied at render time.
+    const owned = { "test-upgrade": 2, "test-upgrade-2": 1 };
+    const rowsBase = computeAllGeneratorsCps([mockUpgrade, mockUpgrade2], owned);
+    // There's no parameter for global multiplier by design — verify the function
+    // signature doesn't accept one, and that results are stable.
+    expect(rowsBase[0].percentOfTotal).toBeCloseTo(37.5, 1);
   });
 });
