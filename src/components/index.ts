@@ -3,6 +3,7 @@ export { BonusesSidebar } from "./BonusesSidebar";
 export { CrtOverlay } from "./CrtOverlay";
 export { FloatingParticles } from "./FloatingParticles";
 export { GameLayout } from "./GameLayout";
+export { GeneratorCpsBreakdown } from "./GeneratorCpsBreakdown";
 export { OfflineProgressModal } from "./OfflineProgressModal";
 export { PetDisplay } from "./PetDisplay";
 export { RebirthModal } from "./RebirthModal";

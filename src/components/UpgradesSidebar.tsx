@@ -19,6 +19,7 @@ import { useGameStore } from "../store";
 import type { BuyMode } from "../store/settingsStore";
 import { useSettingsStore } from "../store/settingsStore";
 import { D } from "../utils/decimal";
+import { GeneratorCpsBreakdown } from "./GeneratorCpsBreakdown";
 import { ClickUpgradeCard } from "./upgrades/ClickUpgradeCard";
 import { UpgradeCard } from "./upgrades/UpgradeCard";
 
@@ -29,18 +30,18 @@ interface TierConfig {
 }
 
 const TIER_CONFIG: readonly TierConfig[] = [
-  { tier: "garage-lab", label: "🔬 Garage Lab", unlockStage: 0 },
-  { tier: "startup", label: "🚀 Startup", unlockStage: 0 },
-  { tier: "scale-up", label: "🏗️ Scale-Up", unlockStage: 2 },
-  { tier: "mega-corp", label: "🏢 Mega Corp", unlockStage: 3 },
-  { tier: "transcendence", label: "✨ Transcendence", unlockStage: 4 },
+  { tier: "garage-lab", label: "\uD83D\uDD2C Garage Lab", unlockStage: 0 },
+  { tier: "startup", label: "\uD83D\uDE80 Startup", unlockStage: 0 },
+  { tier: "scale-up", label: "\uD83C\uDFD7\uFE0F Scale-Up", unlockStage: 2 },
+  { tier: "mega-corp", label: "\uD83C\uDFE2 Mega Corp", unlockStage: 3 },
+  { tier: "transcendence", label: "\u2728 Transcendence", unlockStage: 4 },
 ];
 
 const BUY_MODES: readonly { mode: BuyMode; label: string; shortcut: string }[] =
   [
-    { mode: 1, label: "×1", shortcut: "1" },
-    { mode: 10, label: "×10", shortcut: "2" },
-    { mode: 100, label: "×100", shortcut: "3" },
+    { mode: 1, label: "\u00d71", shortcut: "1" },
+    { mode: 10, label: "\u00d710", shortcut: "2" },
+    { mode: 100, label: "\u00d7100", shortcut: "3" },
     { mode: "max", label: "Max", shortcut: "4" },
   ];
 
@@ -81,7 +82,7 @@ function CategoryHeader({
             transition: "transform 200ms ease",
           }}
         >
-          ▼
+          \u25bc
         </Text>
       </Group>
     </UnstyledButton>
@@ -136,6 +137,7 @@ export function UpgradesSidebar() {
       "scale-up": true,
       "mega-corp": true,
       transcendence: true,
+      "production-breakdown": true,
     },
   );
 
@@ -171,6 +173,11 @@ export function UpgradesSidebar() {
 
   const hasAnyUpgrades =
     visibleClickUpgrades.length > 0 || visibleTiers.length > 0;
+
+  // Count of owned generators for the breakdown header badge
+  const ownedGeneratorCount = UPGRADES.filter(
+    (u) => (upgradeOwned[u.id] ?? 0) > 0,
+  ).length;
 
   return (
     <aside aria-label="Upgrades" className="sidebar-upgrades">
@@ -212,7 +219,7 @@ export function UpgradesSidebar() {
               {visibleClickUpgrades.length > 0 && (
                 <div>
                   <CategoryHeader
-                    label="🖱️ Click Boosters"
+                    label="\uD83D\uDDB1\uFE0F Click Boosters"
                     count={visibleClickUpgrades.length}
                     open={openCategories["click-boosters"] ?? true}
                     onToggle={() => toggle("click-boosters")}
@@ -281,6 +288,25 @@ export function UpgradesSidebar() {
                   </div>
                 );
               })}
+
+              {/* Production Breakdown section — live CPS share per generator */}
+              <div>
+                <CategoryHeader
+                  label="\uD83D\uDCCA Production Breakdown"
+                  count={ownedGeneratorCount}
+                  open={openCategories["production-breakdown"] ?? true}
+                  onToggle={() => toggle("production-breakdown")}
+                  color="teal"
+                />
+                <Collapse
+                  in={openCategories["production-breakdown"] ?? true}
+                  transitionDuration={200}
+                >
+                  <div style={{ marginTop: 4, paddingBottom: 4 }}>
+                    <GeneratorCpsBreakdown />
+                  </div>
+                </Collapse>
+              </div>
             </Stack>
           </ScrollArea>
         </Stack>
