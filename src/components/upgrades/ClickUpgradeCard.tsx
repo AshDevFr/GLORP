@@ -77,6 +77,9 @@ export function ClickUpgradeCard({
                 : "var(--mantine-color-dark-4)",
             opacity: purchased ? 0.7 : canAfford ? 1 : 0.5,
             animation: isGlowing ? "glow-pulse 0.6s ease-in-out" : undefined,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <Group justify="space-between" mb={4} wrap="nowrap">
@@ -106,7 +109,7 @@ export function ClickUpgradeCard({
             </Group>
           </Group>
 
-          <Text size="xs" c="dimmed" ff="monospace" mb="xs">
+          <Text size="xs" c="dimmed" ff="monospace" mb="xs" style={{ flex: 1 }}>
             {upgrade.description}
           </Text>
 

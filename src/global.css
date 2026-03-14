@@ -133,7 +133,7 @@ body {
   }
 }
 
-/* ── Purchase snap-back animation ──────────────────────────────────────── */
+/* ── Purchase snap-back animation ──────────────────────────────────────────── */
 
 @keyframes purchase-snap {
   0% {
@@ -163,7 +163,7 @@ body {
   }
 }
 
-/* ── ASCII art color classes ─────────────────────────── */
+/* ── ASCII art color classes ─────────────────────────────── */
 
 .ascii-eyes {
   color: var(--mantine-color-green-4);
@@ -186,13 +186,13 @@ body {
   color: var(--mantine-color-gray-6);
 }
 
-/* ── ASCII art responsive sizing ────────────────────── */
+/* ── ASCII art responsive sizing ────────────────────────────── */
 
 .ascii-art-container {
   font-size: clamp(0.65rem, 1.8vw, 1.5rem);
 }
 
-/* ── ASCII glitch keyframe (stage transition) ───────── */
+/* ── ASCII glitch keyframe (stage transition) ─────────────────────── */
 
 @keyframes ascii-glitch {
   0%,
@@ -226,12 +226,12 @@ body {
   }
 }
 
-/* ── Game layout: dual-sidebar three-column layout ─────────────────────── */
+/* ── Game layout: dual-sidebar three-column layout ───────────────────────── */
 
 .game-layout {
   display: flex;
   height: calc(100dvh - 44px);
-  min-width: 860px;
+  min-width: 1300px;
   overflow: hidden;
 }
 
@@ -242,7 +242,7 @@ body {
   overflow: hidden;
 }
 
-/* ── Sidebar common styles ─────────────────────────────────────────────── */
+/* ── Sidebar common styles ──────────────────────────────────────────────────── */
 
 .sidebar-upgrades,
 .sidebar-bonuses {
@@ -252,16 +252,16 @@ body {
 }
 
 .sidebar-upgrades {
-  width: 320px;
+  width: 640px;
   border-right: 1px solid var(--mantine-color-dark-4);
 }
 
 .sidebar-bonuses {
-  width: 240px;
+  width: 360px;
   border-left: 1px solid var(--mantine-color-dark-4);
 }
 
-/* ── Upgrades grid: 2-column card layout inside each tier ──────────────── */
+/* ── Upgrades grid: 2-column card layout inside each tier ───────────────────── */
 
 .upgrades-grid {
   display: grid;
@@ -270,7 +270,7 @@ body {
   padding: 4px 0;
 }
 
-/* ── Bonuses grid: single-column generator list ────────────────────────── */
+/* ── Bonuses grid: single-column generator list ───────────────────────────── */
 
 .bonuses-grid {
   display: grid;
