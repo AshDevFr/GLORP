@@ -1,4 +1,11 @@
-import { Collapse, ScrollArea, Stack, Text, Title, UnstyledButton } from "@mantine/core";
+import {
+  Collapse,
+  ScrollArea,
+  Stack,
+  Text,
+  Title,
+  UnstyledButton,
+} from "@mantine/core";
 import { useState } from "react";
 import { BOOSTERS } from "../data/boosters";
 import { useGameStore } from "../store";

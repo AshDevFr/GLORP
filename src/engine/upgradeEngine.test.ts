@@ -431,8 +431,12 @@ describe("computeAllGeneratorsCps", () => {
   it("shows 100% for the only owned generator", () => {
     const owned = { "test-upgrade": 4 };
     const rows = computeAllGeneratorsCps([mockUpgrade, mockUpgrade2], owned);
-    const active = rows.find((r) => r.id === "test-upgrade")!;
-    const inactive = rows.find((r) => r.id === "test-upgrade-2")!;
+    const active = rows.find(
+      (r) => r.id === "test-upgrade",
+    ) as (typeof rows)[0];
+    const inactive = rows.find(
+      (r) => r.id === "test-upgrade-2",
+    ) as (typeof rows)[0];
     expect(active.percentOfTotal).toBeCloseTo(100);
     expect(inactive.percentOfTotal).toBeCloseTo(0);
   });
@@ -450,8 +454,8 @@ describe("computeAllGeneratorsCps", () => {
   it("percentages reflect each generator's share correctly", () => {
     const owned = { "test-upgrade": 2, "test-upgrade-2": 1 };
     const rows = computeAllGeneratorsCps([mockUpgrade, mockUpgrade2], owned);
-    const r1 = rows.find((r) => r.id === "test-upgrade")!;
-    const r2 = rows.find((r) => r.id === "test-upgrade-2")!;
+    const r1 = rows.find((r) => r.id === "test-upgrade") as (typeof rows)[0];
+    const r2 = rows.find((r) => r.id === "test-upgrade-2") as (typeof rows)[0];
     // 3 / 8 * 100 = 37.5 and 5 / 8 * 100 = 62.5
     expect(r1.percentOfTotal).toBeCloseTo(37.5, 1);
     expect(r2.percentOfTotal).toBeCloseTo(62.5, 1);
