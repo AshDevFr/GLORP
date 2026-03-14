@@ -1,6 +1,8 @@
+import type { DecimalSource } from "break_infinity.js";
 import type { Species } from "../data/species";
 import { SPECIES_ORDER } from "../data/species";
 import { STAGES } from "../data/stages";
+import { D } from "../utils/decimal";
 
 /** Minimum evolution stage required to trigger a Rebirth. */
 export const REBIRTH_MIN_STAGE = 4;
@@ -16,11 +18,11 @@ export const WISDOM_TOKENS_DIVISOR = 5_000_000;
  * The optional `tokenMagnetMultiplier` scales the result (default 1).
  */
 export function computeWisdomTokens(
-  totalTdEarned: number,
+  totalTdEarned: DecimalSource,
   tokenMagnetMultiplier = 1,
 ): number {
-  const base = Math.floor(Math.sqrt(totalTdEarned / WISDOM_TOKENS_DIVISOR));
-  return Math.floor(base * tokenMagnetMultiplier);
+  const base = D(totalTdEarned).div(WISDOM_TOKENS_DIVISOR).sqrt().floor();
+  return base.mul(tokenMagnetMultiplier).floor().toNumber();
 }
 
 /** Returns true when the player is eligible to Rebirth. */
@@ -48,12 +50,13 @@ export function getRebirthThresholdTd(thresholdMultiplier = 1): number {
  * `thresholdMultiplier` mirrors the Evolution Accelerator prestige upgrade.
  */
 export function getRebirthProgress(
-  totalTdEarned: number,
+  totalTdEarned: DecimalSource,
   thresholdMultiplier = 1,
 ): number {
+  const td = D(totalTdEarned);
   const threshold = getRebirthThresholdTd(thresholdMultiplier);
-  if (totalTdEarned >= threshold) return 1;
-  return Math.max(0, totalTdEarned / threshold);
+  if (td.gte(threshold)) return 1;
+  return Math.max(0, td.div(threshold).toNumber());
 }
 
 /**

@@ -16,6 +16,7 @@ import {
 import { useInterpolatedTd } from "../hooks/useInterpolatedTd";
 import { useGameStore } from "../store";
 import { useSettingsStore } from "../store/settingsStore";
+import { D, type Decimal } from "../utils/decimal";
 import { formatNumber, formatNumberFull } from "../utils/formatNumber";
 
 const RATE_BOOST_DURATION_MS = 3000;
@@ -45,7 +46,8 @@ export function StatsBar() {
     idleBoost * speciesBonus.autoGen,
     boosterMultiplier,
   );
-  const tdPerSecond = activeChallengeId === "click-only" ? 0 : rawTdPerSecond;
+  const tdPerSecond =
+    activeChallengeId === "click-only" ? D(0) : rawTdPerSecond;
   const clickMastery = getClickMasteryBonus(ep["click-mastery"] ?? 0);
   const effectiveClickPower = computeClickPower(
     { clickUpgradesPurchased, comboCount, lastClickTime },
@@ -59,11 +61,11 @@ export function StatsBar() {
   const fmt = numberFormat === "full" ? formatNumberFull : formatNumber;
 
   // Rate-of-change indicator: show sparkle when TD/s increases
-  const prevTdPerSecondRef = useRef(tdPerSecond);
+  const prevTdPerSecondRef = useRef<Decimal>(tdPerSecond);
   const [rateBoosted, setRateBoosted] = useState(false);
 
   useEffect(() => {
-    if (tdPerSecond > prevTdPerSecondRef.current) {
+    if (tdPerSecond.gt(prevTdPerSecondRef.current)) {
       setRateBoosted(true);
       const timer = setTimeout(
         () => setRateBoosted(false),
@@ -92,8 +94,8 @@ export function StatsBar() {
       </Text>
       <Text size="sm" ff="monospace">
         TD/s:{" "}
-        <Text span fw={700} c={tdPerSecond > 0 ? "green" : "dimmed"}>
-          {tdPerSecond > 0 ? fmt(tdPerSecond) : "0.0"}
+        <Text span fw={700} c={tdPerSecond.gt(0) ? "green" : "dimmed"}>
+          {tdPerSecond.gt(0) ? fmt(tdPerSecond) : "0.0"}
         </Text>
         {rateBoosted && (
           <Text
@@ -113,7 +115,7 @@ export function StatsBar() {
       <Text size="sm" ff="monospace">
         Click:{" "}
         <Text span fw={700} c="cyan">
-          {fmt(Math.floor(effectiveClickPower))} TD
+          {fmt(effectiveClickPower)} TD
         </Text>
       </Text>
       {rebirthCount > 0 && (

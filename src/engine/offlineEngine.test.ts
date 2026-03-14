@@ -70,7 +70,9 @@ describe("computeOfflineProgress", () => {
       const result = computeOfflineProgress(lastSaved, BASE_NOW, state);
 
       expect(result).not.toBeNull();
-      expect(result?.earned).toBeCloseTo(0.2 * 14_400 * OFFLINE_EFFICIENCY);
+      expect(result?.earned.toNumber()).toBeCloseTo(
+        0.2 * 14_400 * OFFLINE_EFFICIENCY,
+      );
       expect(result?.cappedSeconds).toBeCloseTo(14_400);
       expect(result?.elapsedSeconds).toBeCloseTo(14_400);
     });
@@ -89,7 +91,9 @@ describe("computeOfflineProgress", () => {
       const result = computeOfflineProgress(lastSaved, BASE_NOW, state);
 
       expect(result).not.toBeNull();
-      expect(result?.earned).toBeCloseTo(2.4 * 14_400 * OFFLINE_EFFICIENCY);
+      expect(result?.earned.toNumber()).toBeCloseTo(
+        2.4 * 14_400 * OFFLINE_EFFICIENCY,
+      );
     });
   });
 
@@ -106,7 +110,7 @@ describe("computeOfflineProgress", () => {
       expect(result?.cappedSeconds).toBe(OFFLINE_CAP_SECONDS); // 28,800
       expect(result?.elapsedSeconds).toBeGreaterThan(OFFLINE_CAP_SECONDS);
       // earned should be based on capped 8h, not 12h
-      expect(result?.earned).toBeCloseTo(
+      expect(result?.earned.toNumber()).toBeCloseTo(
         0.2 * OFFLINE_CAP_SECONDS * OFFLINE_EFFICIENCY,
       );
     });
@@ -133,7 +137,7 @@ describe("computeOfflineProgress", () => {
 
       expect(result).not.toBeNull();
       // 4.0 TD/s * 3,600s * 0.5 = 7,200
-      expect(result?.earned).toBeCloseTo(7_200);
+      expect(result?.earned.toNumber()).toBeCloseTo(7_200);
     });
   });
 

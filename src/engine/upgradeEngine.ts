@@ -1,5 +1,7 @@
+import type { DecimalSource } from "break_infinity.js";
 import type { Booster } from "../data/boosters";
 import type { Upgrade } from "../data/upgrades";
+import { D, Decimal } from "../utils/decimal";
 import { getMilestoneMultiplier } from "./milestoneEngine";
 import { getSynergyMultiplier } from "./synergyEngine";
 
@@ -9,8 +11,8 @@ export function getUpgradeCost(
   upgrade: Upgrade,
   owned: number,
   costMultiplier = COST_MULTIPLIER,
-): number {
-  return Math.floor(upgrade.baseCost * costMultiplier ** owned);
+): Decimal {
+  return D(upgrade.baseCost).mul(D(costMultiplier).pow(owned)).floor();
 }
 
 /**
@@ -22,13 +24,14 @@ export function getBulkCost(
   owned: number,
   count: number,
   costMultiplier = COST_MULTIPLIER,
-): number {
-  if (count <= 0) return 0;
+): Decimal {
+  if (count <= 0) return D(0);
   if (count === 1) return getUpgradeCost(upgrade, owned, costMultiplier);
-  const firstCost = upgrade.baseCost * costMultiplier ** owned;
-  return Math.floor(
-    (firstCost * (costMultiplier ** count - 1)) / (costMultiplier - 1),
-  );
+  const firstCost = D(upgrade.baseCost).mul(D(costMultiplier).pow(owned));
+  return firstCost
+    .mul(D(costMultiplier).pow(count).sub(1))
+    .div(D(costMultiplier).sub(1))
+    .floor();
 }
 
 /**
@@ -38,15 +41,16 @@ export function getBulkCost(
 export function getMaxAffordable(
   upgrade: Upgrade,
   owned: number,
-  budget: number,
+  budget: DecimalSource,
   costMultiplier = COST_MULTIPLIER,
 ): number {
-  if (budget <= 0) return 0;
-  const firstCost = upgrade.baseCost * costMultiplier ** owned;
-  if (budget < firstCost) return 0;
+  const b = new Decimal(budget);
+  if (b.lte(0)) return 0;
+  const firstCost = D(upgrade.baseCost).mul(D(costMultiplier).pow(owned));
+  if (b.lt(firstCost)) return 0;
   const n = Math.floor(
-    Math.log((budget * (costMultiplier - 1)) / firstCost + 1) /
-      Math.log(costMultiplier),
+    b.mul(D(costMultiplier).sub(1)).div(firstCost).add(1).log10() /
+      D(costMultiplier).log10(),
   );
   return Math.max(0, n);
 }
@@ -74,14 +78,18 @@ export function getTotalTdPerSecond(
   owned: Record<string, number>,
   globalMultiplier = 1,
   boosterMultiplier = 1,
-): number {
-  let total = 0;
+): Decimal {
+  let total = D(0);
   for (const upgrade of upgrades) {
     const count = owned[upgrade.id] ?? 0;
     const milestoneMultiplier = getMilestoneMultiplier(count);
     const synergyMultiplier = getSynergyMultiplier(upgrade.id, owned);
-    total +=
-      upgrade.baseTdPerSecond * count * milestoneMultiplier * synergyMultiplier;
+    total = total.add(
+      D(upgrade.baseTdPerSecond)
+        .mul(count)
+        .mul(milestoneMultiplier)
+        .mul(synergyMultiplier),
+    );
   }
-  return total * globalMultiplier * boosterMultiplier;
+  return total.mul(globalMultiplier).mul(boosterMultiplier);
 }

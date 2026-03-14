@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GameState } from "../store/gameStore";
 import { initialGameState, useGameStore } from "../store/gameStore";
+import { D } from "./decimal";
 import {
   applySave,
   exportSave,
@@ -14,7 +15,8 @@ import {
   validateSave,
 } from "./saveManager";
 
-const validSave: GameState = {
+// Raw save data uses plain numbers for Decimal fields (migrateSave converts them)
+const validSave = {
   trainingData: 100,
   totalClicks: 50,
   totalTdEarned: 200,
@@ -48,7 +50,7 @@ const validSave: GameState = {
   lifetimeBestRunTd: 0,
   lifetimeWisdomEarned: 0,
   activeChallengeId: null,
-};
+} as unknown as GameState;
 
 beforeEach(() => {
   useGameStore.setState(initialGameState);
@@ -86,24 +88,24 @@ describe("applySave", () => {
   it("applies the save to the game store", () => {
     applySave(validSave);
     const state = useGameStore.getState();
-    expect(state.trainingData).toBe(100);
+    expect(state.trainingData.toNumber()).toBe(100);
     expect(state.totalClicks).toBe(50);
     expect(state.rebirthCount).toBe(1);
     expect(state.unlockedAchievements).toEqual(["first-click"]);
   });
 
   it("overwrites existing store values", () => {
-    useGameStore.setState({ trainingData: 9999 });
+    useGameStore.setState({ trainingData: D(9999) });
     applySave(validSave);
-    expect(useGameStore.getState().trainingData).toBe(100);
+    expect(useGameStore.getState().trainingData.toNumber()).toBe(100);
   });
 });
 
 describe("resetGame", () => {
   it("resets trainingData to 0", () => {
-    useGameStore.setState({ trainingData: 9999 });
+    useGameStore.setState({ trainingData: D(9999) });
     resetGame();
-    expect(useGameStore.getState().trainingData).toBe(0);
+    expect(useGameStore.getState().trainingData.toNumber()).toBe(0);
   });
 
   it("resets totalClicks to 0", () => {
@@ -208,7 +210,7 @@ describe("parseSaveFile", () => {
     const json = JSON.stringify(validSave);
     const file = new File([json], "save.json", { type: "application/json" });
     const result = await parseSaveFile(file);
-    expect(result.trainingData).toBe(100);
+    expect(result.trainingData.toNumber()).toBe(100);
     expect(result.rebirthCount).toBe(1);
   });
 
@@ -233,7 +235,7 @@ describe("exportSaveToClipboard", () => {
       value: { writeText: vi.fn().mockResolvedValue(undefined) },
       writable: true,
     });
-    useGameStore.setState({ ...initialGameState, trainingData: 42 });
+    useGameStore.setState({ ...initialGameState, trainingData: D(42) });
   });
 
   it("copies a JSON string to clipboard", async () => {
@@ -258,7 +260,7 @@ describe("exportSaveToClipboard", () => {
     const written = (navigator.clipboard.writeText as ReturnType<typeof vi.fn>)
       .mock.calls[0][0] as string;
     const imported = importSaveFromString(written);
-    expect(imported.trainingData).toBe(42);
+    expect(imported.trainingData.toNumber()).toBe(42);
   });
 });
 
@@ -272,7 +274,7 @@ describe("importSaveFromString", () => {
 
   it("returns a valid GameState for a correct envelope", () => {
     const result = importSaveFromString(makeEnvelope(validSave));
-    expect(result.trainingData).toBe(100);
+    expect(result.trainingData.toNumber()).toBe(100);
     expect(result.rebirthCount).toBe(1);
   });
 
@@ -305,12 +307,12 @@ describe("importSaveFromString", () => {
   });
 
   it("does not modify game state on failure", () => {
-    useGameStore.setState({ trainingData: 9999 });
+    useGameStore.setState({ trainingData: D(9999) });
     try {
       importSaveFromString("garbage");
     } catch {
       // expected
     }
-    expect(useGameStore.getState().trainingData).toBe(9999);
+    expect(useGameStore.getState().trainingData.toNumber()).toBe(9999);
   });
 });

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { UPGRADES } from "../data/upgrades";
 import { COMBO_THRESHOLD } from "../engine/clickEngine";
 import { getUpgradeCost } from "../engine/upgradeEngine";
+import { D } from "../utils/decimal";
 import { initialGameState, useGameStore } from "./gameStore";
 
 beforeEach(() => {
@@ -17,9 +18,9 @@ describe("gameStore", () => {
   describe("initial state", () => {
     it("has correct default values", () => {
       const state = useGameStore.getState();
-      expect(state.trainingData).toBe(0);
+      expect(state.trainingData.toNumber()).toBe(0);
       expect(state.totalClicks).toBe(0);
-      expect(state.totalTdEarned).toBe(0);
+      expect(state.totalTdEarned.toNumber()).toBe(0);
       expect(state.evolutionStage).toBe(0);
       expect(state.lastSaved).toBe(0);
     });
@@ -33,7 +34,7 @@ describe("gameStore", () => {
   describe("clickFeed", () => {
     it("increments trainingData by 1", () => {
       useGameStore.getState().clickFeed();
-      expect(useGameStore.getState().trainingData).toBe(1);
+      expect(useGameStore.getState().trainingData.toNumber()).toBe(1);
     });
 
     it("increments totalClicks by 1", () => {
@@ -43,7 +44,7 @@ describe("gameStore", () => {
 
     it("increments totalTdEarned by 1", () => {
       useGameStore.getState().clickFeed();
-      expect(useGameStore.getState().totalTdEarned).toBe(1);
+      expect(useGameStore.getState().totalTdEarned.toNumber()).toBe(1);
     });
 
     it("updates lastSaved timestamp", () => {
@@ -67,9 +68,9 @@ describe("gameStore", () => {
       useGameStore.getState().clickFeed();
 
       const state = useGameStore.getState();
-      expect(state.trainingData).toBe(3);
+      expect(state.trainingData.toNumber()).toBe(3);
       expect(state.totalClicks).toBe(3);
-      expect(state.totalTdEarned).toBe(3);
+      expect(state.totalTdEarned.toNumber()).toBe(3);
     });
 
     it("awards floor(1 × comboMultiplier) TD per click when combo is active", () => {
@@ -89,20 +90,20 @@ describe("gameStore", () => {
 
       useGameStore.getState().clickFeed();
 
-      expect(useGameStore.getState().trainingData).toBe(2);
-      expect(useGameStore.getState().totalTdEarned).toBe(2);
+      expect(useGameStore.getState().trainingData.toNumber()).toBe(2);
+      expect(useGameStore.getState().totalTdEarned.toNumber()).toBe(2);
     });
   });
 
   describe("addTrainingData", () => {
     it("adds the specified amount to trainingData", () => {
       useGameStore.getState().addTrainingData(100);
-      expect(useGameStore.getState().trainingData).toBe(100);
+      expect(useGameStore.getState().trainingData.toNumber()).toBe(100);
     });
 
     it("adds the amount to totalTdEarned", () => {
       useGameStore.getState().addTrainingData(100);
-      expect(useGameStore.getState().totalTdEarned).toBe(100);
+      expect(useGameStore.getState().totalTdEarned.toNumber()).toBe(100);
     });
 
     it("does not affect totalClicks", () => {
@@ -122,13 +123,13 @@ describe("gameStore", () => {
     it("accumulates with existing trainingData", () => {
       useGameStore.getState().addTrainingData(10);
       useGameStore.getState().addTrainingData(20);
-      expect(useGameStore.getState().trainingData).toBe(30);
+      expect(useGameStore.getState().trainingData.toNumber()).toBe(30);
     });
 
     it("works with fractional amounts", () => {
       useGameStore.getState().addTrainingData(0.5);
       useGameStore.getState().addTrainingData(0.3);
-      expect(useGameStore.getState().trainingData).toBeCloseTo(0.8);
+      expect(useGameStore.getState().trainingData.toNumber()).toBeCloseTo(0.8);
     });
 
     it("combines correctly with clickFeed", () => {
@@ -141,9 +142,9 @@ describe("gameStore", () => {
       useGameStore.getState().clickFeed();
       useGameStore.getState().addTrainingData(100);
       const state = useGameStore.getState();
-      expect(state.trainingData).toBe(102);
+      expect(state.trainingData.toNumber()).toBe(102);
       expect(state.totalClicks).toBe(2);
-      expect(state.totalTdEarned).toBe(102);
+      expect(state.totalTdEarned.toNumber()).toBe(102);
     });
   });
 
@@ -152,40 +153,40 @@ describe("gameStore", () => {
     const baseCost = firstUpgrade.baseCost;
 
     it("deducts cost and increments owned count", () => {
-      useGameStore.setState({ trainingData: baseCost });
+      useGameStore.setState({ trainingData: D(baseCost) });
       useGameStore.getState().purchaseUpgrade(firstUpgrade.id);
       const state = useGameStore.getState();
-      expect(state.trainingData).toBe(0);
+      expect(state.trainingData.toNumber()).toBe(0);
       expect(state.upgradeOwned[firstUpgrade.id]).toBe(1);
     });
 
     it("no-ops when player cannot afford", () => {
-      useGameStore.setState({ trainingData: baseCost - 1 });
+      useGameStore.setState({ trainingData: D(baseCost - 1) });
       useGameStore.getState().purchaseUpgrade(firstUpgrade.id);
       const state = useGameStore.getState();
-      expect(state.trainingData).toBe(baseCost - 1);
+      expect(state.trainingData.toNumber()).toBe(baseCost - 1);
       expect(state.upgradeOwned[firstUpgrade.id]).toBeUndefined();
     });
 
     it("scales cost after purchase", () => {
-      const totalNeeded = baseCost + getUpgradeCost(firstUpgrade, 1);
+      const totalNeeded = D(baseCost).add(getUpgradeCost(firstUpgrade, 1));
       useGameStore.setState({ trainingData: totalNeeded });
       useGameStore.getState().purchaseUpgrade(firstUpgrade.id);
       useGameStore.getState().purchaseUpgrade(firstUpgrade.id);
       const state = useGameStore.getState();
       expect(state.upgradeOwned[firstUpgrade.id]).toBe(2);
-      expect(state.trainingData).toBe(0);
+      expect(state.trainingData.toNumber()).toBe(0);
     });
 
     it("no-ops for unknown upgrade id", () => {
-      useGameStore.setState({ trainingData: 999_999 });
+      useGameStore.setState({ trainingData: D(999_999) });
       useGameStore.getState().purchaseUpgrade("nonexistent");
       const state = useGameStore.getState();
-      expect(state.trainingData).toBe(999_999);
+      expect(state.trainingData.toNumber()).toBe(999_999);
     });
 
     it("updates lastSaved on purchase", () => {
-      useGameStore.setState({ trainingData: baseCost });
+      useGameStore.setState({ trainingData: D(baseCost) });
       const before = Date.now();
       useGameStore.getState().purchaseUpgrade(firstUpgrade.id);
       const after = Date.now();
@@ -197,20 +198,23 @@ describe("gameStore", () => {
     it("allows purchasing different upgrades independently", () => {
       const secondUpgrade = UPGRADES[1];
       useGameStore.setState({
-        trainingData: firstUpgrade.baseCost + secondUpgrade.baseCost,
+        trainingData: D(firstUpgrade.baseCost + secondUpgrade.baseCost),
       });
       useGameStore.getState().purchaseUpgrade(firstUpgrade.id);
       useGameStore.getState().purchaseUpgrade(secondUpgrade.id);
       const state = useGameStore.getState();
       expect(state.upgradeOwned[firstUpgrade.id]).toBe(1);
       expect(state.upgradeOwned[secondUpgrade.id]).toBe(1);
-      expect(state.trainingData).toBe(0);
+      expect(state.trainingData.toNumber()).toBe(0);
     });
 
     it("does not change totalTdEarned", () => {
-      useGameStore.setState({ trainingData: baseCost, totalTdEarned: 50 });
+      useGameStore.setState({
+        trainingData: D(baseCost),
+        totalTdEarned: D(50),
+      });
       useGameStore.getState().purchaseUpgrade(firstUpgrade.id);
-      expect(useGameStore.getState().totalTdEarned).toBe(50);
+      expect(useGameStore.getState().totalTdEarned.toNumber()).toBe(50);
     });
   });
 
@@ -261,7 +265,7 @@ describe("gameStore", () => {
 
     it("purchaseUpgrade sets mood to Excited", () => {
       const firstUpgrade = UPGRADES[0];
-      useGameStore.setState({ trainingData: firstUpgrade.baseCost });
+      useGameStore.setState({ trainingData: D(firstUpgrade.baseCost) });
       useGameStore.getState().purchaseUpgrade(firstUpgrade.id);
       expect(useGameStore.getState().mood).toBe("Excited");
     });
@@ -269,7 +273,7 @@ describe("gameStore", () => {
     it("purchaseUpgrade resets moodChangedAt", () => {
       const firstUpgrade = UPGRADES[0];
       useGameStore.setState({
-        trainingData: firstUpgrade.baseCost,
+        trainingData: D(firstUpgrade.baseCost),
         moodChangedAt: 1000,
       });
       const before = Date.now();
@@ -281,7 +285,7 @@ describe("gameStore", () => {
     });
 
     it("failed purchase does not change mood", () => {
-      useGameStore.setState({ trainingData: 0, mood: "Sad" });
+      useGameStore.setState({ trainingData: D(0), mood: "Sad" });
       useGameStore.getState().purchaseUpgrade(UPGRADES[0].id);
       expect(useGameStore.getState().mood).toBe("Sad");
     });
@@ -304,7 +308,7 @@ describe("gameStore", () => {
     });
 
     it("evolves via clickFeed accumulation", () => {
-      useGameStore.setState({ totalTdEarned: 99 });
+      useGameStore.setState({ totalTdEarned: D(99) });
       useGameStore.getState().clickFeed();
       expect(useGameStore.getState().evolutionStage).toBe(1);
     });
@@ -359,7 +363,7 @@ describe("gameStore", () => {
 
     it("performRebirth awards tokens and increments balance", () => {
       useGameStore.setState({
-        totalTdEarned: 20_000_000, // floor(sqrt(20_000_000 / 5_000_000)) = floor(sqrt(4)) = 2 tokens
+        totalTdEarned: D(20_000_000), // floor(sqrt(20_000_000 / 5_000_000)) = floor(sqrt(4)) = 2 tokens
         evolutionStage: 5,
         prestigeTokenBalance: 0,
         wisdomTokens: 0,
@@ -372,7 +376,7 @@ describe("gameStore", () => {
 
     it("performRebirth preserves prestige upgrades", () => {
       useGameStore.setState({
-        totalTdEarned: 400_000,
+        totalTdEarned: D(400_000),
         evolutionStage: 5,
         prestigeUpgrades: { "click-mastery": 3 },
       });
@@ -394,7 +398,7 @@ describe("gameStore", () => {
     it("resets crossedMilestones on rebirth", () => {
       // Set up a state eligible for rebirth (stage 5) with some milestones
       useGameStore.setState({
-        totalTdEarned: 1_000_000,
+        totalTdEarned: D(1_000_000),
         evolutionStage: 5,
         crossedMilestones: [1_000, 10_000, 100_000, 1_000_000],
       });
@@ -410,7 +414,7 @@ describe("gameStore", () => {
 
     it("performRebirth sets activeChallengeId for next run", () => {
       useGameStore.setState({
-        totalTdEarned: 2_000_000,
+        totalTdEarned: D(2_000_000),
         evolutionStage: 5,
       });
       useGameStore.getState().performRebirth(undefined, "click-only");
@@ -419,7 +423,7 @@ describe("gameStore", () => {
 
     it("performRebirth clears challenge when none selected", () => {
       useGameStore.setState({
-        totalTdEarned: 2_000_000,
+        totalTdEarned: D(2_000_000),
         evolutionStage: 5,
         activeChallengeId: "click-only",
       });
@@ -430,7 +434,7 @@ describe("gameStore", () => {
     it("awards 2x tokens when challenge is completed", () => {
       // click-only challenge, need stage >= 3
       useGameStore.setState({
-        totalTdEarned: 20_000_000, // base = floor(sqrt(20_000_000 / 5_000_000)) = floor(sqrt(4)) = 2
+        totalTdEarned: D(20_000_000), // base = floor(sqrt(20_000_000 / 5_000_000)) = floor(sqrt(4)) = 2
         evolutionStage: 5,
         activeChallengeId: "click-only",
         runStart: Date.now() - 1000,
@@ -444,7 +448,7 @@ describe("gameStore", () => {
     it("does not award bonus when challenge is not completed", () => {
       // no-prestige needs stage 5, give stage 4 only
       useGameStore.setState({
-        totalTdEarned: 20_000_000, // floor(sqrt(20_000_000 / 5_000_000)) = floor(sqrt(4)) = 2
+        totalTdEarned: D(20_000_000), // floor(sqrt(20_000_000 / 5_000_000)) = floor(sqrt(4)) = 2
         evolutionStage: 4,
         activeChallengeId: "no-prestige",
         runStart: Date.now() - 1000,
@@ -457,19 +461,19 @@ describe("gameStore", () => {
 
     it("no-prestige challenge disables quick-start for next run", () => {
       useGameStore.setState({
-        totalTdEarned: 2_000_000,
+        totalTdEarned: D(2_000_000),
         evolutionStage: 5,
         prestigeUpgrades: { "quick-start": 2 },
       });
       useGameStore.getState().performRebirth(undefined, "no-prestige");
       const state = useGameStore.getState();
-      expect(state.trainingData).toBe(0);
+      expect(state.trainingData.toNumber()).toBe(0);
       expect(state.activeChallengeId).toBe("no-prestige");
     });
 
     it("resets upgradeOwned to {} regardless of species-memory prestige", () => {
       useGameStore.setState({
-        totalTdEarned: 2_000_000,
+        totalTdEarned: D(2_000_000),
         evolutionStage: 5,
         prestigeUpgrades: { "species-memory": 2 },
         upgradeOwned: { "neural-notepad": 10, "data-hamster-wheel": 5 },
@@ -483,7 +487,7 @@ describe("gameStore", () => {
   describe("rebirth reset", () => {
     it("resets upgradeOwned to {} after rebirth", () => {
       useGameStore.setState({
-        totalTdEarned: 2_000_000,
+        totalTdEarned: D(2_000_000),
         evolutionStage: 5,
         upgradeOwned: { "neural-notepad": 50, "quantum-processor": 100 },
       });
@@ -493,7 +497,7 @@ describe("gameStore", () => {
 
     it("resets upgradeOwned to {} even with species-memory prestige active", () => {
       useGameStore.setState({
-        totalTdEarned: 2_000_000,
+        totalTdEarned: D(2_000_000),
         evolutionStage: 5,
         prestigeUpgrades: { "species-memory": 5 },
         upgradeOwned: {
@@ -508,7 +512,7 @@ describe("gameStore", () => {
 
     it("resets evolutionStage to 0 after rebirth with no quick-start", () => {
       useGameStore.setState({
-        totalTdEarned: 10_000_000,
+        totalTdEarned: D(10_000_000),
         evolutionStage: 4,
       });
       useGameStore.getState().performRebirth();
@@ -517,16 +521,16 @@ describe("gameStore", () => {
 
     it("resets totalTdEarned to 0 after rebirth with no quick-start", () => {
       useGameStore.setState({
-        totalTdEarned: 5_000_000,
+        totalTdEarned: D(5_000_000),
         evolutionStage: 4,
       });
       useGameStore.getState().performRebirth();
-      expect(useGameStore.getState().totalTdEarned).toBe(0);
+      expect(useGameStore.getState().totalTdEarned.toNumber()).toBe(0);
     });
 
     it("preserves prestigeUpgrades (Wisdom bonuses) after rebirth", () => {
       useGameStore.setState({
-        totalTdEarned: 2_000_000,
+        totalTdEarned: D(2_000_000),
         evolutionStage: 5,
         prestigeUpgrades: { "idle-boost": 3, "click-mastery": 5 },
       });
@@ -540,13 +544,13 @@ describe("gameStore", () => {
     it("sets evolutionStage based on quickStartTd when quick-start prestige active", () => {
       // quick-start level 2 = 10_000 TD; getEvolutionStage(10_000) = stage 2 (unlockAt 5_000)
       useGameStore.setState({
-        totalTdEarned: 2_000_000,
+        totalTdEarned: D(2_000_000),
         evolutionStage: 5,
         prestigeUpgrades: { "quick-start": 2 },
       });
       useGameStore.getState().performRebirth();
       const state = useGameStore.getState();
-      expect(state.totalTdEarned).toBe(10_000);
+      expect(state.totalTdEarned.toNumber()).toBe(10_000);
       expect(state.evolutionStage).toBe(2);
     });
   });

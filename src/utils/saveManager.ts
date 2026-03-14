@@ -1,5 +1,6 @@
 import type { GameState } from "../store/gameStore";
 import { initialGameState, useGameStore } from "../store/gameStore";
+import { toDecimal } from "./decimal";
 
 const REQUIRED_KEYS: (keyof GameState)[] = [
   "trainingData",
@@ -27,6 +28,30 @@ export function validateSave(data: unknown): data is GameState {
   return REQUIRED_KEYS.every((key) => key in (data as object));
 }
 
+/** Keys in GameState that should be Decimal objects. */
+const DECIMAL_KEYS: ReadonlySet<string> = new Set([
+  "trainingData",
+  "totalTdEarned",
+  "peakTdPerSecond",
+  "lifetimeTdEarned",
+  "lifetimePeakTdPerSecond",
+  "lifetimeBestRunTd",
+]);
+
+/**
+ * Ensure all Decimal-typed fields are actual Decimal instances.
+ * Handles legacy saves where these were plain numbers.
+ */
+function hydrateDecimals(data: GameState): GameState {
+  const record = data as unknown as Record<string, unknown>;
+  for (const key of DECIMAL_KEYS) {
+    if (key in record) {
+      record[key] = toDecimal(record[key] as string | number | null);
+    }
+  }
+  return data;
+}
+
 /**
  * Migrate old saves that lack prestige fields.
  * Old saves have `wisdomTokens` but no `prestigeTokenBalance`.
@@ -34,21 +59,24 @@ export function validateSave(data: unknown): data is GameState {
  */
 export function migrateSave(data: GameState): GameState {
   const record = data as unknown as Record<string, unknown>;
+  let migrated: GameState;
   if (!("prestigeTokenBalance" in record)) {
-    return {
+    migrated = {
       ...data,
       prestigeUpgrades: {},
       prestigeTokenBalance: data.wisdomTokens ?? 0,
       hasOpenedPrestigeShop: false,
     };
+  } else {
+    // Ensure defaults for any missing prestige fields
+    migrated = {
+      ...data,
+      prestigeUpgrades: data.prestigeUpgrades ?? {},
+      prestigeTokenBalance: data.prestigeTokenBalance ?? 0,
+      hasOpenedPrestigeShop: data.hasOpenedPrestigeShop ?? false,
+    };
   }
-  // Ensure defaults for any missing prestige fields
-  return {
-    ...data,
-    prestigeUpgrades: data.prestigeUpgrades ?? {},
-    prestigeTokenBalance: data.prestigeTokenBalance ?? 0,
-    hasOpenedPrestigeShop: data.hasOpenedPrestigeShop ?? false,
-  };
+  return hydrateDecimals(migrated);
 }
 
 export function exportSave(): void {

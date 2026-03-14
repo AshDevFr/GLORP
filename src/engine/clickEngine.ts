@@ -1,4 +1,6 @@
+import type { DecimalSource } from "break_infinity.js";
 import type { ClickUpgrade } from "../data/clickUpgrades";
+import { D, Decimal } from "../utils/decimal";
 
 /** Milliseconds between clicks to maintain combo (≈3 clicks/sec). */
 export const COMBO_CLICK_WINDOW_MS = 333;
@@ -64,11 +66,11 @@ export function computeClickSeconds(
 export function computeClickPower(
   state: ClickPowerState,
   clickUpgrades: readonly ClickUpgrade[],
-  tdPerSecond: number,
+  tdPerSecond: DecimalSource,
   now?: number,
   clickMasteryBonus = 0,
   speciesClickMultiplier = 1,
-): number {
+): Decimal {
   const seconds = computeClickSeconds(
     state.clickUpgradesPurchased,
     clickUpgrades,
@@ -81,9 +83,9 @@ export function computeClickPower(
     now,
   );
 
-  return Math.floor(
-    Math.max(1, seconds * tdPerSecond * speciesClickMultiplier) * combo,
-  );
+  return Decimal.max(1, D(seconds).mul(tdPerSecond).mul(speciesClickMultiplier))
+    .mul(combo)
+    .floor();
 }
 
 /**
@@ -115,14 +117,11 @@ export function updateCombo(lastClickTime: number, now: number): number {
   if (lastClickTime === 0) return 1;
   const elapsed = now - lastClickTime;
   if (elapsed <= COMBO_CLICK_WINDOW_MS) {
-    // Fast enough to build combo — but we don't know old count here,
-    // caller adds to existing count
     return -1; // sentinel: increment existing
   }
   if (elapsed > COMBO_DECAY_MS) {
     return 1; // reset
   }
-  // Between combo window and decay: maintain but don't grow
   return -1; // sentinel: increment existing
 }
 

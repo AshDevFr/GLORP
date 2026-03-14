@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { GameState } from "../store/gameStore";
+import { D } from "../utils/decimal";
 import { ACHIEVEMENTS } from "./achievements";
 
 const emptyState: GameState = {
-  trainingData: 0,
+  trainingData: D(0),
   totalClicks: 0,
-  totalTdEarned: 0,
+  totalTdEarned: D(0),
   evolutionStage: 0,
   lastSaved: 0,
   upgradeOwned: {},
@@ -29,11 +30,11 @@ const emptyState: GameState = {
   prestigeTokenBalance: 0,
   hasOpenedPrestigeShop: false,
   runStart: 0,
-  peakTdPerSecond: 0,
+  peakTdPerSecond: D(0),
   peakGeneratorsOwned: 0,
-  lifetimeTdEarned: 0,
-  lifetimePeakTdPerSecond: 0,
-  lifetimeBestRunTd: 0,
+  lifetimeTdEarned: D(0),
+  lifetimePeakTdPerSecond: D(0),
+  lifetimeBestRunTd: D(0),
   lifetimeWisdomEarned: 0,
   activeChallengeId: null,
 };
@@ -113,10 +114,12 @@ describe("ACHIEVEMENTS", () => {
   it("td-1m fires when totalTdEarned >= 1_000_000", () => {
     const a = ACHIEVEMENTS.find((x) => x.id === "td-1m");
     expect(a).toBeDefined();
-    expect(a?.condition({ ...emptyState, totalTdEarned: 1_000_000 })).toBe(
+    expect(a?.condition({ ...emptyState, totalTdEarned: D(1_000_000) })).toBe(
       true,
     );
-    expect(a?.condition({ ...emptyState, totalTdEarned: 999_999 })).toBe(false);
+    expect(a?.condition({ ...emptyState, totalTdEarned: D(999_999) })).toBe(
+      false,
+    );
   });
 
   it("first-rebirth fires when rebirthCount >= 1", () => {

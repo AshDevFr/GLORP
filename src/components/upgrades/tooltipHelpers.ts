@@ -45,8 +45,9 @@ export function computeGeneratorTooltipData(
   // cancel out in the percentage calculation — the % share is the same
   // regardless of which global multipliers are active.
   const grandTotal = getTotalTdPerSecond(UPGRADES, allOwned, 1, 1);
-  const percentOfTotal =
-    grandTotal > 0 ? (totalTdForGenerator / grandTotal) * 100 : 0;
+  const percentOfTotal = grandTotal.gt(0)
+    ? (totalTdForGenerator / grandTotal.toNumber()) * 100
+    : 0;
 
   const nextThreshold = MILESTONE_THRESHOLDS[milestoneLevel] ?? null;
 

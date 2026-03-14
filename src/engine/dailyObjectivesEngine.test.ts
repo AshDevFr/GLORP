@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { D } from "../utils/decimal";
 import {
   checkObjectiveCompletion,
   createSeededRandom,
@@ -15,7 +16,7 @@ import {
 const baseGame = {
   evolutionStage: 0,
   upgradeOwned: {},
-  totalTdEarned: 0,
+  totalTdEarned: D(0),
   crossedMilestones: [] as number[],
   currentSpecies: "GLORP" as const,
 } satisfies Parameters<typeof checkObjectiveCompletion>[1];
@@ -265,7 +266,7 @@ describe("checkObjectiveCompletion — earn-td", () => {
     expect(
       checkObjectiveCompletion(
         obj,
-        { ...baseGame, totalTdEarned: 500_000 },
+        { ...baseGame, totalTdEarned: D(500_000) },
         baseDaily,
       ),
     ).toBe(false);
@@ -274,7 +275,7 @@ describe("checkObjectiveCompletion — earn-td", () => {
     expect(
       checkObjectiveCompletion(
         obj,
-        { ...baseGame, totalTdEarned: 1_000_000 },
+        { ...baseGame, totalTdEarned: D(1_000_000) },
         baseDaily,
       ),
     ).toBe(true);

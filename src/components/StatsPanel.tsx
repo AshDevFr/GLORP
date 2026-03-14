@@ -1,6 +1,7 @@
 import { Badge, Divider, Group, Modal, Stack, Text } from "@mantine/core";
 import { ACHIEVEMENTS } from "../data/achievements";
 import { useGameStore } from "../store";
+import { Decimal } from "../utils/decimal";
 import { formatNumber } from "../utils/formatNumber";
 
 function formatTime(totalSeconds: number): string {
@@ -74,9 +75,9 @@ export function StatsPanel({
     0,
   );
 
-  const isBestRun = rebirthCount > 0 && totalTdEarned > lifetimeBestRunTd;
+  const isBestRun = rebirthCount > 0 && totalTdEarned.gt(lifetimeBestRunTd);
   const isPeakTdPs =
-    rebirthCount > 0 && peakTdPerSecond > lifetimePeakTdPerSecond;
+    rebirthCount > 0 && peakTdPerSecond.gt(lifetimePeakTdPerSecond);
 
   return (
     <Modal
@@ -129,7 +130,7 @@ export function StatsPanel({
         <Stack gap={2}>
           <StatRow
             label="Total TD (all runs)"
-            value={formatNumber(lifetimeTdEarned + totalTdEarned)}
+            value={formatNumber(lifetimeTdEarned.add(totalTdEarned))}
           />
           <StatRow label="Rebirths" value={rebirthCount.toLocaleString()} />
           <StatRow
@@ -138,11 +139,11 @@ export function StatsPanel({
           />
           <StatRow
             label="Best run TD"
-            value={formatNumber(Math.max(lifetimeBestRunTd, totalTdEarned))}
+            value={formatNumber(Decimal.max(lifetimeBestRunTd, totalTdEarned))}
           />
           <StatRow
             label="All-time peak TD/s"
-            value={`${formatNumber(Math.max(lifetimePeakTdPerSecond, peakTdPerSecond))}/s`}
+            value={`${formatNumber(Decimal.max(lifetimePeakTdPerSecond, peakTdPerSecond))}/s`}
           />
           <StatRow
             label="Wisdom earned (total)"

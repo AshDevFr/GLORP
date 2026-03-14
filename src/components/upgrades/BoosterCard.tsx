@@ -1,14 +1,16 @@
 import { Badge, Button, Card, Group, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import type { DecimalSource } from "break_infinity.js";
 import { useCallback, useRef, useState } from "react";
 import type { Booster } from "../../data/boosters";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
+import { D } from "../../utils/decimal";
 import { formatNumber } from "../../utils/formatNumber";
 
 interface BoosterCardProps {
   booster: Booster;
   purchased: boolean;
-  trainingData: number;
+  trainingData: DecimalSource;
   evolutionStage: number;
   onPurchase: (id: string) => void;
 }
@@ -20,7 +22,7 @@ export function BoosterCard({
   evolutionStage,
   onPurchase,
 }: BoosterCardProps) {
-  const canAfford = !purchased && trainingData >= booster.cost;
+  const canAfford = !purchased && D(trainingData).gte(booster.cost);
   const locked = evolutionStage < booster.unlockStage;
   const [isGlowing, setIsGlowing] = useState(false);
   const glowTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);

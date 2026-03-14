@@ -1,3 +1,4 @@
+import type { Decimal } from "../utils/decimal";
 import type { Mood } from "./moodEngine";
 import { computeTick } from "./tickEngine";
 
@@ -16,7 +17,7 @@ interface OfflineState {
 }
 
 export interface OfflineProgressResult {
-  earned: number;
+  earned: Decimal;
   elapsedSeconds: number;
   cappedSeconds: number;
   welcomeMessage: string;
@@ -46,9 +47,9 @@ export function computeOfflineProgress(
 
   // Reuse computeTick for TD calculation (no duplicated TD/s logic)
   const tickResult = computeTick(state, cappedSeconds, now);
-  const earned = tickResult.trainingDataDelta * offlineEfficiency;
+  const earned = tickResult.trainingDataDelta.mul(offlineEfficiency);
 
-  if (earned === 0) return null;
+  if (earned.eq(0)) return null;
 
   // Use the decayed mood (if any) for the welcome message
   const currentMood = tickResult.newMood ?? state.mood;

@@ -1,3 +1,4 @@
+import type { DecimalSource } from "break_infinity.js";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { BOOSTERS } from "../data/boosters";
@@ -29,11 +30,12 @@ import {
   getTotalTdPerSecond,
   getUpgradeCost,
 } from "../engine/upgradeEngine";
+import { D, Decimal, toDecimal } from "../utils/decimal";
 
 export interface GameState {
-  trainingData: number;
+  trainingData: Decimal;
   totalClicks: number;
-  totalTdEarned: number;
+  totalTdEarned: Decimal;
   evolutionStage: number;
   lastSaved: number;
   upgradeOwned: Record<string, number>;
@@ -66,12 +68,12 @@ export interface GameState {
   crossedMilestones: number[];
   // Per-run stats — reset on rebirth
   runStart: number;
-  peakTdPerSecond: number;
+  peakTdPerSecond: Decimal;
   peakGeneratorsOwned: number;
   // Cumulative lifetime stats — persist across rebirths
-  lifetimeTdEarned: number;
-  lifetimePeakTdPerSecond: number;
-  lifetimeBestRunTd: number;
+  lifetimeTdEarned: Decimal;
+  lifetimePeakTdPerSecond: Decimal;
+  lifetimeBestRunTd: Decimal;
   lifetimeWisdomEarned: number;
   // Challenge run state — resets on rebirth
   activeChallengeId: string | null;
@@ -79,7 +81,7 @@ export interface GameState {
 
 interface GameActions {
   clickFeed: () => void;
-  addTrainingData: (amount: number) => void;
+  addTrainingData: (amount: DecimalSource) => void;
   purchaseUpgrade: (id: string) => void;
   purchaseBulkUpgrade: (id: string, count: number) => void;
   purchaseBooster: (id: string) => void;
@@ -95,16 +97,19 @@ interface GameActions {
   unlockEasterEgg: (id: string) => void;
   incrementTimePlayed: (seconds: number) => void;
   crossMilestones: (thresholds: number[]) => void;
-  updatePeakStats: (tdPerSecond: number, generatorsOwned: number) => void;
+  updatePeakStats: (
+    tdPerSecond: DecimalSource,
+    generatorsOwned: number,
+  ) => void;
   awardDailyWisdomTokens: (amount: number) => void;
 }
 
 export type GameStore = GameState & GameActions;
 
 export const initialGameState: GameState = {
-  trainingData: 0,
+  trainingData: D(0),
   totalClicks: 0,
-  totalTdEarned: 0,
+  totalTdEarned: D(0),
   evolutionStage: 0,
   lastSaved: 0,
   upgradeOwned: {},
@@ -128,11 +133,11 @@ export const initialGameState: GameState = {
   totalTimePlayed: 0,
   crossedMilestones: [],
   runStart: 0,
-  peakTdPerSecond: 0,
+  peakTdPerSecond: D(0),
   peakGeneratorsOwned: 0,
-  lifetimeTdEarned: 0,
-  lifetimePeakTdPerSecond: 0,
-  lifetimeBestRunTd: 0,
+  lifetimeTdEarned: D(0),
+  lifetimePeakTdPerSecond: D(0),
+  lifetimeBestRunTd: D(0),
   lifetimeWisdomEarned: 0,
   activeChallengeId: null,
 };
@@ -141,6 +146,19 @@ export const initialGameState: GameState = {
 function pLevel(prestigeUpgrades: Record<string, number>, id: string): number {
   return prestigeUpgrades[id] ?? 0;
 }
+
+/**
+ * List of GameState keys that are stored as Decimal.
+ * Used for serialization/deserialization in the persist middleware.
+ */
+const DECIMAL_KEYS: ReadonlySet<string> = new Set([
+  "trainingData",
+  "totalTdEarned",
+  "peakTdPerSecond",
+  "lifetimeTdEarned",
+  "lifetimePeakTdPerSecond",
+  "lifetimeBestRunTd",
+]);
 
 export const useGameStore = create<GameStore>()(
   persist(
@@ -186,12 +204,12 @@ export const useGameStore = create<GameStore>()(
             clickMastery,
             speciesBonus.clickPower,
           );
-          const newTotalTdEarned = state.totalTdEarned + clickPower;
+          const newTotalTdEarned = state.totalTdEarned.add(clickPower);
           const evoMultiplier = getEvolutionThresholdMultiplier(
             pLevel(effectivePrestige, "evolution-accelerator"),
           );
           return {
-            trainingData: state.trainingData + clickPower,
+            trainingData: state.trainingData.add(clickPower),
             totalClicks: state.totalClicks + 1,
             totalTdEarned: newTotalTdEarned,
             evolutionStage: getEvolutionStage(newTotalTdEarned, evoMultiplier),
@@ -202,7 +220,8 @@ export const useGameStore = create<GameStore>()(
         }),
       addTrainingData: (amount) =>
         set((state) => {
-          const newTotalTdEarned = state.totalTdEarned + amount;
+          const amountD = D(amount);
+          const newTotalTdEarned = state.totalTdEarned.add(amountD);
           const ep =
             state.activeChallengeId === "no-prestige"
               ? {}
@@ -211,7 +230,7 @@ export const useGameStore = create<GameStore>()(
             pLevel(ep, "evolution-accelerator"),
           );
           return {
-            trainingData: state.trainingData + amount,
+            trainingData: state.trainingData.add(amountD),
             totalTdEarned: newTotalTdEarned,
             evolutionStage: getEvolutionStage(newTotalTdEarned, evoMultiplier),
             lastSaved: Date.now(),
@@ -232,10 +251,10 @@ export const useGameStore = create<GameStore>()(
           );
           const cost = getUpgradeCost(upgrade, owned, costMultiplier);
 
-          if (state.trainingData < cost) return state;
+          if (state.trainingData.lt(cost)) return state;
 
           return {
-            trainingData: state.trainingData - cost,
+            trainingData: state.trainingData.sub(cost),
             upgradeOwned: { ...state.upgradeOwned, [id]: owned + 1 },
             lastSaved: Date.now(),
             mood: "Excited" as Mood,
@@ -258,10 +277,10 @@ export const useGameStore = create<GameStore>()(
           );
           const cost = getBulkCost(upgrade, owned, count, costMultiplier);
 
-          if (state.trainingData < cost) return state;
+          if (state.trainingData.lt(cost)) return state;
 
           return {
-            trainingData: state.trainingData - cost,
+            trainingData: state.trainingData.sub(cost),
             upgradeOwned: { ...state.upgradeOwned, [id]: owned + count },
             lastSaved: Date.now(),
             mood: "Excited" as Mood,
@@ -275,10 +294,10 @@ export const useGameStore = create<GameStore>()(
 
           if (state.boostersPurchased.includes(id)) return state;
           if (state.evolutionStage < booster.unlockStage) return state;
-          if (state.trainingData < booster.cost) return state;
+          if (state.trainingData.lt(booster.cost)) return state;
 
           return {
-            trainingData: state.trainingData - booster.cost,
+            trainingData: state.trainingData.sub(booster.cost),
             boostersPurchased: [...state.boostersPurchased, id],
             lastSaved: Date.now(),
             mood: "Excited" as Mood,
@@ -291,11 +310,11 @@ export const useGameStore = create<GameStore>()(
           if (!upgrade) return state;
 
           if (state.clickUpgradesPurchased.includes(id)) return state;
-          if (state.trainingData < upgrade.cost) return state;
+          if (state.trainingData.lt(upgrade.cost)) return state;
           if (state.evolutionStage < upgrade.unlockStage) return state;
 
           return {
-            trainingData: state.trainingData - upgrade.cost,
+            trainingData: state.trainingData.sub(upgrade.cost),
             clickUpgradesPurchased: [...state.clickUpgradesPurchased, id],
             lastSaved: Date.now(),
             mood: "Excited" as Mood,
@@ -346,12 +365,12 @@ export const useGameStore = create<GameStore>()(
         })),
       updatePeakStats: (tdPerSecond, generatorsOwned) =>
         set((state) => ({
-          peakTdPerSecond: Math.max(state.peakTdPerSecond, tdPerSecond),
+          peakTdPerSecond: Decimal.max(state.peakTdPerSecond, tdPerSecond),
           peakGeneratorsOwned: Math.max(
             state.peakGeneratorsOwned,
             generatorsOwned,
           ),
-          lifetimePeakTdPerSecond: Math.max(
+          lifetimePeakTdPerSecond: Decimal.max(
             state.lifetimePeakTdPerSecond,
             tdPerSecond,
           ),
@@ -433,9 +452,9 @@ export const useGameStore = create<GameStore>()(
 
           return {
             // Reset progression
-            trainingData: quickStartTd,
+            trainingData: D(quickStartTd),
             totalClicks: 0,
-            totalTdEarned: quickStartTd,
+            totalTdEarned: D(quickStartTd),
             evolutionStage:
               quickStartTd > 0 ? getEvolutionStage(quickStartTd) : 0,
             upgradeOwned: {},
@@ -452,7 +471,7 @@ export const useGameStore = create<GameStore>()(
             crossedMilestones: [],
             // Reset per-run stats
             runStart: now,
-            peakTdPerSecond: 0,
+            peakTdPerSecond: D(0),
             peakGeneratorsOwned: 0,
             // Persist rebirth rewards
             wisdomTokens: newWisdomTokens,
@@ -461,12 +480,12 @@ export const useGameStore = create<GameStore>()(
             currentSpecies: nextSpecies,
             unlockedSpecies: newUnlocked,
             // Accumulate lifetime stats
-            lifetimeTdEarned: state.lifetimeTdEarned + runTd,
-            lifetimePeakTdPerSecond: Math.max(
+            lifetimeTdEarned: state.lifetimeTdEarned.add(runTd),
+            lifetimePeakTdPerSecond: Decimal.max(
               state.lifetimePeakTdPerSecond,
               state.peakTdPerSecond,
             ),
-            lifetimeBestRunTd: Math.max(state.lifetimeBestRunTd, runTd),
+            lifetimeBestRunTd: Decimal.max(state.lifetimeBestRunTd, runTd),
             lifetimeWisdomEarned: state.lifetimeWisdomEarned + earned,
             // Challenge for next run (null = normal)
             activeChallengeId: challengeId ?? null,
@@ -476,15 +495,26 @@ export const useGameStore = create<GameStore>()(
     {
       name: "glorp-game-state",
       merge: (persisted, current) => {
-        const saved = persisted as Partial<GameState> | undefined;
+        const saved = persisted as Partial<Record<string, unknown>> | undefined;
         if (!saved) return current;
+
+        // Convert Decimal fields from persisted strings/numbers back to Decimal
+        const merged = { ...current, ...(saved as Partial<GameState>) };
+        for (const key of DECIMAL_KEYS) {
+          const val = saved[key];
+          if (val !== undefined) {
+            (merged as Record<string, unknown>)[key] = toDecimal(
+              val as string | number | null,
+            );
+          }
+        }
+
         // Migrate old saves: convert wisdomTokens to spendable balance
-        const merged = { ...current, ...saved };
         if (saved.prestigeUpgrades === undefined) {
           merged.prestigeUpgrades = {};
         }
         if (saved.prestigeTokenBalance === undefined) {
-          merged.prestigeTokenBalance = saved.wisdomTokens ?? 0;
+          merged.prestigeTokenBalance = (saved.wisdomTokens as number) ?? 0;
         }
         if (saved.hasOpenedPrestigeShop === undefined) {
           merged.hasOpenedPrestigeShop = false;

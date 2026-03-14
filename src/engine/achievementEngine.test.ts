@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { Species } from "../data/species";
 import type { GameState } from "../store/gameStore";
+import { D } from "../utils/decimal";
 import { checkAchievements } from "./achievementEngine";
 
 const baseState: GameState = {
-  trainingData: 0,
+  trainingData: D(0),
   totalClicks: 0,
-  totalTdEarned: 0,
+  totalTdEarned: D(0),
   evolutionStage: 0,
   lastSaved: 0,
   upgradeOwned: {},
@@ -30,11 +31,11 @@ const baseState: GameState = {
   prestigeTokenBalance: 0,
   hasOpenedPrestigeShop: false,
   runStart: 0,
-  peakTdPerSecond: 0,
+  peakTdPerSecond: D(0),
   peakGeneratorsOwned: 0,
-  lifetimeTdEarned: 0,
-  lifetimePeakTdPerSecond: 0,
-  lifetimeBestRunTd: 0,
+  lifetimeTdEarned: D(0),
+  lifetimePeakTdPerSecond: D(0),
+  lifetimeBestRunTd: D(0),
   lifetimeWisdomEarned: 0,
   activeChallengeId: null,
 };
@@ -104,7 +105,7 @@ describe("checkAchievements", () => {
   });
 
   it("returns td-1m when totalTdEarned reaches 1M", () => {
-    const state = { ...baseState, totalTdEarned: 1_000_000 };
+    const state = { ...baseState, totalTdEarned: D(1_000_000) };
     const result = checkAchievements(state, ["td-1k"]);
     expect(result).toContain("td-1m");
   });
@@ -207,7 +208,7 @@ describe("checkAchievements", () => {
   });
 
   it("returns td-1t when totalTdEarned reaches 1 trillion", () => {
-    const state = { ...baseState, totalTdEarned: 1_000_000_000_000 };
+    const state = { ...baseState, totalTdEarned: D(1_000_000_000_000) };
     const result = checkAchievements(state, []);
     expect(result).toContain("td-1t");
   });
@@ -216,7 +217,7 @@ describe("checkAchievements", () => {
     const state = {
       ...baseState,
       totalClicks: 100_000,
-      totalTdEarned: 1_000_000_000_000,
+      totalTdEarned: D(1_000_000_000_000),
       evolutionStage: 4,
       rebirthCount: 10,
       upgradeOwned: { "neural-notepad": 100 },

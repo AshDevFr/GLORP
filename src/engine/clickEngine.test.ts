@@ -92,7 +92,7 @@ describe("computeClickPower", () => {
       mockUpgrades,
       0,
     );
-    expect(power).toBe(1);
+    expect(power.toNumber()).toBe(1);
   });
 
   it("returns floor of 1 even with upgrades at 0 tdPerSecond", () => {
@@ -101,7 +101,7 @@ describe("computeClickPower", () => {
       mockUpgrades,
       0,
     );
-    expect(power).toBe(1);
+    expect(power.toNumber()).toBe(1);
   });
 
   it("scales linearly with tdPerSecond", () => {
@@ -111,7 +111,7 @@ describe("computeClickPower", () => {
       mockUpgrades,
       tdPerSecond,
     );
-    expect(power).toBeCloseTo(BASE_CLICK_SECONDS * tdPerSecond);
+    expect(power.toNumber()).toBeCloseTo(BASE_CLICK_SECONDS * tdPerSecond);
   });
 
   it("adds purchased upgrade seconds to base", () => {
@@ -122,7 +122,7 @@ describe("computeClickPower", () => {
       mockUpgrades,
       tdPerSecond,
     );
-    expect(power).toBeCloseTo(expected);
+    expect(power.toNumber()).toBeCloseTo(expected);
   });
 
   it("stacks all purchased upgrades", () => {
@@ -136,7 +136,7 @@ describe("computeClickPower", () => {
       mockUpgrades,
       tdPerSecond,
     );
-    expect(power).toBeCloseTo(totalSeconds * tdPerSecond);
+    expect(power.toNumber()).toBeCloseTo(totalSeconds * tdPerSecond);
   });
 
   it("applies combo multiplier on top", () => {
@@ -153,7 +153,7 @@ describe("computeClickPower", () => {
       now,
     );
     const expectedBase = BASE_CLICK_SECONDS * tdPerSecond;
-    expect(power).toBeCloseTo(expectedBase * COMBO_MULTIPLIER);
+    expect(power.toNumber()).toBeCloseTo(expectedBase * COMBO_MULTIPLIER);
   });
 
   it("applies combo multiplier to the base-1 floor when tdPerSecond is 0", () => {
@@ -172,7 +172,7 @@ describe("computeClickPower", () => {
       0,
       now,
     );
-    expect(power).toBe(2);
+    expect(power.toNumber()).toBe(2);
   });
 
   it("applies species click multiplier", () => {
@@ -185,7 +185,9 @@ describe("computeClickPower", () => {
       0,
       1.5, // CHONK species
     );
-    expect(power).toBeCloseTo(BASE_CLICK_SECONDS * tdPerSecond * 1.5);
+    expect(power.toNumber()).toBeCloseTo(
+      BASE_CLICK_SECONDS * tdPerSecond * 1.5,
+    );
   });
 
   it("includes click mastery bonus seconds", () => {
@@ -201,7 +203,7 @@ describe("computeClickPower", () => {
       undefined,
       masteryLevel,
     );
-    expect(power).toBeCloseTo(expected);
+    expect(power.toNumber()).toBeCloseTo(expected);
   });
 
   it("click power scales with tdPerSecond — mid game example", () => {
@@ -212,7 +214,7 @@ describe("computeClickPower", () => {
       CLICK_UPGRADES,
       1000,
     );
-    expect(power).toBeGreaterThan(1000);
+    expect(power.toNumber()).toBeGreaterThan(1000);
   });
 
   it("click power scales with tdPerSecond — late game example", () => {
@@ -223,7 +225,7 @@ describe("computeClickPower", () => {
       CLICK_UPGRADES,
       30_000,
     );
-    expect(power).toBeGreaterThan(60_000);
+    expect(power.toNumber()).toBeGreaterThan(60_000);
   });
 });
 

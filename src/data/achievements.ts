@@ -86,19 +86,19 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
     id: "td-1k",
     name: "Data Hoarder",
     description: "Earn 1,000 TD total",
-    condition: (s) => s.totalTdEarned >= 1_000,
+    condition: (s) => s.totalTdEarned.gte(1_000),
   },
   {
     id: "td-1m",
     name: "Big Data",
     description: "Earn 1,000,000 TD total",
-    condition: (s) => s.totalTdEarned >= 1_000_000,
+    condition: (s) => s.totalTdEarned.gte(1_000_000),
   },
   {
     id: "td-1b",
     name: "Data Singularity",
     description: "Earn 1,000,000,000 TD total",
-    condition: (s) => s.totalTdEarned >= 1_000_000_000,
+    condition: (s) => s.totalTdEarned.gte(1_000_000_000),
   },
   {
     id: "first-rebirth",
@@ -164,6 +164,6 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
     id: "td-1t",
     name: "Trillionaire",
     description: "A trillion training data points. GLORP transcends.",
-    condition: (s) => s.totalTdEarned >= 1_000_000_000_000,
+    condition: (s) => s.totalTdEarned.gte(1_000_000_000_000),
   },
 ];

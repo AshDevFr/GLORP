@@ -8,6 +8,7 @@ import {
   Text,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import type { DecimalSource } from "break_infinity.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MILESTONE_THRESHOLDS } from "../../data/milestones";
 import { SYNERGIES } from "../../data/synergies";
@@ -20,6 +21,7 @@ import { getSynergyMultiplier } from "../../engine/synergyEngine";
 import { getBulkCost, getMaxAffordable } from "../../engine/upgradeEngine";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import type { BuyMode } from "../../store/settingsStore";
+import { D } from "../../utils/decimal";
 import { formatNumber } from "../../utils/formatNumber";
 import { GeneratorTooltipContent } from "./GeneratorTooltipContent";
 
@@ -27,7 +29,7 @@ interface UpgradeCardProps {
   upgrade: Upgrade;
   owned: number;
   allOwned?: Record<string, number>;
-  trainingData: number;
+  trainingData: DecimalSource;
   buyMode: BuyMode;
   onPurchase: (id: string, count: number) => void;
   costMultiplier?: number;
@@ -47,7 +49,7 @@ export function UpgradeCard({
       ? getMaxAffordable(upgrade, owned, trainingData, costMultiplier)
       : buyMode;
   const cost = getBulkCost(upgrade, owned, count, costMultiplier);
-  const canAfford = count > 0 && trainingData >= cost;
+  const canAfford = count > 0 && D(trainingData).gte(cost);
 
   const milestoneLevel = getMilestoneLevel(owned);
   const milestoneMultiplier = getMilestoneMultiplier(owned);

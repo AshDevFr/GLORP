@@ -213,7 +213,10 @@ export function PetDisplay() {
           }}
         />
       )}
-      <FloatingParticles particles={particles} clickPower={baseClickPower} />
+      <FloatingParticles
+        particles={particles}
+        clickPower={baseClickPower.toNumber()}
+      />
       <Stack align="center" justify="center" gap="lg" h="100%">
         <SpeechBubble text={dialogueLine} />
         <Text size="xs" ff="monospace" c="dimmed">
@@ -316,7 +319,7 @@ export function PetDisplay() {
           performRebirth(selectedSpecies, challengeId);
           setRebirthModalOpen(false);
         }}
-        totalTdEarned={totalTdEarned}
+        totalTdEarned={totalTdEarned.toNumber()}
         currentBalance={prestigeTokenBalance}
         nextSpecies={nextSpecies}
         currentSpecies={currentSpecies}
@@ -326,7 +329,7 @@ export function PetDisplay() {
         activeChallengeId={activeChallengeId}
         totalClicks={totalClicks}
         evolutionStage={evolutionStage}
-        peakTdPerSecond={peakTdPerSecond}
+        peakTdPerSecond={peakTdPerSecond.toNumber()}
         runStart={runStart}
       />
       <PrestigeShop opened={shopOpen} onClose={() => setShopOpen(false)} />

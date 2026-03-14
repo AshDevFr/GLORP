@@ -1,5 +1,7 @@
 import { BOOSTERS } from "../data/boosters";
 import { UPGRADES } from "../data/upgrades";
+import type { Decimal } from "../utils/decimal";
+import { D } from "../utils/decimal";
 import type { Mood } from "./moodEngine";
 import { getDecayedMood } from "./moodEngine";
 import { computeBoosterMultiplier, getTotalTdPerSecond } from "./upgradeEngine";
@@ -15,7 +17,7 @@ interface TickState {
 }
 
 interface TickResult {
-  trainingDataDelta: number;
+  trainingDataDelta: Decimal;
   newMood: Mood | null;
 }
 
@@ -29,7 +31,7 @@ export function computeTick(
 
   // Click-Only challenge: auto-generators produce no TD
   if (state.activeChallengeId === "click-only") {
-    return { trainingDataDelta: 0, newMood };
+    return { trainingDataDelta: D(0), newMood };
   }
 
   const globalMultiplier =
@@ -46,7 +48,7 @@ export function computeTick(
   );
 
   return {
-    trainingDataDelta: tdPerSecond * deltaSeconds,
+    trainingDataDelta: tdPerSecond.mul(deltaSeconds),
     newMood,
   };
 }

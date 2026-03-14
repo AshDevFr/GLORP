@@ -7,16 +7,18 @@ import {
   Popover,
   Text,
 } from "@mantine/core";
+import type { DecimalSource } from "break_infinity.js";
 import { useCallback, useRef, useState } from "react";
 import type { ClickUpgrade } from "../../data/clickUpgrades";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
+import { D } from "../../utils/decimal";
 import { formatNumber } from "../../utils/formatNumber";
 import { ClickUpgradeTooltipContent } from "./ClickUpgradeTooltipContent";
 
 interface ClickUpgradeCardProps {
   upgrade: ClickUpgrade;
   purchased: boolean;
-  trainingData: number;
+  trainingData: DecimalSource;
   evolutionStage: number;
   onPurchase: (id: string) => void;
 }
@@ -28,7 +30,7 @@ export function ClickUpgradeCard({
   evolutionStage,
   onPurchase,
 }: ClickUpgradeCardProps) {
-  const canAfford = !purchased && trainingData >= upgrade.cost;
+  const canAfford = !purchased && D(trainingData).gte(upgrade.cost);
   const locked = evolutionStage < upgrade.unlockStage;
   const [isGlowing, setIsGlowing] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState(false);

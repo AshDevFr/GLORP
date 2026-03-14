@@ -4,6 +4,7 @@ import { getSpeciesBonus } from "../data/species";
 import { UPGRADES } from "../data/upgrades";
 import { getTotalTdPerSecond } from "../engine/upgradeEngine";
 import { useGameStore } from "../store";
+import { Decimal } from "../utils/decimal";
 
 /**
  * Pure interpolation logic — exported for unit testing.
@@ -19,22 +20,22 @@ import { useGameStore } from "../store";
  *  - Otherwise → interpolate forward, capped at one tick ahead of actual.
  */
 export function interpolateTd(
-  prev: number,
-  actual: number,
-  tdPerSecond: number,
+  prev: Decimal,
+  actual: Decimal,
+  tdPerSecond: Decimal,
   elapsedSeconds: number,
-): number {
-  if (tdPerSecond <= 0) return actual;
+): Decimal {
+  if (tdPerSecond.lte(0)) return actual;
 
   // Snap when display has drifted more than 1.5 ticks ahead (e.g. purchase).
-  if (prev - actual > tdPerSecond * 1.5) return actual;
+  if (prev.minus(actual).gt(tdPerSecond.mul(1.5))) return actual;
 
   // Snap when actual jumped far ahead (e.g. offline progress load).
-  if (actual - prev > tdPerSecond * 2) return actual;
+  if (actual.minus(prev).gt(tdPerSecond.mul(2))) return actual;
 
-  const next = prev + tdPerSecond * elapsedSeconds;
+  const next = prev.plus(tdPerSecond.mul(elapsedSeconds));
   // Cap at one tick ahead of actual to prevent visual runaway.
-  return Math.min(next, actual + tdPerSecond);
+  return Decimal.min(next, actual.plus(tdPerSecond));
 }
 
 /**
@@ -44,8 +45,8 @@ export function interpolateTd(
  * The authoritative value (from Zustand) remains the source of truth; this
  * hook only affects the *display*.
  */
-export function useInterpolatedTd(): number {
-  const [displayTd, setDisplayTd] = useState(
+export function useInterpolatedTd(): Decimal {
+  const [displayTd, setDisplayTd] = useState<Decimal>(
     () => useGameStore.getState().trainingData,
   );
   const rafRef = useRef<number>(0);

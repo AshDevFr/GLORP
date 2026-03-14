@@ -28,6 +28,7 @@ import {
 import { useGameStore } from "../store";
 import { useDailyStore } from "../store/dailyStore";
 import { useUIStore } from "../store/uiStore";
+import type { Decimal } from "../utils/decimal";
 
 const TICK_INTERVAL_MS = 1000;
 
@@ -93,7 +94,7 @@ export function useGameLoop() {
         now,
       );
 
-      if (result.trainingDataDelta > 0) {
+      if (result.trainingDataDelta.gt(0)) {
         state.addTrainingData(result.trainingDataDelta);
 
         // Check for milestone crossings and fire celebration events.
@@ -156,14 +157,14 @@ export function useGameLoop() {
         const costMult = getGeneratorCostMultiplier(
           effectivePrestige["generator-discount"] ?? 0,
         );
-        let cheapest: { id: string; cost: number } | null = null;
+        let cheapest: { id: string; cost: Decimal } | null = null;
         for (const u of UPGRADES) {
           if (current.evolutionStage < u.unlockStage) continue;
           const owned = current.upgradeOwned[u.id] ?? 0;
           const cost = getUpgradeCost(u, owned, costMult);
           if (
-            cost <= current.trainingData &&
-            (cheapest === null || cost < cheapest.cost)
+            cost.lte(current.trainingData) &&
+            (cheapest === null || cost.lt(cheapest.cost))
           ) {
             cheapest = { id: u.id, cost };
           }

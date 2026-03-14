@@ -261,7 +261,7 @@ export function checkObjectiveCompletion(
       return daily.todayDidPrestigePurchase;
 
     case "earn-td":
-      return gameState.totalTdEarned >= (objective.targetTd ?? 0);
+      return gameState.totalTdEarned.gte(objective.targetTd ?? 0);
 
     case "rebirth":
       return daily.todayDidRebirth;

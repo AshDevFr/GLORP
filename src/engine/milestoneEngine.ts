@@ -1,4 +1,6 @@
+import type { DecimalSource } from "break_infinity.js";
 import { MILESTONE_THRESHOLDS } from "../data/milestones";
+import { D } from "../utils/decimal";
 
 /**
  * Returns the number of milestone thresholds reached for the given owned count.
@@ -37,11 +39,13 @@ export const TD_MILESTONES: readonly number[] = [
  * (prevTd, currentTd], excluding any already in `alreadyCrossed`.
  */
 export function checkMilestones(
-  prevTd: number,
-  currentTd: number,
+  prevTd: DecimalSource,
+  currentTd: DecimalSource,
   alreadyCrossed: Set<number>,
 ): number[] {
+  const prev = D(prevTd);
+  const current = D(currentTd);
   return TD_MILESTONES.filter(
-    (t) => t > prevTd && t <= currentTd && !alreadyCrossed.has(t),
+    (t) => D(t).gt(prev) && D(t).lte(current) && !alreadyCrossed.has(t),
   );
 }

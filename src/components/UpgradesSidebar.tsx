@@ -18,6 +18,7 @@ import { useSound } from "../hooks/useSound";
 import { useGameStore } from "../store";
 import type { BuyMode } from "../store/settingsStore";
 import { useSettingsStore } from "../store/settingsStore";
+import { D } from "../utils/decimal";
 import { ClickUpgradeCard } from "./upgrades/ClickUpgradeCard";
 import { UpgradeCard } from "./upgrades/UpgradeCard";
 
@@ -108,7 +109,7 @@ export function UpgradesSidebar() {
     (id: string, qty: number) => {
       const dataBefore = useGameStore.getState().trainingData;
       purchaseBulkUpgrade(id, qty);
-      if (useGameStore.getState().trainingData !== dataBefore) {
+      if (!D(useGameStore.getState().trainingData).eq(dataBefore)) {
         playPurchase();
       }
     },
@@ -119,7 +120,7 @@ export function UpgradesSidebar() {
     (id: string) => {
       const dataBefore = useGameStore.getState().trainingData;
       purchaseClickUpgrade(id);
-      if (useGameStore.getState().trainingData !== dataBefore) {
+      if (!D(useGameStore.getState().trainingData).eq(dataBefore)) {
         playPurchase();
       }
     },
