@@ -16,7 +16,7 @@ const mockClose = vi.fn();
 
 class MockNotification {
   static permission: NotificationPermission = "default";
-  static requestPermission = vi.fn<[], Promise<NotificationPermission>>();
+  static requestPermission = vi.fn<() => Promise<NotificationPermission>>();
 
   body: string;
   icon: string | undefined;
@@ -33,10 +33,7 @@ class MockNotification {
 beforeEach(() => {
   vi.useFakeTimers();
   MockNotification.permission = "default";
-  MockNotification.requestPermission = vi.fn<
-    [],
-    Promise<NotificationPermission>
-  >();
+  MockNotification.requestPermission = vi.fn<() => Promise<NotificationPermission>>();
   mockNotificationConstructor.mockClear();
   mockClose.mockClear();
 
