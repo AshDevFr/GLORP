@@ -33,7 +33,8 @@ class MockNotification {
 beforeEach(() => {
   vi.useFakeTimers();
   MockNotification.permission = "default";
-  MockNotification.requestPermission = vi.fn<() => Promise<NotificationPermission>>();
+  MockNotification.requestPermission =
+    vi.fn<() => Promise<NotificationPermission>>();
   mockNotificationConstructor.mockClear();
   mockClose.mockClear();
 
