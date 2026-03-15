@@ -48,8 +48,7 @@ export function SettingsPanel({
   // the Notification API. We read the permission eagerly — the drawer is opened on
   // demand so we always see the current state.
   const notificationsBlocked =
-    typeof Notification !== "undefined" &&
-    Notification.permission === "denied";
+    typeof Notification !== "undefined" && Notification.permission === "denied";
 
   const [resetStage, setResetStage] = useState(0);
   const [importError, setImportError] = useState<string | null>(null);

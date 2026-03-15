@@ -23,10 +23,7 @@ class MockNotification {
   onclick: ((this: Notification, ev: Event) => unknown) | null = null;
   close = mockClose;
 
-  constructor(
-    title: string,
-    options?: { body?: string; icon?: string },
-  ) {
+  constructor(title: string, options?: { body?: string; icon?: string }) {
     this.body = options?.body ?? "";
     this.icon = options?.icon;
     mockNotificationConstructor(title, options);
