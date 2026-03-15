@@ -83,4 +83,27 @@ describe("useSettingsStore", () => {
     expect(useSettingsStore.getState().crtEnabled).toBe(false);
     expect(useSettingsStore.getState().animationsDisabled).toBe(false);
   });
+
+  it("has notificationsEnabled defaulting to true", () => {
+    const state = useSettingsStore.getState();
+    expect(state.notificationsEnabled).toBe(true);
+  });
+
+  it("setNotificationsEnabled sets notificationsEnabled to false", () => {
+    useSettingsStore.getState().setNotificationsEnabled(false);
+    expect(useSettingsStore.getState().notificationsEnabled).toBe(false);
+  });
+
+  it("setNotificationsEnabled sets notificationsEnabled back to true", () => {
+    useSettingsStore.setState({ notificationsEnabled: false });
+    useSettingsStore.getState().setNotificationsEnabled(true);
+    expect(useSettingsStore.getState().notificationsEnabled).toBe(true);
+  });
+
+  it("setNotificationsEnabled does not affect other settings", () => {
+    useSettingsStore.getState().setNotificationsEnabled(false);
+    expect(useSettingsStore.getState().crtEnabled).toBe(false);
+    expect(useSettingsStore.getState().soundEnabled).toBe(true);
+    expect(useSettingsStore.getState().animationsDisabled).toBe(false);
+  });
 });

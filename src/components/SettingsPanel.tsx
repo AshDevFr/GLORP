@@ -8,6 +8,7 @@ import {
   Switch,
   Text,
   Textarea,
+  Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useState } from "react";
@@ -38,6 +39,16 @@ export function SettingsPanel({
   const setNumberFormat = useSettingsStore((s) => s.setNumberFormat);
   const soundEnabled = useSettingsStore((s) => s.soundEnabled);
   const setSoundEnabled = useSettingsStore((s) => s.setSoundEnabled);
+  const notificationsEnabled = useSettingsStore((s) => s.notificationsEnabled);
+  const setNotificationsEnabled = useSettingsStore(
+    (s) => s.setNotificationsEnabled,
+  );
+
+  // The toggle is disabled (and shows a tooltip) when the OS/browser has blocked
+  // the Notification API. We read the permission eagerly — the drawer is opened on
+  // demand so we always see the current state.
+  const notificationsBlocked =
+    typeof Notification !== "undefined" && Notification.permission === "denied";
 
   const [resetStage, setResetStage] = useState(0);
   const [importError, setImportError] = useState<string | null>(null);
@@ -197,6 +208,25 @@ export function SettingsPanel({
             onChange={(e) => setSoundEnabled(e.currentTarget.checked)}
             styles={{ label: { fontFamily: "monospace" } }}
           />
+          <Tooltip
+            label="Notifications are blocked in your browser settings."
+            disabled={!notificationsBlocked}
+            multiline
+            maw={240}
+          >
+            <div>
+              <Switch
+                label="Browser Notifications"
+                description="Get a reminder when GLORP's 8-hour offline cap is reached"
+                checked={notificationsEnabled && !notificationsBlocked}
+                onChange={(e) =>
+                  setNotificationsEnabled(e.currentTarget.checked)
+                }
+                disabled={notificationsBlocked}
+                styles={{ label: { fontFamily: "monospace" } }}
+              />
+            </div>
+          </Tooltip>
 
           <Divider />
 

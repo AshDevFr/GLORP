@@ -12,6 +12,7 @@ import { computeOfflineProgress } from "../engine/offlineEngine";
 import { useDailyObjectiveTracking } from "../hooks/useDailyObjectiveTracking";
 import { useGameLoop } from "../hooks/useGameLoop";
 import { useKonamiCode } from "../hooks/useKonamiCode";
+import { useOfflineNotification } from "../hooks/useOfflineNotification";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useSound } from "../hooks/useSound";
 import { useGameStore } from "../store";
@@ -30,6 +31,7 @@ import { UpgradesSidebar } from "./UpgradesSidebar";
 export function GameLayout() {
   useGameLoop();
   useDailyObjectiveTracking();
+  useOfflineNotification();
 
   const [offlineResult, setOfflineResult] =
     useState<OfflineProgressResult | null>(null);
