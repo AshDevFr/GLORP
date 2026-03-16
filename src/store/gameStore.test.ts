@@ -484,6 +484,82 @@ describe("gameStore", () => {
     });
   });
 
+  describe("burst actions", () => {
+    it("activateBurstBoost sets multiplier and expiry", () => {
+      useGameStore.getState().activateBurstBoost(45_000, 3);
+      const state = useGameStore.getState();
+      expect(state.burstMultiplier).toBe(3);
+      expect(state.burstBoostExpiresAt).toBeGreaterThan(Date.now() - 1000);
+    });
+
+    it("activateBurstBoost accepts custom multiplier", () => {
+      useGameStore.getState().activateBurstBoost(10_000, 5);
+      expect(useGameStore.getState().burstMultiplier).toBe(5);
+    });
+
+    it("clearBurstBoost resets multiplier and expiry", () => {
+      useGameStore.getState().activateBurstBoost(45_000, 3);
+      useGameStore.getState().clearBurstBoost();
+      const state = useGameStore.getState();
+      expect(state.burstMultiplier).toBe(1);
+      expect(state.burstBoostExpiresAt).toBe(0);
+    });
+
+    it("activateBurstDiscount sets discount expiry", () => {
+      useGameStore.getState().activateBurstDiscount(30_000);
+      const state = useGameStore.getState();
+      expect(state.burstDiscountExpiresAt).toBeGreaterThan(Date.now() - 1000);
+    });
+
+    it("clearBurstDiscount resets discount expiry", () => {
+      useGameStore.getState().activateBurstDiscount(30_000);
+      useGameStore.getState().clearBurstDiscount();
+      expect(useGameStore.getState().burstDiscountExpiresAt).toBe(0);
+    });
+
+    it("incrementBurstCount increments burstCount", () => {
+      expect(useGameStore.getState().burstCount).toBe(0);
+      useGameStore.getState().incrementBurstCount();
+      expect(useGameStore.getState().burstCount).toBe(1);
+      useGameStore.getState().incrementBurstCount();
+      expect(useGameStore.getState().burstCount).toBe(2);
+    });
+
+    it("purchasePrestigeUpgrade applies 10% discount during burst window", () => {
+      useGameStore.setState({
+        prestigeTokenBalance: 100,
+        burstDiscountExpiresAt: Date.now() + 30_000,
+      });
+      // idle-boost costs 5 per level; with 10% discount = floor(5 * 0.9) = 4
+      useGameStore.getState().purchasePrestigeUpgrade("idle-boost");
+      expect(useGameStore.getState().prestigeTokenBalance).toBe(96);
+    });
+
+    it("purchasePrestigeUpgrade uses full price when no discount", () => {
+      useGameStore.setState({
+        prestigeTokenBalance: 100,
+        burstDiscountExpiresAt: 0,
+      });
+      useGameStore.getState().purchasePrestigeUpgrade("idle-boost");
+      expect(useGameStore.getState().prestigeTokenBalance).toBe(95);
+    });
+
+    it("performRebirth resets burst discount but preserves burstCount", () => {
+      useGameStore.setState({
+        totalTdEarned: D(2_000_000),
+        evolutionStage: 5,
+        burstDiscountExpiresAt: Date.now() + 30_000,
+        burstCount: 7,
+      });
+      useGameStore.getState().performRebirth();
+      const state = useGameStore.getState();
+      expect(state.burstDiscountExpiresAt).toBe(0);
+      expect(state.burstMultiplier).toBe(1);
+      expect(state.burstBoostExpiresAt).toBe(0);
+      expect(state.burstCount).toBe(7);
+    });
+  });
+
   describe("rebirth reset", () => {
     it("resets upgradeOwned to {} after rebirth", () => {
       useGameStore.setState({

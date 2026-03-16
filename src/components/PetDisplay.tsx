@@ -80,13 +80,13 @@ export function PetDisplay() {
   const [isGlitching, setIsGlitching] = useState(false);
 
   const dialogueLine = useDialogue();
-  const { burstState, onBurstClick } = useDataBurst();
+  const { playClick, playEvolution, playBurst } = useSound();
+  const { burstState, onBurstClick, onBurstDismiss } = useDataBurst(playBurst);
   const [isFlashing, setIsFlashing] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
   const prevStageRef = useRef(evolutionStage);
   const containerRef = useRef<HTMLDivElement>(null);
   const prefersReduced = useReducedMotion();
-  const { playClick, playEvolution } = useSound();
 
   const currentFrame = useAsciiAnimation(artFrames, 2000, isGlitching);
 
@@ -203,7 +203,11 @@ export function PetDisplay() {
         animation: isShaking ? "screen-shake 0.5s ease-in-out" : undefined,
       }}
     >
-      <DataBurst burst={burstState} onClick={onBurstClick} />
+      <DataBurst
+        burst={burstState}
+        onClick={onBurstClick}
+        onDismiss={onBurstDismiss}
+      />
       {isFlashing && (
         <div
           aria-hidden="true"
