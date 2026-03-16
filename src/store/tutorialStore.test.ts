@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  TUTORIAL_STEP,
   getActiveStep,
   initialTutorialState,
+  TUTORIAL_STEP,
   useTutorialStore,
 } from "./tutorialStore";
 
@@ -73,9 +73,9 @@ describe("useTutorialStore", () => {
 
 describe("getActiveStep", () => {
   it("returns FEED_BUTTON (0) when no steps are completed", () => {
-    expect(
-      getActiveStep({ completedSteps: [], dismissed: false }),
-    ).toBe(TUTORIAL_STEP.FEED_BUTTON);
+    expect(getActiveStep({ completedSteps: [], dismissed: false })).toBe(
+      TUTORIAL_STEP.FEED_BUTTON,
+    );
   });
 
   it("returns TD_COUNTER (1) after FEED_BUTTON is completed", () => {
@@ -124,9 +124,7 @@ describe("getActiveStep", () => {
   });
 
   it("returns null when dismissed, regardless of completedSteps", () => {
-    expect(
-      getActiveStep({ completedSteps: [], dismissed: true }),
-    ).toBeNull();
+    expect(getActiveStep({ completedSteps: [], dismissed: true })).toBeNull();
   });
 
   it("returns null when dismissed even with some steps incomplete", () => {
