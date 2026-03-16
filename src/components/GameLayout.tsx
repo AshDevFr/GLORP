@@ -27,7 +27,6 @@ import { SettingsPanel } from "./SettingsPanel";
 import { StatsBar } from "./StatsBar";
 import { StatsPanel } from "./StatsPanel";
 import { StorageBanner } from "./StorageBanner";
-import { TutorialOverlay } from "./TutorialOverlay";
 import { UpgradesSidebar } from "./UpgradesSidebar";
 
 export function GameLayout() {
@@ -158,7 +157,6 @@ export function GameLayout() {
         opened={settingsOpen}
         onClose={() => setSettingsOpen(false)}
       />
-      <TutorialOverlay />
       <CrtOverlay />
       <StorageBanner />
 

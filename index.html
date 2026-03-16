@@ -9,10 +9,11 @@
       // Apply high-contrast attribute before first paint to avoid flash of
       // un-styled content. Reads from the same localStorage key used by
       // Zustand persist ("glorp-settings").
+      var stored, parsed;
       try {
-        var stored = localStorage.getItem("glorp-settings");
+        stored = localStorage.getItem("glorp-settings");
         if (stored) {
-          var parsed = JSON.parse(stored);
+          parsed = JSON.parse(stored);
           if (parsed && parsed.state && parsed.state.highContrast === true) {
             document.documentElement.setAttribute("data-high-contrast", "true");
           }
