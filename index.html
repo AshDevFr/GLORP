@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="data:,">
     <title>GLORP</title>
+    <script>
+      // Apply high-contrast attribute before first paint to avoid flash of
+      // un-styled content. Reads from the same localStorage key used by
+      // Zustand persist ("glorp-settings").
+      try {
+        var stored = localStorage.getItem("glorp-settings");
+        if (stored) {
+          var parsed = JSON.parse(stored);
+          if (parsed && parsed.state && parsed.state.highContrast === true) {
+            document.documentElement.setAttribute("data-high-contrast", "true");
+          }
+        }
+      } catch (e) {
+        // Ignore storage / parse errors — graceful degradation.
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
