@@ -8,6 +8,7 @@ export function useReducedMotion(): boolean {
   });
 
   const animationsDisabled = useSettingsStore((s) => s.animationsDisabled);
+  const reducedMotion = useSettingsStore((s) => s.reducedMotion);
 
   useEffect(() => {
     const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -16,5 +17,5 @@ export function useReducedMotion(): boolean {
     return () => mql.removeEventListener("change", handler);
   }, []);
 
-  return osPrefersReduced || animationsDisabled;
+  return osPrefersReduced || animationsDisabled || reducedMotion;
 }
