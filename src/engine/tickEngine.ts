@@ -13,6 +13,7 @@ interface TickState {
   boostersPurchased?: string[];
   idleBoostMultiplier?: number;
   speciesAutoGenMultiplier?: number;
+  burstMultiplier?: number;
   activeChallengeId?: string | null;
 }
 
@@ -35,7 +36,9 @@ export function computeTick(
   }
 
   const globalMultiplier =
-    (state.idleBoostMultiplier ?? 1) * (state.speciesAutoGenMultiplier ?? 1);
+    (state.idleBoostMultiplier ?? 1) *
+    (state.speciesAutoGenMultiplier ?? 1) *
+    (state.burstMultiplier ?? 1);
   const boosterMultiplier = computeBoosterMultiplier(
     BOOSTERS,
     state.boostersPurchased ?? [],

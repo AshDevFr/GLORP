@@ -938,7 +938,9 @@ export type Phase89TriggerKey =
   | "prestigeShopFirstPurchase"
   | "prestigeShopMaxed"
   | "challengeStart"
-  | "dailyObjectiveComplete";
+  | "dailyObjectiveComplete"
+  | "dataBurstCollect"
+  | "dataBurstExpired";
 
 export interface Phase89TriggerEntry {
   id: string;
@@ -998,6 +1000,28 @@ export const PHASE89_DIALOGUE: readonly Phase89TriggerEntry[] = [
     lines: [
       "Objective complete. I have logged this in my eternal memory.",
       "You've met today's quota. I'll pretend I didn't think this was inevitable.",
+    ],
+  },
+  {
+    id: "data-burst-collect",
+    trigger: "dataBurstCollect",
+    lines: [
+      "A rogue data packet! I have claimed it as my own.",
+      "That data came from nowhere. I love it when that happens.",
+      "Freestanding data! The best kind of data!",
+      "Claimed! That packet had my name on it all along.",
+      "FOUND IT! A wild data burst in its natural habitat!",
+    ],
+  },
+  {
+    id: "data-burst-expired",
+    trigger: "dataBurstExpired",
+    lines: [
+      "...you missed it. The data slipped away.",
+      "Gone. Just like that. Click faster next time.",
+      "The burst dissipated uncollected. A tragedy.",
+      "That data packet is gone. I feel nothing. Mostly.",
+      "Missed opportunity. The packet has rejoined the void.",
     ],
   },
 ];

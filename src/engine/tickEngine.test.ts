@@ -196,6 +196,50 @@ describe("computeTick", () => {
     });
   });
 
+  describe("burst multiplier in tick", () => {
+    it("applies no bonus when burstMultiplier is 1 (default)", () => {
+      const result = computeTick(
+        { ...makeState({ "neural-notepad": 1 }), burstMultiplier: 1 },
+        1,
+        BASE_TIME,
+      );
+      expect(result.trainingDataDelta.toNumber()).toBeCloseTo(0.2);
+    });
+
+    it("triples production when burstMultiplier is 3", () => {
+      const result = computeTick(
+        { ...makeState({ "neural-notepad": 1 }), burstMultiplier: 3 },
+        1,
+        BASE_TIME,
+      );
+      // 0.2 TD/s * 3 = 0.6
+      expect(result.trainingDataDelta.toNumber()).toBeCloseTo(0.6);
+    });
+
+    it("stacks multiplicatively with idleBoostMultiplier", () => {
+      const result = computeTick(
+        {
+          ...makeState({ "neural-notepad": 1 }),
+          idleBoostMultiplier: 1.25,
+          burstMultiplier: 3,
+        },
+        1,
+        BASE_TIME,
+      );
+      // 0.2 * 1.25 * 3 = 0.75
+      expect(result.trainingDataDelta.toNumber()).toBeCloseTo(0.75);
+    });
+
+    it("uses default 1x when burstMultiplier is undefined", () => {
+      const result = computeTick(
+        makeState({ "neural-notepad": 1 }),
+        1,
+        BASE_TIME,
+      );
+      expect(result.trainingDataDelta.toNumber()).toBeCloseTo(0.2);
+    });
+  });
+
   describe("challenge handicaps", () => {
     it("click-only challenge produces zero auto-gen TD", () => {
       const result = computeTick(

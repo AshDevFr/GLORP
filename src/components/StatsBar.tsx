@@ -13,6 +13,7 @@ import {
   computeBoosterMultiplier,
   getTotalTdPerSecond,
 } from "../engine/upgradeEngine";
+import { BURST_BOOST_MULTIPLIER } from "../hooks/useDataBurst";
 import { useInterpolatedTd } from "../hooks/useInterpolatedTd";
 import { useGameStore } from "../store";
 import { useSettingsStore } from "../store/settingsStore";
@@ -57,8 +58,31 @@ export function StatsBar() {
     clickMastery,
     speciesBonus.clickPower,
   );
+  const burstBoostExpiresAt = useGameStore((s) => s.burstBoostExpiresAt);
+  const burstMultiplier = useGameStore((s) => s.burstMultiplier);
   const numberFormat = useSettingsStore((s) => s.numberFormat);
   const fmt = numberFormat === "full" ? formatNumberFull : formatNumber;
+
+  // Burst boost countdown (seconds remaining)
+  const [burstSecondsLeft, setBurstSecondsLeft] = useState(0);
+  useEffect(() => {
+    const remaining = burstBoostExpiresAt - Date.now();
+    if (remaining <= 0 || burstMultiplier <= 1) {
+      setBurstSecondsLeft(0);
+      return;
+    }
+    setBurstSecondsLeft(Math.ceil(remaining / 1000));
+    const interval = setInterval(() => {
+      const r = burstBoostExpiresAt - Date.now();
+      if (r <= 0) {
+        setBurstSecondsLeft(0);
+        clearInterval(interval);
+      } else {
+        setBurstSecondsLeft(Math.ceil(r / 1000));
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [burstBoostExpiresAt, burstMultiplier]);
 
   // Rate-of-change indicator: show sparkle when TD/s increases
   const prevTdPerSecondRef = useRef<Decimal>(tdPerSecond);
@@ -109,6 +133,11 @@ export function StatsBar() {
             }}
           >
             ▲✦
+          </Text>
+        )}
+        {burstSecondsLeft > 0 && (
+          <Text span c="cyan" fw={700} ff="monospace" style={{ marginLeft: 6 }}>
+            {"\u26a1"} {BURST_BOOST_MULTIPLIER}&#215; for {burstSecondsLeft}s
           </Text>
         )}
       </Text>

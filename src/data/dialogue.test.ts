@@ -15,6 +15,8 @@ const REQUIRED_TRIGGERS = [
   "prestigeShopMaxed",
   "challengeStart",
   "dailyObjectiveComplete",
+  "dataBurstCollect",
+  "dataBurstExpired",
 ] as const;
 
 const ALL_STAGES = [0, 1, 2, 3, 4];

@@ -172,6 +172,8 @@ describe("checkAchievements", () => {
         "species-memory": 5,
         "token-magnet": 5,
         "unlock-all-species": 1,
+        "burst-frequency": 3,
+        "burst-duration": 3,
       },
     };
     const result = checkAchievements(state, []);

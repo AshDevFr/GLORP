@@ -84,11 +84,16 @@ export function useGameLoop() {
       );
       const speciesAutoGen = getSpeciesBonus(state.currentSpecies).autoGen;
 
+      // Burst multiplier: active only while boost has not expired
+      const burstMultiplier =
+        state.burstBoostExpiresAt > now ? state.burstMultiplier : 1;
+
       const result = computeTick(
         {
           ...state,
           idleBoostMultiplier: idleBoost,
           speciesAutoGenMultiplier: speciesAutoGen,
+          burstMultiplier,
         },
         deltaSeconds,
         now,
