@@ -77,7 +77,10 @@ describe("useReducedMotion", () => {
 
   it("returns false when reducedMotion is false and OS preference is off", () => {
     mockMatchMedia(false);
-    useSettingsStore.setState({ reducedMotion: false, animationsDisabled: false });
+    useSettingsStore.setState({
+      reducedMotion: false,
+      animationsDisabled: false,
+    });
     const { result } = renderHook(() => useReducedMotion());
     expect(result.current).toBe(false);
   });
