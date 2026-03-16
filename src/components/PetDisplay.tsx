@@ -25,12 +25,14 @@ import {
 } from "../engine/upgradeEngine";
 import { useAsciiAnimation } from "../hooks/useAsciiAnimation";
 import { useClickParticles } from "../hooks/useClickParticles";
+import { useDataBurst } from "../hooks/useDataBurst";
 import { useDialogue } from "../hooks/useDialogue";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useSound } from "../hooks/useSound";
 import { useGameStore } from "../store";
 import { useUIStore } from "../store/uiStore";
 import { formatNumber } from "../utils/formatNumber";
+import { DataBurst } from "./DataBurst";
 import { FloatingParticles } from "./FloatingParticles";
 import { PrestigeShop } from "./PrestigeShop";
 import { RebirthModal } from "./RebirthModal";
@@ -78,6 +80,7 @@ export function PetDisplay() {
   const [isGlitching, setIsGlitching] = useState(false);
 
   const dialogueLine = useDialogue();
+  const { burstState, onBurstClick } = useDataBurst();
   const [isFlashing, setIsFlashing] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
   const prevStageRef = useRef(evolutionStage);
@@ -200,6 +203,7 @@ export function PetDisplay() {
         animation: isShaking ? "screen-shake 0.5s ease-in-out" : undefined,
       }}
     >
+      <DataBurst burst={burstState} onClick={onBurstClick} />
       {isFlashing && (
         <div
           aria-hidden="true"

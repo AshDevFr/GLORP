@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  getBurstDuration,
+  getBurstMaxInterval,
+  getBurstMinInterval,
   getClickMasteryBonus,
   getEvolutionThresholdMultiplier,
   getGeneratorCostMultiplier,
@@ -12,8 +15,8 @@ import {
 } from "./prestigeShop";
 
 describe("PRESTIGE_UPGRADES data", () => {
-  it("defines 10 upgrades", () => {
-    expect(PRESTIGE_UPGRADES).toHaveLength(10);
+  it("defines 12 upgrades", () => {
+    expect(PRESTIGE_UPGRADES).toHaveLength(12);
   });
 
   it("all upgrades have unique IDs", () => {
@@ -131,5 +134,47 @@ describe("getTokenMagnetMultiplier", () => {
 
   it("returns 2 at level 5", () => {
     expect(getTokenMagnetMultiplier(5)).toBeCloseTo(2);
+  });
+});
+
+describe("getBurstMinInterval", () => {
+  it("returns 240s at level 0 (4 minutes)", () => {
+    expect(getBurstMinInterval(0)).toBe(240);
+  });
+
+  it("returns 210s at level 1", () => {
+    expect(getBurstMinInterval(1)).toBe(210);
+  });
+
+  it("returns 150s at level 3", () => {
+    expect(getBurstMinInterval(3)).toBe(150);
+  });
+});
+
+describe("getBurstMaxInterval", () => {
+  it("returns 480s at level 0 (8 minutes)", () => {
+    expect(getBurstMaxInterval(0)).toBe(480);
+  });
+
+  it("returns 450s at level 1", () => {
+    expect(getBurstMaxInterval(1)).toBe(450);
+  });
+
+  it("returns 390s at level 3", () => {
+    expect(getBurstMaxInterval(3)).toBe(390);
+  });
+});
+
+describe("getBurstDuration", () => {
+  it("returns 30s at level 0", () => {
+    expect(getBurstDuration(0)).toBe(30);
+  });
+
+  it("returns 40s at level 1", () => {
+    expect(getBurstDuration(1)).toBe(40);
+  });
+
+  it("returns 60s at level 3", () => {
+    expect(getBurstDuration(3)).toBe(60);
   });
 });

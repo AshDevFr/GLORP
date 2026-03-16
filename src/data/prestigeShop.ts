@@ -88,6 +88,22 @@ export const PRESTIGE_UPGRADES: readonly PrestigeUpgrade[] = [
     maxLevel: 1,
     icon: "🌟",
   },
+  {
+    id: "burst-frequency",
+    name: "Burst Frequency",
+    description: "-30s to Data Burst spawn interval per level",
+    costPerLevel: 8,
+    maxLevel: 3,
+    icon: "\u26a1",
+  },
+  {
+    id: "burst-duration",
+    name: "Burst Duration",
+    description: "+10s Data Burst display duration per level",
+    costPerLevel: 6,
+    maxLevel: 3,
+    icon: "\u23f1\ufe0f",
+  },
 ];
 
 /** Returns the cost for the next level of a prestige upgrade. */
@@ -129,4 +145,28 @@ export function getClickMasteryBonus(level: number): number {
 /** Token Magnet multiplier applied to WT earned on rebirth. */
 export function getTokenMagnetMultiplier(level: number): number {
   return 1 + level * 0.2;
+}
+
+/**
+ * Minimum Data Burst spawn interval in seconds.
+ * Base 240s (4 min), reduced by 30s per Burst Frequency level.
+ */
+export function getBurstMinInterval(level: number): number {
+  return 240 - level * 30;
+}
+
+/**
+ * Maximum Data Burst spawn interval in seconds.
+ * Base 480s (8 min), reduced by 30s per Burst Frequency level.
+ */
+export function getBurstMaxInterval(level: number): number {
+  return 480 - level * 30;
+}
+
+/**
+ * Data Burst display duration in seconds.
+ * Base 30s, increased by 10s per Burst Duration level.
+ */
+export function getBurstDuration(level: number): number {
+  return 30 + level * 10;
 }

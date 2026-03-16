@@ -163,6 +163,20 @@ body {
   }
 }
 
+/* ── Data Burst orb pulse animation ──────────────────────────────────── */
+
+@keyframes data-burst-pulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 0 6px #00ffff);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: drop-shadow(0 0 16px #00ffff) drop-shadow(0 0 32px #0088ff);
+  }
+}
+
 /* ── ASCII art color classes ─────────────────────────────── */
 
 .ascii-eyes {
@@ -300,6 +314,9 @@ body {
     animation: none;
   }
   .purchase-snap {
+    animation: none;
+  }
+  .data-burst-pulse {
     animation: none;
   }
 }

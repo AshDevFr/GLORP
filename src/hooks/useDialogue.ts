@@ -147,5 +147,21 @@ export function useDialogue(): string {
     prevChallengeRef.current = activeChallengeId;
   }, [activeChallengeId]);
 
+  // Data Burst: collect / expired dialogue triggers (fired via window events)
+  useEffect(() => {
+    const handleCollect = () => {
+      setCurrentLine(getRandomPhase89Line("dataBurstCollect"));
+    };
+    const handleExpired = () => {
+      setCurrentLine(getRandomPhase89Line("dataBurstExpired"));
+    };
+    window.addEventListener("dataBurstCollect", handleCollect);
+    window.addEventListener("dataBurstExpired", handleExpired);
+    return () => {
+      window.removeEventListener("dataBurstCollect", handleCollect);
+      window.removeEventListener("dataBurstExpired", handleExpired);
+    };
+  }, []);
+
   return currentLine;
 }
