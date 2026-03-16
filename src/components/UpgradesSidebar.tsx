@@ -173,7 +173,11 @@ export function UpgradesSidebar() {
     visibleClickUpgrades.length > 0 || visibleTiers.length > 0;
 
   return (
-    <aside aria-label="Upgrades" className="sidebar-upgrades">
+    <aside
+      id="tutorial-upgrades-panel"
+      aria-label="Upgrades"
+      className="sidebar-upgrades"
+    >
       <Stack
         gap={0}
         style={{
