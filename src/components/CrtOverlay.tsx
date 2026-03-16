@@ -1,9 +1,11 @@
+import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useSettingsStore } from "../store/settingsStore";
 
 export function CrtOverlay() {
   const crtEnabled = useSettingsStore((s) => s.crtEnabled);
+  const reduced = useReducedMotion();
 
-  if (!crtEnabled) return null;
+  if (!crtEnabled || reduced) return null;
 
   return (
     <div
