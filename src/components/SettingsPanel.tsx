@@ -31,11 +31,15 @@ export function SettingsPanel({
 }) {
   const crtEnabled = useSettingsStore((s) => s.crtEnabled);
   const animationsDisabled = useSettingsStore((s) => s.animationsDisabled);
+  const reducedMotion = useSettingsStore((s) => s.reducedMotion);
+  const highContrast = useSettingsStore((s) => s.highContrast);
   const numberFormat = useSettingsStore((s) => s.numberFormat);
   const setCrtEnabled = useSettingsStore((s) => s.setCrtEnabled);
   const setAnimationsDisabled = useSettingsStore(
     (s) => s.setAnimationsDisabled,
   );
+  const setReducedMotion = useSettingsStore((s) => s.setReducedMotion);
+  const setHighContrast = useSettingsStore((s) => s.setHighContrast);
   const setNumberFormat = useSettingsStore((s) => s.setNumberFormat);
   const soundEnabled = useSettingsStore((s) => s.soundEnabled);
   const setSoundEnabled = useSettingsStore((s) => s.setSoundEnabled);
@@ -178,6 +182,29 @@ export function SettingsPanel({
         position="right"
       >
         <Stack gap="md">
+          <Text size="xs" c="dimmed" ff="monospace" fw={700}>
+            ACCESSIBILITY
+          </Text>
+          <Switch
+            label="Reduced Motion"
+            description="Disable animations, particles, screen shake and counter interpolation"
+            checked={reducedMotion}
+            onChange={(e) => setReducedMotion(e.currentTarget.checked)}
+            styles={{ label: { fontFamily: "monospace" } }}
+          />
+          <Switch
+            label="High Contrast"
+            description="Pure black background, white text, yellow interactive elements"
+            checked={highContrast}
+            onChange={(e) => setHighContrast(e.currentTarget.checked)}
+            styles={{ label: { fontFamily: "monospace" } }}
+          />
+
+          <Divider />
+
+          <Text size="xs" c="dimmed" ff="monospace" fw={700}>
+            DISPLAY
+          </Text>
           <Switch
             label="CRT Scanlines"
             description="Apply a retro CRT scanline overlay"
@@ -201,6 +228,12 @@ export function SettingsPanel({
             }
             styles={{ label: { fontFamily: "monospace" } }}
           />
+
+          <Divider />
+
+          <Text size="xs" c="dimmed" ff="monospace" fw={700}>
+            AUDIO & NOTIFICATIONS
+          </Text>
           <Switch
             label="Sound Effects"
             description="Play synthesised audio feedback for clicks, purchases and events"
