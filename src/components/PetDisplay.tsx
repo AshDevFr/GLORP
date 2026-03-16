@@ -227,7 +227,7 @@ export function PetDisplay() {
       />
       <Stack align="center" justify="center" gap="lg" h="100%">
         <SpeechBubble text={dialogueLine} />
-        <Text size="xs" ff="monospace" c="dimmed">
+        <Text id="tutorial-evolution-stage" size="xs" ff="monospace" c="dimmed">
           Stage {evolutionStage}: {stageMeta.name} [{MOOD_LABELS[mood] ?? mood}]
         </Text>
         <div
@@ -259,6 +259,7 @@ export function PetDisplay() {
         />
         <Group gap="sm">
           <Button
+            id="tutorial-feed-btn"
             size="lg"
             variant="outline"
             color="green"
