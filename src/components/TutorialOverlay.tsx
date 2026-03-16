@@ -5,9 +5,9 @@ import { getUpgradeCost } from "../engine/upgradeEngine";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useGameStore } from "../store";
 import {
+  getActiveStep,
   TUTORIAL_STEP,
   type TutorialStep,
-  getActiveStep,
   useTutorialStore,
 } from "../store/tutorialStore";
 
