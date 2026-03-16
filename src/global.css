@@ -133,7 +133,7 @@ body {
   }
 }
 
-/* ── Purchase snap-back animation ──────────────────────────────────────────── */
+/* ── Purchase snap-back animation ───────────────────────────────────────────── */
 
 @keyframes purchase-snap {
   0% {
@@ -163,7 +163,7 @@ body {
   }
 }
 
-/* ── Data Burst orb pulse animation ──────────────────────────────────── */
+/* ── Data Burst orb pulse animation ──────────────────────────── */
 
 @keyframes data-burst-pulse {
   0%,
@@ -222,7 +222,7 @@ body {
   font-size: clamp(0.65rem, 1.8vw, 1.5rem);
 }
 
-/* ── ASCII glitch keyframe (stage transition) ─────────────────────── */
+/* ── ASCII glitch keyframe (stage transition) ───────────────────── */
 
 @keyframes ascii-glitch {
   0%,
@@ -256,7 +256,7 @@ body {
   }
 }
 
-/* ── Game layout: dual-sidebar three-column layout ───────────────────────── */
+/* ── Game layout: dual-sidebar three-column layout ──────────────────── */
 
 .game-layout {
   display: flex;
@@ -272,7 +272,7 @@ body {
   overflow: hidden;
 }
 
-/* ── Sidebar common styles ──────────────────────────────────────────────────── */
+/* ── Sidebar common styles ───────────────────────────────────────────── */
 
 .sidebar-upgrades,
 .sidebar-bonuses {
@@ -291,7 +291,7 @@ body {
   border-left: 1px solid var(--mantine-color-dark-4);
 }
 
-/* ── Upgrades grid: 2-column card layout inside each tier ───────────────────── */
+/* ── Upgrades grid: 2-column card layout inside each tier ───────────────── */
 
 .upgrades-grid {
   display: grid;
@@ -300,7 +300,7 @@ body {
   padding: 4px 0;
 }
 
-/* ── Bonuses grid: single-column generator list ───────────────────────────── */
+/* ── Bonuses grid: single-column generator list ─────────────────────── */
 
 .bonuses-grid {
   display: grid;

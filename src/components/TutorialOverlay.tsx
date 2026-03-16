@@ -11,13 +11,13 @@ import {
   useTutorialStore,
 } from "../store/tutorialStore";
 
-interface StepConfig {
+export interface StepConfig {
   targetId: string;
   message: string;
   placement: "top" | "bottom" | "left" | "right";
 }
 
-const STEP_CONFIG: { [K in TutorialStep]: StepConfig } = {
+export const STEP_CONFIG: { [K in TutorialStep]: StepConfig } = {
   [TUTORIAL_STEP.FEED_BUTTON]: {
     targetId: "tutorial-feed-btn",
     message: "Click to give GLORP training data!",
@@ -42,7 +42,7 @@ const STEP_CONFIG: { [K in TutorialStep]: StepConfig } = {
 
 const TOOLTIP_GAP = 12;
 
-function computeTooltipPosition(
+export function computeTooltipPosition(
   rect: DOMRect,
   placement: StepConfig["placement"],
 ): { top: number; left: number; transform: string } {
