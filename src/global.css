@@ -177,6 +177,22 @@ body {
   }
 }
 
+/* -- Tutorial highlight ring: green glow pulse (1.5 s infinite) ---------- */
+
+@keyframes tutorial-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 4px rgba(64, 192, 87, 0.4);
+    opacity: 1;
+  }
+  50% {
+    box-shadow:
+      0 0 14px rgba(64, 192, 87, 0.8),
+      0 0 28px rgba(64, 192, 87, 0.4);
+    opacity: 0.85;
+  }
+}
+
 /* ── ASCII art color classes ─────────────────────────────── */
 
 .ascii-eyes {
