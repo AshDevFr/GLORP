@@ -132,7 +132,7 @@ export function StatsBar() {
         borderBottom: "1px solid var(--mantine-color-dark-4)",
       }}
     >
-      <Text size="sm" ff="monospace">
+      <Text id="tutorial-td-counter" size="sm" ff="monospace">
         Training Data:{" "}
         <Text span fw={700} c="green">
           {fmt(trainingData)}
