@@ -106,4 +106,48 @@ describe("useSettingsStore", () => {
     expect(useSettingsStore.getState().soundEnabled).toBe(true);
     expect(useSettingsStore.getState().animationsDisabled).toBe(false);
   });
+
+  it("has reducedMotion defaulting to false in initialSettings", () => {
+    expect(initialSettings.reducedMotion).toBe(false);
+  });
+
+  it("setReducedMotion sets reducedMotion to true", () => {
+    useSettingsStore.getState().setReducedMotion(true);
+    expect(useSettingsStore.getState().reducedMotion).toBe(true);
+  });
+
+  it("setReducedMotion sets reducedMotion back to false", () => {
+    useSettingsStore.setState({ reducedMotion: true });
+    useSettingsStore.getState().setReducedMotion(false);
+    expect(useSettingsStore.getState().reducedMotion).toBe(false);
+  });
+
+  it("setReducedMotion does not affect other settings", () => {
+    useSettingsStore.getState().setReducedMotion(true);
+    expect(useSettingsStore.getState().crtEnabled).toBe(false);
+    expect(useSettingsStore.getState().highContrast).toBe(false);
+    expect(useSettingsStore.getState().soundEnabled).toBe(true);
+  });
+
+  it("has highContrast defaulting to false", () => {
+    expect(useSettingsStore.getState().highContrast).toBe(false);
+  });
+
+  it("setHighContrast sets highContrast to true", () => {
+    useSettingsStore.getState().setHighContrast(true);
+    expect(useSettingsStore.getState().highContrast).toBe(true);
+  });
+
+  it("setHighContrast sets highContrast back to false", () => {
+    useSettingsStore.setState({ highContrast: true });
+    useSettingsStore.getState().setHighContrast(false);
+    expect(useSettingsStore.getState().highContrast).toBe(false);
+  });
+
+  it("setHighContrast does not affect other settings", () => {
+    useSettingsStore.getState().setHighContrast(true);
+    expect(useSettingsStore.getState().crtEnabled).toBe(false);
+    expect(useSettingsStore.getState().reducedMotion).toBe(false);
+    expect(useSettingsStore.getState().soundEnabled).toBe(true);
+  });
 });
