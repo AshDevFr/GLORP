@@ -67,4 +67,18 @@ describe("useReducedMotion", () => {
     const { result } = renderHook(() => useReducedMotion());
     expect(result.current).toBe(true);
   });
+
+  it("returns true when reducedMotion store setting is enabled", () => {
+    mockMatchMedia(false);
+    useSettingsStore.setState({ reducedMotion: true });
+    const { result } = renderHook(() => useReducedMotion());
+    expect(result.current).toBe(true);
+  });
+
+  it("returns false when reducedMotion is false and OS preference is off", () => {
+    mockMatchMedia(false);
+    useSettingsStore.setState({ reducedMotion: false, animationsDisabled: false });
+    const { result } = renderHook(() => useReducedMotion());
+    expect(result.current).toBe(false);
+  });
 });
