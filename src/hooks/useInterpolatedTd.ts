@@ -5,6 +5,7 @@ import { UPGRADES } from "../data/upgrades";
 import { getTotalTdPerSecond } from "../engine/upgradeEngine";
 import { useGameStore } from "../store";
 import { Decimal } from "../utils/decimal";
+import { useReducedMotion } from "./useReducedMotion";
 
 /**
  * Pure interpolation logic — exported for unit testing.
@@ -42,10 +43,14 @@ export function interpolateTd(
  * Returns a smoothly-interpolated Training Data value that updates at ~60 fps
  * via requestAnimationFrame, instead of snapping once per engine tick.
  *
+ * When reduced motion is enabled, skips interpolation entirely and snaps to
+ * the authoritative store value once per second instead.
+ *
  * The authoritative value (from Zustand) remains the source of truth; this
  * hook only affects the *display*.
  */
 export function useInterpolatedTd(): Decimal {
+  const reduced = useReducedMotion();
   const [displayTd, setDisplayTd] = useState<Decimal>(
     () => useGameStore.getState().trainingData,
   );
@@ -53,6 +58,16 @@ export function useInterpolatedTd(): Decimal {
   const lastTimeRef = useRef<number>(performance.now());
 
   useEffect(() => {
+    if (reduced) {
+      cancelAnimationFrame(rafRef.current);
+      // Snap immediately to the current value, then update once per second.
+      setDisplayTd(useGameStore.getState().trainingData);
+      const id = setInterval(() => {
+        setDisplayTd(useGameStore.getState().trainingData);
+      }, 1000);
+      return () => clearInterval(id);
+    }
+
     const frame = (now: number) => {
       // Cap elapsed to 100 ms to avoid huge jumps after tab becomes active.
       const elapsed = Math.min((now - lastTimeRef.current) / 1000, 0.1);
@@ -78,7 +93,7 @@ export function useInterpolatedTd(): Decimal {
 
     rafRef.current = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(rafRef.current);
-  }, []); // Runs once; reads latest store state every frame via getState().
+  }, [reduced]);
 
   return displayTd;
 }
