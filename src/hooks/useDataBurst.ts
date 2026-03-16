@@ -21,6 +21,15 @@ export const BURST_BOOST_DURATION_MS = 45_000;
 /** Multiplier applied to auto-gen TD/s during a burst boost. */
 export const BURST_BOOST_MULTIPLIER = 3;
 
+/** Duration of the prestige shop discount in milliseconds. */
+export const BURST_DISCOUNT_DURATION_MS = 30_000;
+
+/** Reward types for a collected Data Burst. */
+export type BurstRewardType =
+  | "production-boost"
+  | "lump-sum"
+  | "prestige-shop-discount";
+
 export interface DataBurstState {
   isVisible: boolean;
   /** CSS percentage [10–80] for position within the pet display area. */
@@ -46,15 +55,19 @@ function randomInterval(minMs: number, maxMs: number): number {
  * Returns current burst visibility state and a handler to call when the
  * player clicks the burst orb.
  */
-export function useDataBurst(): {
+export function useDataBurst(onBurstAppear?: () => void): {
   burstState: DataBurstState;
   onBurstClick: () => void;
+  onBurstDismiss: () => void;
 } {
   const upgradeOwned = useGameStore((s) => s.upgradeOwned);
   const prestigeUpgrades = useGameStore((s) => s.prestigeUpgrades);
   const activateBurstBoost = useGameStore((s) => s.activateBurstBoost);
   const clearBurstBoost = useGameStore((s) => s.clearBurstBoost);
   const addTrainingData = useGameStore((s) => s.addTrainingData);
+  const activateBurstDiscount = useGameStore((s) => s.activateBurstDiscount);
+  const clearBurstDiscount = useGameStore((s) => s.clearBurstDiscount);
+  const incrementBurstCount = useGameStore((s) => s.incrementBurstCount);
 
   const [burstState, setBurstState] = useState<DataBurstState>({
     isVisible: false,
@@ -69,7 +82,12 @@ export function useDataBurst(): {
     null,
   );
   const boostClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const discountClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const burstVisibleRef = useRef(false);
+  const onBurstAppearRef = useRef(onBurstAppear);
+  onBurstAppearRef.current = onBurstAppear;
 
   /** True when at least one auto-generator is owned. */
   const hasGenerators =
@@ -104,6 +122,9 @@ export function useDataBurst(): {
     const durationSec = Math.round(durationMs / 1000);
     burstVisibleRef.current = true;
     setBurstState({ isVisible: true, position: pos, secondsLeft: durationSec });
+
+    // Play burst fanfare sound
+    onBurstAppearRef.current?.();
 
     // Countdown update every second
     let remaining = durationSec;
@@ -167,10 +188,14 @@ export function useDataBurst(): {
       boosterMult,
     );
 
-    // Pick reward at random (50/50)
-    if (Math.random() < 0.5) {
+    // Track burst collection
+    incrementBurstCount();
+
+    // Pick reward at random (equal 1/3 chance each)
+    const roll = Math.random();
+    if (roll < 1 / 3) {
       // Production boost: 3× auto-gen for 45 seconds
-      activateBurstBoost(BURST_BOOST_DURATION_MS);
+      activateBurstBoost(BURST_BOOST_DURATION_MS, BURST_BOOST_MULTIPLIER);
       // Schedule automatic clear
       if (boostClearTimerRef.current !== null)
         clearTimeout(boostClearTimerRef.current);
@@ -178,12 +203,22 @@ export function useDataBurst(): {
         clearBurstBoost();
         boostClearTimerRef.current = null;
       }, BURST_BOOST_DURATION_MS);
-    } else {
+    } else if (roll < 2 / 3) {
       // Lump sum: 30 minutes of current auto-gen
       const lumpSum = tdPerSecond.mul(D(1800));
       if (lumpSum.gt(0)) {
         addTrainingData(lumpSum);
       }
+    } else {
+      // Prestige shop discount: 10% off Wisdom Token purchases for 30s
+      activateBurstDiscount(BURST_DISCOUNT_DURATION_MS);
+      // Schedule automatic clear
+      if (discountClearTimerRef.current !== null)
+        clearTimeout(discountClearTimerRef.current);
+      discountClearTimerRef.current = setTimeout(() => {
+        clearBurstDiscount();
+        discountClearTimerRef.current = null;
+      }, BURST_DISCOUNT_DURATION_MS);
     }
 
     // Trigger collect dialogue
@@ -191,22 +226,39 @@ export function useDataBurst(): {
 
     // Schedule next burst
     scheduleNextBurst();
-  }, [activateBurstBoost, clearBurstBoost, addTrainingData, scheduleNextBurst]);
+  }, [
+    activateBurstBoost,
+    clearBurstBoost,
+    addTrainingData,
+    activateBurstDiscount,
+    clearBurstDiscount,
+    incrementBurstCount,
+    scheduleNextBurst,
+  ]);
 
-  // On mount: resume mid-boost if page was refreshed during one.
-  // clearBurstBoost is a stable Zustand action so this only runs once.
+  // On mount: resume mid-boost / mid-discount if page was refreshed.
+  // clearBurstBoost / clearBurstDiscount are stable Zustand actions so this only runs once.
   useEffect(() => {
     const state = useGameStore.getState();
-    const remaining = state.burstBoostExpiresAt - Date.now();
-    if (remaining > 0 && state.burstMultiplier > 1) {
+    const boostRemaining = state.burstBoostExpiresAt - Date.now();
+    if (boostRemaining > 0 && state.burstMultiplier > 1) {
       if (boostClearTimerRef.current !== null)
         clearTimeout(boostClearTimerRef.current);
       boostClearTimerRef.current = setTimeout(() => {
         clearBurstBoost();
         boostClearTimerRef.current = null;
-      }, remaining);
+      }, boostRemaining);
     }
-  }, [clearBurstBoost]);
+    const discountRemaining = state.burstDiscountExpiresAt - Date.now();
+    if (discountRemaining > 0) {
+      if (discountClearTimerRef.current !== null)
+        clearTimeout(discountClearTimerRef.current);
+      discountClearTimerRef.current = setTimeout(() => {
+        clearBurstDiscount();
+        discountClearTimerRef.current = null;
+      }, discountRemaining);
+    }
+  }, [clearBurstBoost, clearBurstDiscount]);
 
   // Start scheduling when generators are available; stop when they're gone.
   useEffect(() => {
@@ -243,5 +295,28 @@ export function useDataBurst(): {
       document.removeEventListener("visibilitychange", handleVisibility);
   }, [hasGenerators, clearAllTimers, scheduleNextBurst]);
 
-  return { burstState, onBurstClick };
+  /** Handle player dismissing the burst orb without collecting. */
+  const onBurstDismiss = useCallback(() => {
+    if (!burstVisibleRef.current) return;
+
+    // Cancel expiry timers
+    if (expireTimerRef.current !== null) {
+      clearTimeout(expireTimerRef.current);
+      expireTimerRef.current = null;
+    }
+    if (countdownIntervalRef.current !== null) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    burstVisibleRef.current = false;
+    setBurstState((prev) => ({ ...prev, isVisible: false, secondsLeft: 0 }));
+
+    // No reward awarded — treated the same as expired
+    window.dispatchEvent(new CustomEvent("dataBurstExpired"));
+
+    // Schedule next burst
+    scheduleNextBurst();
+  }, [scheduleNextBurst]);
+
+  return { burstState, onBurstClick, onBurstDismiss };
 }

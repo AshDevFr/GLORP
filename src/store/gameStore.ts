@@ -81,6 +81,9 @@ export interface GameState {
   // Data Burst state — persists across page loads; resets on rebirth
   burstMultiplier: number;
   burstBoostExpiresAt: number;
+  burstDiscountExpiresAt: number;
+  // Data Burst stats — persists across rebirths
+  burstCount: number;
 }
 
 interface GameActions {
@@ -106,8 +109,11 @@ interface GameActions {
     generatorsOwned: number,
   ) => void;
   awardDailyWisdomTokens: (amount: number) => void;
-  activateBurstBoost: (durationMs: number) => void;
+  activateBurstBoost: (durationMs: number, multiplier: number) => void;
   clearBurstBoost: () => void;
+  activateBurstDiscount: (durationMs: number) => void;
+  clearBurstDiscount: () => void;
+  incrementBurstCount: () => void;
 }
 
 export type GameStore = GameState & GameActions;
@@ -148,6 +154,8 @@ export const initialGameState: GameState = {
   activeChallengeId: null,
   burstMultiplier: 1,
   burstBoostExpiresAt: 0,
+  burstDiscountExpiresAt: 0,
+  burstCount: 0,
 };
 
 /** Helper: get a prestige upgrade level from state. */
@@ -337,7 +345,10 @@ export const useGameStore = create<GameStore>()(
           const currentLevel = pLevel(state.prestigeUpgrades, id);
           if (currentLevel >= upgrade.maxLevel) return state;
 
-          const cost = upgrade.costPerLevel;
+          const hasDiscount = state.burstDiscountExpiresAt > Date.now();
+          const cost = hasDiscount
+            ? Math.floor(upgrade.costPerLevel * 0.9)
+            : upgrade.costPerLevel;
           if (state.prestigeTokenBalance < cost) return state;
 
           return {
@@ -389,13 +400,18 @@ export const useGameStore = create<GameStore>()(
           prestigeTokenBalance: state.prestigeTokenBalance + amount,
           lifetimeWisdomEarned: state.lifetimeWisdomEarned + amount,
         })),
-      activateBurstBoost: (durationMs) =>
+      activateBurstBoost: (durationMs, multiplier) =>
         set({
-          burstMultiplier: 3,
+          burstMultiplier: multiplier,
           burstBoostExpiresAt: Date.now() + durationMs,
         }),
       clearBurstBoost: () =>
         set({ burstMultiplier: 1, burstBoostExpiresAt: 0 }),
+      activateBurstDiscount: (durationMs) =>
+        set({ burstDiscountExpiresAt: Date.now() + durationMs }),
+      clearBurstDiscount: () => set({ burstDiscountExpiresAt: 0 }),
+      incrementBurstCount: () =>
+        set((state) => ({ burstCount: state.burstCount + 1 })),
       performRebirth: (selectedSpecies, challengeId) =>
         set((state) => {
           if (!canRebirth(state.evolutionStage)) return state;
@@ -504,9 +520,10 @@ export const useGameStore = create<GameStore>()(
             lifetimeWisdomEarned: state.lifetimeWisdomEarned + earned,
             // Challenge for next run (null = normal)
             activeChallengeId: challengeId ?? null,
-            // Reset burst state on rebirth
+            // Reset burst state on rebirth (burstCount persists)
             burstMultiplier: 1,
             burstBoostExpiresAt: 0,
+            burstDiscountExpiresAt: 0,
           };
         }),
     }),

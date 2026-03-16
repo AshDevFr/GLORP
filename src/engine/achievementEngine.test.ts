@@ -38,6 +38,10 @@ const baseState: GameState = {
   lifetimeBestRunTd: D(0),
   lifetimeWisdomEarned: 0,
   activeChallengeId: null,
+  burstMultiplier: 1,
+  burstBoostExpiresAt: 0,
+  burstDiscountExpiresAt: 0,
+  burstCount: 0,
 };
 
 describe("checkAchievements", () => {

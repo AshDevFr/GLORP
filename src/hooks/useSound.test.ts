@@ -7,6 +7,7 @@ import { initialSettings, useSettingsStore } from "../store/settingsStore";
 // environment; mock the module so useSound can be tested without a real AudioContext.
 vi.mock("../utils/synthSounds", () => ({
   getAudioContext: vi.fn(() => null),
+  synthBurst: vi.fn(),
   synthClick: vi.fn(),
   synthEvolution: vi.fn(),
   synthPurchase: vi.fn(),
@@ -37,12 +38,13 @@ beforeEach(() => {
 });
 
 describe("useSound", () => {
-  it("returns four play functions", () => {
+  it("returns five play functions", () => {
     const sound = callHook();
     expect(typeof sound.playClick).toBe("function");
     expect(typeof sound.playPurchase).toBe("function");
     expect(typeof sound.playEvolution).toBe("function");
     expect(typeof sound.playWelcomeBack).toBe("function");
+    expect(typeof sound.playBurst).toBe("function");
   });
 
   it("does not call getAudioContext when soundEnabled is false", () => {

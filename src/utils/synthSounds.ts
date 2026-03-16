@@ -73,3 +73,21 @@ export function synthWelcomeBack(ctx: AudioContext): void {
     scheduleEnvelopedTone(ctx, notes[i], "sine", t + i * 0.15, 0.2, 0.28, 0.01);
   }
 }
+
+/** Bright ascending sparkle — plays when a Data Burst orb appears. */
+export function synthBurst(ctx: AudioContext): void {
+  const t = ctx.currentTime;
+  // E5 G5 B5 — bright ascending triad with triangle wave for sparkle
+  const notes = [659.25, 783.99, 987.77];
+  for (let i = 0; i < notes.length; i++) {
+    scheduleEnvelopedTone(
+      ctx,
+      notes[i],
+      "triangle",
+      t + i * 0.08,
+      0.15,
+      0.32,
+      0.005,
+    );
+  }
+}

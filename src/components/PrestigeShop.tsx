@@ -9,7 +9,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { PRESTIGE_UPGRADES } from "../data/prestigeShop";
 import { useGameStore } from "../store";
 import { formatNumber } from "../utils/formatNumber";
@@ -26,6 +26,30 @@ export function PrestigeShop({ opened, onClose }: PrestigeShopProps) {
     (s) => s.purchasePrestigeUpgrade,
   );
   const markPrestigeShopOpened = useGameStore((s) => s.markPrestigeShopOpened);
+  const burstDiscountExpiresAt = useGameStore((s) => s.burstDiscountExpiresAt);
+
+  // Live countdown for burst discount
+  const [discountSecondsLeft, setDiscountSecondsLeft] = useState(0);
+  useEffect(() => {
+    const remaining = burstDiscountExpiresAt - Date.now();
+    if (remaining <= 0) {
+      setDiscountSecondsLeft(0);
+      return;
+    }
+    setDiscountSecondsLeft(Math.ceil(remaining / 1000));
+    const interval = setInterval(() => {
+      const r = burstDiscountExpiresAt - Date.now();
+      if (r <= 0) {
+        setDiscountSecondsLeft(0);
+        clearInterval(interval);
+      } else {
+        setDiscountSecondsLeft(Math.ceil(r / 1000));
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [burstDiscountExpiresAt]);
+
+  const hasDiscount = discountSecondsLeft > 0;
 
   useEffect(() => {
     if (opened) {
@@ -52,14 +76,21 @@ export function PrestigeShop({ opened, onClose }: PrestigeShopProps) {
             {formatNumber(prestigeTokenBalance)} ✦
           </Text>
         </Text>
+        {hasDiscount && (
+          <Text ta="center" size="sm" ff="monospace" c="cyan" fw={700}>
+            ⚡ DATA BURST: 10% off all purchases! ({discountSecondsLeft}s)
+          </Text>
+        )}
 
         <ScrollArea.Autosize mah="60vh">
           <Stack gap="xs">
             {PRESTIGE_UPGRADES.map((upgrade) => {
               const level = prestigeUpgrades[upgrade.id] ?? 0;
               const maxed = level >= upgrade.maxLevel;
-              const canAfford =
-                !maxed && prestigeTokenBalance >= upgrade.costPerLevel;
+              const effectiveCost = hasDiscount
+                ? Math.floor(upgrade.costPerLevel * 0.9)
+                : upgrade.costPerLevel;
+              const canAfford = !maxed && prestigeTokenBalance >= effectiveCost;
 
               return (
                 <Card
@@ -102,7 +133,11 @@ export function PrestigeShop({ opened, onClose }: PrestigeShopProps) {
                       onClick={() => purchasePrestigeUpgrade(upgrade.id)}
                       ff="monospace"
                     >
-                      {maxed ? "MAX" : `${upgrade.costPerLevel} ✦`}
+                      {maxed
+                        ? "MAX"
+                        : hasDiscount
+                          ? `${effectiveCost} ✦ (−10%)`
+                          : `${effectiveCost} ✦`}
                     </Button>
                   </Group>
                 </Card>

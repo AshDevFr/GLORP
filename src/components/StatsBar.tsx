@@ -60,6 +60,7 @@ export function StatsBar() {
   );
   const burstBoostExpiresAt = useGameStore((s) => s.burstBoostExpiresAt);
   const burstMultiplier = useGameStore((s) => s.burstMultiplier);
+  const burstDiscountExpiresAt = useGameStore((s) => s.burstDiscountExpiresAt);
   const numberFormat = useSettingsStore((s) => s.numberFormat);
   const fmt = numberFormat === "full" ? formatNumberFull : formatNumber;
 
@@ -83,6 +84,27 @@ export function StatsBar() {
     }, 1000);
     return () => clearInterval(interval);
   }, [burstBoostExpiresAt, burstMultiplier]);
+
+  // Burst discount countdown
+  const [discountSecondsLeft, setDiscountSecondsLeft] = useState(0);
+  useEffect(() => {
+    const remaining = burstDiscountExpiresAt - Date.now();
+    if (remaining <= 0) {
+      setDiscountSecondsLeft(0);
+      return;
+    }
+    setDiscountSecondsLeft(Math.ceil(remaining / 1000));
+    const interval = setInterval(() => {
+      const r = burstDiscountExpiresAt - Date.now();
+      if (r <= 0) {
+        setDiscountSecondsLeft(0);
+        clearInterval(interval);
+      } else {
+        setDiscountSecondsLeft(Math.ceil(r / 1000));
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [burstDiscountExpiresAt]);
 
   // Rate-of-change indicator: show sparkle when TD/s increases
   const prevTdPerSecondRef = useRef<Decimal>(tdPerSecond);
@@ -138,6 +160,11 @@ export function StatsBar() {
         {burstSecondsLeft > 0 && (
           <Text span c="cyan" fw={700} ff="monospace" style={{ marginLeft: 6 }}>
             {"\u26a1"} {BURST_BOOST_MULTIPLIER}&#215; for {burstSecondsLeft}s
+          </Text>
+        )}
+        {discountSecondsLeft > 0 && (
+          <Text span c="cyan" fw={700} ff="monospace" style={{ marginLeft: 6 }}>
+            {"\u26a1"} -10% Shop for {discountSecondsLeft}s
           </Text>
         )}
       </Text>
