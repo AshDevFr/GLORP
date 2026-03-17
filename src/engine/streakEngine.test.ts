@@ -94,8 +94,6 @@ describe("getStreakMultiplier", () => {
 });
 
 describe("computeStreakUpdate", () => {
-  const DAY_MS = 24 * 60 * 60 * 1000;
-
   it("first ever login starts streak at 1 with bonus", () => {
     const now = Date.UTC(2026, 2, 15, 10, 0, 0);
     const result = computeStreakUpdate("", 0, now);

@@ -41,6 +41,10 @@ const emptyState: GameState = {
   burstBoostExpiresAt: 0,
   burstDiscountExpiresAt: 0,
   burstCount: 0,
+  lastLoginDate: "",
+  streakDays: 0,
+  dailyBonusMultiplier: 1,
+  dailyBonusExpiresAt: 0,
 };
 
 describe("ACHIEVEMENTS", () => {

@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { initialGameState, useGameStore } from "../store";
-import { useDailyBonus } from "./useDailyBonus";
 
 // We test the store integration directly rather than rendering the hook,
 // since the core logic is in streakEngine (tested separately).
