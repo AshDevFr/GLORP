@@ -192,6 +192,8 @@ export function useGameLoop() {
       if (newlyUnlocked.length > 0) {
         updatedState.unlockAchievements(newlyUnlocked);
         notifyAchievements(newlyUnlocked);
+        // Fire CustomEvent so dialogue and sound hooks can react
+        window.dispatchEvent(new CustomEvent("achievementUnlocked"));
       }
 
       // Check for newly triggered easter eggs (state-based; konami handled in GameLayout)

@@ -17,6 +17,7 @@ const REQUIRED_TRIGGERS = [
   "dailyObjectiveComplete",
   "dataBurstCollect",
   "dataBurstExpired",
+  "achievementUnlocked",
 ] as const;
 
 const ALL_STAGES = [0, 1, 2, 3, 4];
@@ -218,6 +219,11 @@ describe("PHASE89_DIALOGUE", () => {
   it("dailyObjectiveComplete has at least 2 lines", () => {
     const lines = getPhase89Lines("dailyObjectiveComplete");
     expect(lines.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("achievementUnlocked has at least 3 lines", () => {
+    const lines = getPhase89Lines("achievementUnlocked");
+    expect(lines.length).toBeGreaterThanOrEqual(3);
   });
 
   it("no duplicate ids across entries", () => {

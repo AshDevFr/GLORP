@@ -74,6 +74,14 @@ export function synthWelcomeBack(ctx: AudioContext): void {
   }
 }
 
+/** Triumphant two-note chime — plays when an achievement unlocks. */
+export function synthAchievement(ctx: AudioContext): void {
+  const t = ctx.currentTime;
+  // G5 → C6: ascending perfect fourth with triangle wave for a badge feel
+  scheduleEnvelopedTone(ctx, 783.99, "triangle", t, 0.15, 0.3, 0.01);
+  scheduleEnvelopedTone(ctx, 1046.5, "triangle", t + 0.12, 0.25, 0.35, 0.01);
+}
+
 /** Bright ascending sparkle — plays when a Data Burst orb appears. */
 export function synthBurst(ctx: AudioContext): void {
   const t = ctx.currentTime;

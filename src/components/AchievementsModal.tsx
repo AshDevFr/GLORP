@@ -1,4 +1,12 @@
-import { Modal, ScrollArea, Stack, Text } from "@mantine/core";
+import {
+  Badge,
+  Drawer,
+  Group,
+  ScrollArea,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { ACHIEVEMENTS } from "../data/achievements";
 import { useGameStore } from "../store";
 
@@ -12,19 +20,26 @@ export function AchievementsModal({
   const unlockedAchievements = useGameStore((s) => s.unlockedAchievements);
   const unlockedSet = new Set(unlockedAchievements);
   const unlockedCount = unlockedAchievements.length;
+  const totalCount = ACHIEVEMENTS.length;
 
   return (
-    <Modal
+    <Drawer
       opened={opened}
       onClose={onClose}
+      position="right"
+      size="sm"
       title={
-        <Text ff="monospace" fw={700}>
-          Achievements ({unlockedCount}/{ACHIEVEMENTS.length})
-        </Text>
+        <Group gap="sm" align="center">
+          <Title order={4} ff="monospace" c="yellow">
+            Achievements
+          </Title>
+          <Badge color="yellow" variant="light" size="lg" ff="monospace">
+            {unlockedCount} / {totalCount} Unlocked
+          </Badge>
+        </Group>
       }
-      size="md"
     >
-      <ScrollArea mah={480}>
+      <ScrollArea h="calc(100vh - 80px)">
         <Stack gap="xs">
           {ACHIEVEMENTS.map((a) => {
             const isUnlocked = unlockedSet.has(a.id);
@@ -41,6 +56,7 @@ export function AchievementsModal({
                   borderLeft: isUnlocked
                     ? "3px solid var(--mantine-color-yellow-5)"
                     : "3px solid var(--mantine-color-dark-4)",
+                  opacity: isUnlocked ? 1 : 0.5,
                 }}
               >
                 <Text
@@ -59,6 +75,6 @@ export function AchievementsModal({
           })}
         </Stack>
       </ScrollArea>
-    </Modal>
+    </Drawer>
   );
 }

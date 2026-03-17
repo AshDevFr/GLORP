@@ -1,6 +1,7 @@
 import { AppShell, Button, Group } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ACHIEVEMENTS } from "../data/achievements";
 import {
   getIdleBoostMultiplier,
   getPrestigeOfflineEfficiency,
@@ -48,9 +49,11 @@ export function GameLayout() {
   const konamiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unlockedCount = useGameStore((s) => s.unlockedAchievements.length);
   const reducedMotion = useReducedMotion();
-  const { playWelcomeBack } = useSound();
+  const { playWelcomeBack, playAchievement } = useSound();
   const playWelcomeBackRef = useRef(playWelcomeBack);
   playWelcomeBackRef.current = playWelcomeBack;
+  const playAchievementRef = useRef(playAchievement);
+  playAchievementRef.current = playAchievement;
 
   useEffect(() => {
     const state = useGameStore.getState();
@@ -98,6 +101,20 @@ export function GameLayout() {
     }
   }, [reducedMotion]);
 
+  // Play achievement chime when an achievement unlocks (CustomEvent from game loop)
+  useEffect(() => {
+    const handleAchievementUnlocked = () => {
+      playAchievementRef.current();
+    };
+    window.addEventListener("achievementUnlocked", handleAchievementUnlocked);
+    return () => {
+      window.removeEventListener(
+        "achievementUnlocked",
+        handleAchievementUnlocked,
+      );
+    };
+  }, []);
+
   useKonamiCode(handleKonami);
 
   return (
@@ -113,7 +130,7 @@ export function GameLayout() {
               onClick={() => setAchievementsOpen(true)}
               style={{ fontFamily: "monospace", whiteSpace: "nowrap" }}
             >
-              ★ {unlockedCount}
+              ★ {unlockedCount}/{ACHIEVEMENTS.length}
             </Button>
             <Button
               size="xs"

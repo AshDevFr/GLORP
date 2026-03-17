@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useSettingsStore } from "../store/settingsStore";
 import {
   getAudioContext,
+  synthAchievement,
   synthBurst,
   synthClick,
   synthEvolution,
@@ -42,6 +43,14 @@ export function useSound() {
   const playEvolution = useCallback(() => play(synthEvolution), [play]);
   const playWelcomeBack = useCallback(() => play(synthWelcomeBack), [play]);
   const playBurst = useCallback(() => play(synthBurst), [play]);
+  const playAchievement = useCallback(() => play(synthAchievement), [play]);
 
-  return { playClick, playPurchase, playEvolution, playWelcomeBack, playBurst };
+  return {
+    playClick,
+    playPurchase,
+    playEvolution,
+    playWelcomeBack,
+    playBurst,
+    playAchievement,
+  };
 }

@@ -160,6 +160,51 @@ describe("checkAchievements", () => {
     expect(result).toContain("bulk-buyer");
   });
 
+  it("returns gen-10 when a generator reaches 10 owned", () => {
+    const state = {
+      ...baseState,
+      upgradeOwned: { "neural-notepad": 10 },
+    };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("gen-10");
+  });
+
+  it("returns gen-25 when a generator reaches 25 owned", () => {
+    const state = {
+      ...baseState,
+      upgradeOwned: { "neural-notepad": 25 },
+    };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("gen-25");
+  });
+
+  it("returns gen-50 when a generator reaches 50 owned", () => {
+    const state = {
+      ...baseState,
+      upgradeOwned: { "neural-notepad": 50 },
+    };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("gen-50");
+  });
+
+  it("returns streak-7 when streakDays reaches 7", () => {
+    const state = { ...baseState, streakDays: 7 };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("streak-7");
+  });
+
+  it("returns clicks-100000 when totalClicks reaches 100000", () => {
+    const state = { ...baseState, totalClicks: 100_000 };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("clicks-100000");
+  });
+
+  it("returns rebirths-10 when rebirthCount reaches 10", () => {
+    const state = { ...baseState, rebirthCount: 10 };
+    const result = checkAchievements(state, []);
+    expect(result).toContain("rebirths-10");
+  });
+
   it("returns window-shopper when prestige shop has been opened", () => {
     const state = { ...baseState, hasOpenedPrestigeShop: true };
     const result = checkAchievements(state, []);
@@ -233,6 +278,7 @@ describe("checkAchievements", () => {
       upgradeOwned: { "neural-notepad": 100 },
       comboCount: 10,
       hasOpenedPrestigeShop: true,
+      streakDays: 7,
       prestigeUpgrades: {
         "quick-start": 3,
         "auto-buy": 1,
@@ -244,6 +290,8 @@ describe("checkAchievements", () => {
         "species-memory": 5,
         "token-magnet": 5,
         "unlock-all-species": 1,
+        "burst-frequency": 3,
+        "burst-duration": 3,
       },
       boostersPurchased: [
         "series-a-funding",
@@ -284,6 +332,12 @@ describe("checkAchievements", () => {
       "multiplied",
       "species-collector",
       "td-1t",
+      "gen-10",
+      "gen-25",
+      "gen-50",
+      "streak-7",
+      "clicks-100000",
+      "rebirths-10",
     ];
     const result = checkAchievements(state, allIds);
     expect(result).toEqual([]);

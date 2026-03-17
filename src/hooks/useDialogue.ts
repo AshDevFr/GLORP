@@ -186,5 +186,16 @@ export function useDialogue(): string {
     };
   }, []);
 
+  // Achievement unlocked dialogue trigger (fired via window event from game loop)
+  useEffect(() => {
+    const handleAchievement = () => {
+      setCurrentLine(getRandomPhase89Line("achievementUnlocked"));
+    };
+    window.addEventListener("achievementUnlocked", handleAchievement);
+    return () => {
+      window.removeEventListener("achievementUnlocked", handleAchievement);
+    };
+  }, []);
+
   return currentLine;
 }

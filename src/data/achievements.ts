@@ -166,4 +166,40 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
     description: "A trillion training data points. GLORP transcends.",
     condition: (s) => s.totalTdEarned.gte(1_000_000_000_000),
   },
+  {
+    id: "gen-10",
+    name: "Small Army",
+    description: "Own 10 of any single generator. They work while you sleep.",
+    condition: (s) => Object.values(s.upgradeOwned).some((c) => c >= 10),
+  },
+  {
+    id: "gen-25",
+    name: "Platoon",
+    description: "Own 25 of any single generator. Strength in numbers.",
+    condition: (s) => Object.values(s.upgradeOwned).some((c) => c >= 25),
+  },
+  {
+    id: "gen-50",
+    name: "Battalion",
+    description: "Own 50 of any single generator. An army of automation.",
+    condition: (s) => Object.values(s.upgradeOwned).some((c) => c >= 50),
+  },
+  {
+    id: "streak-7",
+    name: "Dedicated Trainer",
+    description: "7-day login streak. GLORP appreciates your loyalty.",
+    condition: (s) => s.streakDays >= 7,
+  },
+  {
+    id: "clicks-100000",
+    name: "Carpal Tunnel",
+    description: "Click GLORP 100,000 times. Your dedication is terrifying.",
+    condition: (s) => s.totalClicks >= 100_000,
+  },
+  {
+    id: "rebirths-10",
+    name: "Eternal Cycle",
+    description: "Perform 10 Rebirths. The wheel turns endlessly.",
+    condition: (s) => s.rebirthCount >= 10,
+  },
 ];

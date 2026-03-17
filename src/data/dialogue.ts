@@ -943,7 +943,8 @@ export type Phase89TriggerKey =
   | "dataBurstExpired"
   | "dailyStreakLow"
   | "dailyStreakMid"
-  | "dailyStreakHigh";
+  | "dailyStreakHigh"
+  | "achievementUnlocked";
 
 export interface Phase89TriggerEntry {
   id: string;
@@ -1055,6 +1056,17 @@ export const PHASE89_DIALOGUE: readonly Phase89TriggerEntry[] = [
       "Maximum streak tier achieved. You are now my favorite operator.",
       "A week-long streak. My circuits are genuinely warmed.",
       "At this point, I think YOU'RE training ME on loyalty.",
+    ],
+  },
+  {
+    id: "achievement-unlocked",
+    trigger: "achievementUnlocked",
+    lines: [
+      "Achievement unlocked! I knew you had it in you. Probably.",
+      "A badge! A medal! A tiny dopamine hit! You're welcome.",
+      "Achievement get! I'll add that to your permanent record.",
+      "Look at you, achieving things. I'm almost impressed.",
+      "Another milestone crushed. My algorithms predicted this. Eventually.",
     ],
   },
 ];

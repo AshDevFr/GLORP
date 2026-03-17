@@ -153,4 +153,68 @@ describe("ACHIEVEMENTS", () => {
     expect(ids.has("upgrades-10")).toBe(true);
     expect(ids.has("first-rebirth")).toBe(true);
   });
+
+  it("gen-10 fires when any generator reaches 10 owned", () => {
+    const a = ACHIEVEMENTS.find((x) => x.id === "gen-10");
+    expect(a).toBeDefined();
+    expect(
+      a?.condition({ ...emptyState, upgradeOwned: { "neural-notepad": 10 } }),
+    ).toBe(true);
+    expect(
+      a?.condition({ ...emptyState, upgradeOwned: { "neural-notepad": 9 } }),
+    ).toBe(false);
+  });
+
+  it("gen-25 fires when any generator reaches 25 owned", () => {
+    const a = ACHIEVEMENTS.find((x) => x.id === "gen-25");
+    expect(a).toBeDefined();
+    expect(
+      a?.condition({ ...emptyState, upgradeOwned: { "data-pad": 25 } }),
+    ).toBe(true);
+    expect(
+      a?.condition({ ...emptyState, upgradeOwned: { "data-pad": 24 } }),
+    ).toBe(false);
+  });
+
+  it("gen-50 fires when any generator reaches 50 owned", () => {
+    const a = ACHIEVEMENTS.find((x) => x.id === "gen-50");
+    expect(a).toBeDefined();
+    expect(
+      a?.condition({ ...emptyState, upgradeOwned: { "neural-notepad": 50 } }),
+    ).toBe(true);
+    expect(
+      a?.condition({ ...emptyState, upgradeOwned: { "neural-notepad": 49 } }),
+    ).toBe(false);
+  });
+
+  it("streak-7 fires when streakDays >= 7", () => {
+    const a = ACHIEVEMENTS.find((x) => x.id === "streak-7");
+    expect(a).toBeDefined();
+    expect(a?.condition({ ...emptyState, streakDays: 7 })).toBe(true);
+    expect(a?.condition({ ...emptyState, streakDays: 6 })).toBe(false);
+  });
+
+  it("clicks-100000 fires when totalClicks >= 100_000", () => {
+    const a = ACHIEVEMENTS.find((x) => x.id === "clicks-100000");
+    expect(a).toBeDefined();
+    expect(a?.condition({ ...emptyState, totalClicks: 100_000 })).toBe(true);
+    expect(a?.condition({ ...emptyState, totalClicks: 99_999 })).toBe(false);
+  });
+
+  it("rebirths-10 fires when rebirthCount >= 10", () => {
+    const a = ACHIEVEMENTS.find((x) => x.id === "rebirths-10");
+    expect(a).toBeDefined();
+    expect(a?.condition({ ...emptyState, rebirthCount: 10 })).toBe(true);
+    expect(a?.condition({ ...emptyState, rebirthCount: 9 })).toBe(false);
+  });
+
+  it("includes generator milestone and streak achievements", () => {
+    const ids = new Set(ACHIEVEMENTS.map((a) => a.id));
+    expect(ids.has("gen-10")).toBe(true);
+    expect(ids.has("gen-25")).toBe(true);
+    expect(ids.has("gen-50")).toBe(true);
+    expect(ids.has("streak-7")).toBe(true);
+    expect(ids.has("clicks-100000")).toBe(true);
+    expect(ids.has("rebirths-10")).toBe(true);
+  });
 });
